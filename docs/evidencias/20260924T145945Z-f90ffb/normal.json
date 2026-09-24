@@ -1,0 +1,285 @@
+{
+  "phase": "normal",
+  "http_status": 200,
+  "request_id": "demo-78a2c415-4033-474b-99d9-4cbc502dbd0b",
+  "window": {
+    "start": "2026-09-24T14:59:55.671706+00:00",
+    "end": "2026-09-24T14:59:57.850704+00:00"
+  },
+  "collection": {
+    "snapshot_id": "e6d883c0-b8eb-414a-9cfa-a9e3d12f9730",
+    "timestamp": "2026-09-24T14:59:56.629458+00:00",
+    "ingestion": {
+      "inserted": 17,
+      "duplicates": 0,
+      "rejected": 0,
+      "missing_files": 0
+    },
+    "current_published": true,
+    "current_error": null
+  },
+  "current": {
+    "snapshot_id": "e6d883c0-b8eb-414a-9cfa-a9e3d12f9730",
+    "timestamp": "2026-09-24T14:59:56.629458Z",
+    "services": [
+      {
+        "service": "gateway",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 15.57819199996402,
+        "error_type": null,
+        "metrics": {
+          "service": "gateway",
+          "timestamp": "2026-09-24T14:59:56.577113Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58396672,
+          "process_threads": 3,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 10.6
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "orders-service",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 5.9894930000155,
+        "error_type": null,
+        "metrics": {
+          "service": "orders-service",
+          "timestamp": "2026-09-24T14:59:56.577333Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58195968,
+          "process_threads": 3,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 10.6
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "users-service",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 5.923259999974562,
+        "error_type": null,
+        "metrics": {
+          "service": "users-service",
+          "timestamp": "2026-09-24T14:59:56.577418Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 57614336,
+          "process_threads": 2,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 10.6
+        },
+        "metrics_error": null
+      }
+    ]
+  },
+  "run": {
+    "run_id": "53089916-3781-40b6-ac48-b5e196826fad",
+    "timestamp": "2026-09-24T14:59:58.690701Z",
+    "context": {
+      "context_id": "9f11537c-3056-4932-a974-b04aad06d893",
+      "request": {
+        "request_id": "38131af0-4202-4f43-a186-6fa46b6f6517",
+        "start": "2026-09-24T14:59:55.671706Z",
+        "end": "2026-09-24T14:59:57.850704Z",
+        "service": "gateway",
+        "correlation_id": "demo-78a2c415-4033-474b-99d9-4cbc502dbd0b"
+      },
+      "services": [
+        "gateway",
+        "orders-service",
+        "users-service"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "6515e074-e9a1-4a34-b5e3-8c6b26034fa9",
+          "kind": "log",
+          "data": {
+            "log_id": "6515e074-e9a1-4a34-b5e3-8c6b26034fa9",
+            "timestamp": "2026-09-24T14:59:55.686995Z",
+            "service": "gateway",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-78a2c415-4033-474b-99d9-4cbc502dbd0b",
+            "dependency": null,
+            "duration_ms": 9.511475000010705,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "e6d883c0-b8eb-414a-9cfa-a9e3d12f9730",
+          "kind": "snapshot",
+          "data": {
+            "snapshot_id": "e6d883c0-b8eb-414a-9cfa-a9e3d12f9730",
+            "timestamp": "2026-09-24T14:59:56.629458Z",
+            "services": [
+              {
+                "service": "gateway",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 15.57819199996402,
+                "error_type": null,
+                "metrics": {
+                  "service": "gateway",
+                  "timestamp": "2026-09-24T14:59:56.577113Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58396672,
+                  "process_threads": 3,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 10.6
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "orders-service",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 5.9894930000155,
+                "error_type": null,
+                "metrics": {
+                  "service": "orders-service",
+                  "timestamp": "2026-09-24T14:59:56.577333Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58195968,
+                  "process_threads": 3,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 10.6
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "users-service",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 5.923259999974562,
+                "error_type": null,
+                "metrics": {
+                  "service": "users-service",
+                  "timestamp": "2026-09-24T14:59:56.577418Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 57614336,
+                  "process_threads": 2,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 10.6
+                },
+                "metrics_error": null
+              }
+            ]
+          }
+        },
+        {
+          "evidence_id": "a618d191-aa53-44a1-bdcd-fcc6ba0f3d1a",
+          "kind": "log",
+          "data": {
+            "log_id": "a618d191-aa53-44a1-bdcd-fcc6ba0f3d1a",
+            "timestamp": "2026-09-24T14:59:55.686727Z",
+            "service": "gateway",
+            "level": "INFO",
+            "event": "dependency_completed",
+            "message": "Consulta à dependência concluída",
+            "request_id": "demo-78a2c415-4033-474b-99d9-4cbc502dbd0b",
+            "dependency": "orders-service",
+            "duration_ms": 8.971324000015102,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "2205c9ee-dea7-4200-8f1d-254ae82c16d9",
+          "kind": "log",
+          "data": {
+            "log_id": "2205c9ee-dea7-4200-8f1d-254ae82c16d9",
+            "timestamp": "2026-09-24T14:59:55.685996Z",
+            "service": "orders-service",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-78a2c415-4033-474b-99d9-4cbc502dbd0b",
+            "dependency": null,
+            "duration_ms": 6.644235999999637,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "ab03e6a2-f81d-45c5-8460-8aa9809c973f",
+          "kind": "log",
+          "data": {
+            "log_id": "ab03e6a2-f81d-45c5-8460-8aa9809c973f",
+            "timestamp": "2026-09-24T14:59:55.685711Z",
+            "service": "orders-service",
+            "level": "INFO",
+            "event": "dependency_completed",
+            "message": "Consulta à dependência concluída",
+            "request_id": "demo-78a2c415-4033-474b-99d9-4cbc502dbd0b",
+            "dependency": "users-service",
+            "duration_ms": 5.065331000025708,
+            "method": "GET",
+            "path": "/users/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "7f84fdfb-36eb-4ba3-866b-d1c0135477af",
+          "kind": "log",
+          "data": {
+            "log_id": "7f84fdfb-36eb-4ba3-866b-d1c0135477af",
+            "timestamp": "2026-09-24T14:59:55.684931Z",
+            "service": "users-service",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-78a2c415-4033-474b-99d9-4cbc502dbd0b",
+            "dependency": null,
+            "duration_ms": 0.3124890000094638,
+            "method": "GET",
+            "path": "/users/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        }
+      ],
+      "missing_data": [
+        "Health verifica o processo local; CPU/memória do sistema refletem o ambiente visível ao processo, não uma medição isolada de limites do container."
+      ],
+      "truncated": false,
+      "omitted_count": 0,
+      "prompt_version": "v1"
+    },
+    "executions": [
+      {
+        "execution_id": "314e0506-8ded-4944-87b4-179982ee4bf7",
+        "timestamp": "2026-09-24T14:59:58.690690Z",
+        "provider": "fake",
+        "model": "pipeline-stub-v1",
+        "simulated": true,
+        "attempt": 1,
+        "duration_ms": 0.13224299999592404,
+        "raw_response": "{\"outcome\":\"insufficient_evidence\",\"summary\":\"Execução simulada do pipeline. Nenhuma inferência de IA foi realizada.\",\"hypotheses\":[],\"evidence_ids\":[],\"recommendations\":[],\"limitations\":[\"Configure um provedor real para obter diagnóstico com LLM.\"]}",
+        "validation_error": null
+      }
+    ],
+    "response": {
+      "outcome": "insufficient_evidence",
+      "summary": "Execução simulada do pipeline. Nenhuma inferência de IA foi realizada.",
+      "hypotheses": [],
+      "evidence_ids": [],
+      "recommendations": [],
+      "limitations": [
+        "Configure um provedor real para obter diagnóstico com LLM."
+      ]
+    },
+    "simulated": true
+  }
+}

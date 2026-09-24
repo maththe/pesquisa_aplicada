@@ -1,0 +1,155 @@
+x-app: &app
+  build: .
+  image: pesquisa-aplicada-services:v1
+  restart: unless-stopped
+  volumes:
+    - service_logs:/var/log/observability
+  healthcheck:
+    test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/health', timeout=2).close()"]
+    interval: 5s
+    timeout: 3s
+    retries: 10
+    start_period: 10s
+
+x-app-environment: &app-environment
+  LOG_DIR: /var/log/observability
+  LOG_LEVEL: ${LOG_LEVEL:-INFO}
+  HTTP_TIMEOUT_SECONDS: ${HTTP_TIMEOUT_SECONDS:-2}
+
+x-monitor: &monitor
+  build: .
+  image: pesquisa-aplicada-services:v1
+  volumes:
+    - service_logs:/var/log/observability:ro
+  environment: &monitor-environment
+    OBS_DATABASE_URL: postgresql+psycopg://observability:observability@postgres:5432/observability
+    OBS_ETCD_URL: http://etcd:2379
+    OBS_GATEWAY_URL: http://gateway:8000
+    OBS_USERS_URL: http://users-service:8000
+    OBS_ORDERS_URL: http://orders-service:8000
+    OBS_LOG_DIR: /var/log/observability
+    OBS_INTERVAL_SECONDS: ${OBS_INTERVAL_SECONDS:-5}
+    OBS_SNAPSHOT_TTL_SECONDS: ${OBS_SNAPSHOT_TTL_SECONDS:-30}
+
+services:
+  gateway:
+    <<: *app
+    environment:
+      <<: *app-environment
+      SERVICE_NAME: gateway
+      USERS_SERVICE_URL: http://users-service:8000
+      ORDERS_SERVICE_URL: http://orders-service:8000
+    ports:
+      - "127.0.0.1:${GATEWAY_PORT:-8000}:8000"
+    depends_on:
+      users-service:
+        condition: service_healthy
+      orders-service:
+        condition: service_healthy
+
+  users-service:
+    <<: *app
+    environment:
+      <<: *app-environment
+      SERVICE_NAME: users-service
+    ports:
+      - "127.0.0.1:${USERS_PORT:-8001}:8000"
+
+  orders-service:
+    <<: *app
+    environment:
+      <<: *app-environment
+      SERVICE_NAME: orders-service
+      USERS_SERVICE_URL: http://users-service:8000
+    ports:
+      - "127.0.0.1:${ORDERS_PORT:-8002}:8000"
+    depends_on:
+      users-service:
+        condition: service_healthy
+
+  etcd:
+    image: gcr.io/etcd-development/etcd:v3.6.14
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:${ETCD_PORT:-2379}:2379"
+      - "127.0.0.1:${ETCD_PEER_PORT:-2380}:2380"
+    volumes:
+      - etcd_data:/etcd-data
+    healthcheck:
+      test: ["CMD", "/usr/local/bin/etcdctl", "--endpoints=http://127.0.0.1:2379", "endpoint", "health"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 10s
+    command:
+      - /usr/local/bin/etcd
+      - --name=etcd
+      - --data-dir=/etcd-data
+      - --listen-client-urls=http://0.0.0.0:2379
+      - --advertise-client-urls=http://etcd:2379
+      - --listen-peer-urls=http://0.0.0.0:2380
+      - --initial-advertise-peer-urls=http://etcd:2380
+      - --initial-cluster=etcd=http://etcd:2380
+      - --initial-cluster-token=etcd-cluster
+      - --initial-cluster-state=new
+
+  postgres:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: observability
+      POSTGRES_PASSWORD: observability
+      POSTGRES_DB: observability
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U observability -d observability"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  migrate:
+    <<: *monitor
+    command: ["python", "-m", "app.cli", "init-db"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  collector:
+    <<: *monitor
+    restart: unless-stopped
+    command: ["python", "-m", "app.cli", "collect"]
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      etcd:
+        condition: service_healthy
+      gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-m", "app.cli", "current"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+  diagnostics:
+    <<: *monitor
+    profiles: ["tools"]
+    entrypoint: ["python", "-m", "app.cli"]
+    command: ["history"]
+    environment:
+      <<: *monitor-environment
+      OBS_LLM_PROVIDER: ${OBS_LLM_PROVIDER:-fake}
+      OBS_LLM_URL: ${OBS_LLM_URL:-}
+      OBS_LLM_MODEL: ${OBS_LLM_MODEL:-}
+      OBS_LLM_API_KEY: ${OBS_LLM_API_KEY:-}
+      OBS_LLM_TIMEOUT_SECONDS: ${OBS_LLM_TIMEOUT_SECONDS:-45}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+volumes:
+  etcd_data:
+  service_logs:
+  postgres_data:

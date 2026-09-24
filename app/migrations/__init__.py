@@ -1,0 +1,1 @@
+"""Migrações versionadas do histórico."""
