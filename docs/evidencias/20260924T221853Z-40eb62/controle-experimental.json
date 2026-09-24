@@ -1,0 +1,14 @@
+[
+  {
+    "timestamp": "2026-09-24T22:19:39.406454+00:00",
+    "action": "stop users-service"
+  },
+  {
+    "timestamp": "2026-09-24T22:20:27.574408+00:00",
+    "action": "start users-service"
+  },
+  {
+    "timestamp": "2026-09-24T22:21:12.238129+00:00",
+    "action": "users-service restored"
+  }
+]

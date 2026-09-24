@@ -41,7 +41,8 @@ a recuperação das evidências originais no PostgreSQL e a persistência das
 execuções. Users e o coletor foram restaurados; os seis componentes permaneceram
 saudáveis após o cenário.
 
-**A LLM foi simulada nesta execução.** O stub devolveu `insufficient_evidence`
+**A LLM foi simulada nesta execução histórica, anterior à remoção do stub.**
+O stub devolveu `insufficient_evidence`
 nas três etapas e não produziu hipóteses. O resultado comprova funcionamento
 do fluxo de dados e rastreabilidade; a demonstração de diagnóstico por IA com o
 provedor real continua pendente.
@@ -55,7 +56,7 @@ O ensaio anterior também foi preservado: nele, o roteiro esperava somente 503
 e observou 504. O critério foi ajustado para os dois modos de falha previstos
 na aplicação, exigindo logs que apontem a dependência Users.
 
-## Verificação da implementação
+## Verificação da implementação na execução registrada
 
 - 61 testes automatizados aprovados após a integração com LangChain.
 - Ruff: lint e formatação aprovados.
@@ -70,7 +71,7 @@ funcionais. Para concluir a demonstração com IA, configurar o provedor real e
 executar:
 
 ```powershell
-.\.venv\Scripts\python.exe -B scripts\demonstrate.py --require-real
+.\.venv\Scripts\python.exe -B experiments\demonstrate.py
 ```
 
 Esse modo exige uma LLM real e verifica os resultados esperados das três etapas,

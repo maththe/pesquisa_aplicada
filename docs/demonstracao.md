@@ -27,7 +27,7 @@ Não é necessário expor a chave da API durante a apresentação.
 Execute o cenário com a LLM real:
 
 ```powershell
-.\.venv\Scripts\python.exe -B scripts\demonstrate.py --require-real
+.\.venv\Scripts\python.exe -B experiments\demonstrate.py
 ```
 
 O script pausa o coletor periódico, faz coletas delimitadas por etapa e reinicia
@@ -35,10 +35,9 @@ o coletor ao final. Interrompe somente Users para produzir a indisponibilidade;
 o bloco de finalização tenta restaurá-lo inclusive quando uma verificação falha.
 A restauração e eventuais erros aparecem no relatório.
 
-Para verificar a infraestrutura antes de configurar a LLM, mantenha
-`OBS_LLM_PROVIDER=fake` e execute sem `--require-real`. O stub retorna
-`insufficient_evidence` com indicação explícita de simulação e não gera hipóteses.
-Esse ensaio verifica coleta e rastreabilidade, mas não demonstra diagnóstico por IA.
+Configure `OBS_LLM_URL`, `OBS_LLM_MODEL` e `OBS_LLM_API_KEY` antes da demonstração.
+Para verificar apenas a infraestrutura, use os comandos `collect --once`, `current`
+e `context` da CLI, que não exigem credenciais de LLM.
 
 ## Arquivos produzidos
 
@@ -77,8 +76,7 @@ deve mostrar Users e o coletor novamente ativos.
 ## O que relatar na entrega
 
 Descreva o comportamento efetivamente observado, anexando os JSONs e o relatório.
-Se o modo for simulado, declare essa condição e mantenha a inferência com LLM real
-como pendência. Se o provedor real falhar, preserve o resultado e a mensagem de
+Se o provedor real falhar, preserve o resultado e a mensagem de
 validação; não substitua o resultado observado por uma resposta esperada.
 
 O diagnóstico pode reconhecer a falha de conexão com Users sem determinar por

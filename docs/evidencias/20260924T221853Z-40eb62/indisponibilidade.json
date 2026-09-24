@@ -1,0 +1,293 @@
+{
+  "phase": "indisponibilidade",
+  "http_status": 504,
+  "request_id": "demo-7802f864-54d5-4ad7-bb3b-e41c562e90d2",
+  "window": {
+    "start": "2026-09-24T22:19:40.648263+00:00",
+    "end": "2026-09-24T22:19:54.121329+00:00"
+  },
+  "collection": {
+    "snapshot_id": "c9018955-6847-483e-8e7e-ce1e6ff29a5a",
+    "timestamp": "2026-09-24T22:19:48.385804+00:00",
+    "ingestion": {
+      "inserted": 35,
+      "duplicates": 0,
+      "rejected": 0,
+      "missing_files": 0
+    },
+    "current_published": true,
+    "current_error": null
+  },
+  "current": {
+    "snapshot_id": "c9018955-6847-483e-8e7e-ce1e6ff29a5a",
+    "timestamp": "2026-09-24T22:19:48.385804Z",
+    "services": [
+      {
+        "service": "gateway",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 28.52192299999956,
+        "error_type": null,
+        "metrics": {
+          "service": "gateway",
+          "timestamp": "2026-09-24T22:19:46.391026Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58851328,
+          "process_threads": 3,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 10.8
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "orders-service",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 8.933558999984825,
+        "error_type": null,
+        "metrics": {
+          "service": "orders-service",
+          "timestamp": "2026-09-24T22:19:46.390643Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58621952,
+          "process_threads": 3,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 10.8
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "users-service",
+        "reachable": false,
+        "status_code": null,
+        "latency_ms": 2004.3374489999906,
+        "error_type": "ConnectTimeout",
+        "metrics": null,
+        "metrics_error": null
+      }
+    ]
+  },
+  "run": {
+    "run_id": "a8c72b22-e99c-450a-a0d5-7f5b24430d1e",
+    "timestamp": "2026-09-24T22:20:05.052016Z",
+    "context": {
+      "context_id": "9babeb66-3bbb-4bf9-bb20-bb1dbdc813f2",
+      "request": {
+        "request_id": "caa7286d-4892-4d67-ac5c-d307f369a8e0",
+        "start": "2026-09-24T22:19:40.648263Z",
+        "end": "2026-09-24T22:19:54.121329Z",
+        "service": "gateway",
+        "correlation_id": "demo-7802f864-54d5-4ad7-bb3b-e41c562e90d2"
+      },
+      "services": [
+        "gateway",
+        "orders-service",
+        "users-service"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "b199fee7-9e2b-4a95-946d-e7424e39e6ba",
+          "kind": "log",
+          "data": {
+            "log_id": "b199fee7-9e2b-4a95-946d-e7424e39e6ba",
+            "timestamp": "2026-09-24T22:19:43.036198Z",
+            "service": "orders-service",
+            "level": "ERROR",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-7802f864-54d5-4ad7-bb3b-e41c562e90d2",
+            "dependency": null,
+            "duration_ms": 2002.654898000003,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 504,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "c9018955-6847-483e-8e7e-ce1e6ff29a5a",
+          "kind": "snapshot",
+          "data": {
+            "snapshot_id": "c9018955-6847-483e-8e7e-ce1e6ff29a5a",
+            "timestamp": "2026-09-24T22:19:48.385804Z",
+            "services": [
+              {
+                "service": "gateway",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 28.52192299999956,
+                "error_type": null,
+                "metrics": {
+                  "service": "gateway",
+                  "timestamp": "2026-09-24T22:19:46.391026Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58851328,
+                  "process_threads": 3,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 10.8
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "orders-service",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 8.933558999984825,
+                "error_type": null,
+                "metrics": {
+                  "service": "orders-service",
+                  "timestamp": "2026-09-24T22:19:46.390643Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58621952,
+                  "process_threads": 3,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 10.8
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "users-service",
+                "reachable": false,
+                "status_code": null,
+                "latency_ms": 2004.3374489999906,
+                "error_type": "ConnectTimeout",
+                "metrics": null,
+                "metrics_error": null
+              }
+            ]
+          }
+        },
+        {
+          "evidence_id": "a5896a37-5d2b-47ce-8532-9a982a7a3c1b",
+          "kind": "log",
+          "data": {
+            "log_id": "a5896a37-5d2b-47ce-8532-9a982a7a3c1b",
+            "timestamp": "2026-09-24T22:19:43.035898Z",
+            "service": "gateway",
+            "level": "ERROR",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-7802f864-54d5-4ad7-bb3b-e41c562e90d2",
+            "dependency": null,
+            "duration_ms": 2006.184525000009,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 504,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "a5a88da1-70e9-4d92-8b51-8d416ddc4e47",
+          "kind": "log",
+          "data": {
+            "log_id": "a5a88da1-70e9-4d92-8b51-8d416ddc4e47",
+            "timestamp": "2026-09-24T22:19:43.035655Z",
+            "service": "orders-service",
+            "level": "ERROR",
+            "event": "dependency_timeout",
+            "message": "Falha ao consultar users-service",
+            "request_id": "demo-7802f864-54d5-4ad7-bb3b-e41c562e90d2",
+            "dependency": "users-service",
+            "duration_ms": 2001.7661130000022,
+            "method": "GET",
+            "path": "/users/1",
+            "status_code": null,
+            "error_type": "ConnectTimeout"
+          }
+        },
+        {
+          "evidence_id": "14b2cd52-84f7-41c4-a716-372ed7c668ca",
+          "kind": "log",
+          "data": {
+            "log_id": "14b2cd52-84f7-41c4-a716-372ed7c668ca",
+            "timestamp": "2026-09-24T22:19:43.034818Z",
+            "service": "gateway",
+            "level": "ERROR",
+            "event": "dependency_timeout",
+            "message": "Falha ao consultar orders-service",
+            "request_id": "demo-7802f864-54d5-4ad7-bb3b-e41c562e90d2",
+            "dependency": "orders-service",
+            "duration_ms": 2004.8041930000124,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": null,
+            "error_type": "ReadTimeout"
+          }
+        }
+      ],
+      "missing_data": [
+        "Health verifica o processo local; CPU/memória do sistema refletem o ambiente visível ao processo, não uma medição isolada de limites do container."
+      ],
+      "truncated": false,
+      "omitted_count": 0,
+      "prompt_version": "v1"
+    },
+    "executions": [
+      {
+        "execution_id": "1bda1b5d-b00e-4877-9632-872470c3752d",
+        "timestamp": "2026-09-24T22:20:05.051962Z",
+        "provider": "langchain",
+        "model": "gpt-4.1-mini",
+        "simulated": false,
+        "attempt": 1,
+        "duration_ms": 7776.6202859999685,
+        "raw_response": "{\n  \"outcome\": \"incident\",\n  \"summary\": \"Durante o período analisado, a requisição de GET /orders/1 apresentou erro 504 devido a timeouts em dependências. O orders-service reportou timeout ao consultar o users-service (ConnectTimeout) e retornou 504 na resposta à gateway. A gateway também registrou erro 504 para a mesma rota, além de registrar falhas de timeout tanto para orders-service (ReadTimeout) quanto para users-service (ConnectTimeout). O snapshot indica que a users-service estava inacessível por ConnectTimeout, enquanto gateway e orders-service apresentaram saúde local e latências normais. Portanto, a indisponibilidade da users-service impactou orders-service e consequentemente a gateway, causando erro da requisição.\",\n  \"evidence_ids\": [\n    \"14b2cd52-84f7-41c4-a716-372ed7c668ca\",\n    \"a5a88da1-70e9-4d92-8b51-8d416ddc4e47\",\n    \"a5896a37-5d2b-47ce-8532-9a982a7a3c1b\",\n    \"b199fee7-9e2b-4a95-946d-e7424e39e6ba\",\n    \"c9018955-6847-483e-8e7e-ce1e6ff29a5a\",\n    \"14b2cd52-84f7-41c4-a716-372ed7c668ca\"\n  ],\n  \"hypotheses\": [\n    {\n      \"description\": \"A users-service apresentou indisponibilidade por timeout de conexão (ConnectTimeout), impactando negativamente a orders-service, que depende dela para responder à requisição. Essa falha gerou timeout e erro 504 na orders-service e, em cascata, na gateway.\",\n      \"service\": \"users-service\",\n      \"evidence_ids\": [\n        \"a5a88da1-70e9-4d92-8b51-8d416ddc4e47\",\n        \"c9018955-6847-483e-8e7e-ce1e6ff29a5a\"\n      ]\n    },\n    {\n      \"description\": \"A orders-service experimentou timeout ao tentar consultar a users-service, resultando em erro 504 na requisição que passou pela gateway.\",\n      \"service\": \"orders-service\",\n      \"evidence_ids\": [\n        \"14b2cd52-84f7-41c4-a716-372ed7c668ca\",\n        \"b199fee7-9e2b-4a95-946d-e7424e39e6ba\"\n      ]\n    },\n    {\n      \"description\": \"A gateway registrou erro 504 e timeout nos acessos às services orders-service e users-service, indicando impacto em toda a cadeia de chamadas e exibindo falha generalizada na transação solicitada.\",\n      \"service\": \"gateway\",\n      \"evidence_ids\": [\n        \"14b2cd52-84f7-41c4-a716-372ed7c668ca\",\n        \"a5896a37-5d2b-47ce-8532-9a982a7a3c1b\"\n      ]\n    }\n  ],\n  \"recommendations\": [\n    \"Investigar a indisponibilidade da users-service, especialmente conectividade e desempenho.\",\n    \"Analisar logs e métricas da users-service em janela temporal ampla para identificar causas do ConnectTimeout.\",\n    \"Verificar a saúde e configuração da rede entre orders-service e users-service.\",\n    \"Analisar o tratamento de timeouts e exceções na orders-service para mitigar impacto em erros cascata.\",\n    \"Monitorar a gateway para garantir tolerância em cascata e resiliência a falhas em serviços dependentes.\",\n    \"Rever timeout configurado nas chamadas entre serviços para evitar longas esperas e impactos em cascata.\"\n  ],\n  \"limitations\": [\n    \"Não há logs explícitos detalhando o motivo da indisponibilidade da users-service além do ConnectTimeout.\",\n    \"As métricas coletadas do snapshot não incluem dados da users-service devido à inacessibilidade no momento.\",\n    \"Health checks locais indicam serviços orders-service e gateway saudáveis no momento do snapshot, mas não garantem funcionamento pleno das dependências.\",\n    \"A janela temporal das evidências é limitada, podendo não representar eventos anteriores ou posteriores relevantes.\",\n    \"Não há evidências de métricas de rede, recursos ou configurações específicas que possam explicar a causa técnica do timeout.\"\n  ]\n}",
+        "validation_error": null
+      }
+    ],
+    "response": {
+      "outcome": "incident",
+      "summary": "Durante o período analisado, a requisição de GET /orders/1 apresentou erro 504 devido a timeouts em dependências. O orders-service reportou timeout ao consultar o users-service (ConnectTimeout) e retornou 504 na resposta à gateway. A gateway também registrou erro 504 para a mesma rota, além de registrar falhas de timeout tanto para orders-service (ReadTimeout) quanto para users-service (ConnectTimeout). O snapshot indica que a users-service estava inacessível por ConnectTimeout, enquanto gateway e orders-service apresentaram saúde local e latências normais. Portanto, a indisponibilidade da users-service impactou orders-service e consequentemente a gateway, causando erro da requisição.",
+      "hypotheses": [
+        {
+          "description": "A users-service apresentou indisponibilidade por timeout de conexão (ConnectTimeout), impactando negativamente a orders-service, que depende dela para responder à requisição. Essa falha gerou timeout e erro 504 na orders-service e, em cascata, na gateway.",
+          "service": "users-service",
+          "evidence_ids": [
+            "a5a88da1-70e9-4d92-8b51-8d416ddc4e47",
+            "c9018955-6847-483e-8e7e-ce1e6ff29a5a"
+          ]
+        },
+        {
+          "description": "A orders-service experimentou timeout ao tentar consultar a users-service, resultando em erro 504 na requisição que passou pela gateway.",
+          "service": "orders-service",
+          "evidence_ids": [
+            "14b2cd52-84f7-41c4-a716-372ed7c668ca",
+            "b199fee7-9e2b-4a95-946d-e7424e39e6ba"
+          ]
+        },
+        {
+          "description": "A gateway registrou erro 504 e timeout nos acessos às services orders-service e users-service, indicando impacto em toda a cadeia de chamadas e exibindo falha generalizada na transação solicitada.",
+          "service": "gateway",
+          "evidence_ids": [
+            "14b2cd52-84f7-41c4-a716-372ed7c668ca",
+            "a5896a37-5d2b-47ce-8532-9a982a7a3c1b"
+          ]
+        }
+      ],
+      "evidence_ids": [
+        "14b2cd52-84f7-41c4-a716-372ed7c668ca",
+        "a5a88da1-70e9-4d92-8b51-8d416ddc4e47",
+        "a5896a37-5d2b-47ce-8532-9a982a7a3c1b",
+        "b199fee7-9e2b-4a95-946d-e7424e39e6ba",
+        "c9018955-6847-483e-8e7e-ce1e6ff29a5a",
+        "14b2cd52-84f7-41c4-a716-372ed7c668ca"
+      ],
+      "recommendations": [
+        "Investigar a indisponibilidade da users-service, especialmente conectividade e desempenho.",
+        "Analisar logs e métricas da users-service em janela temporal ampla para identificar causas do ConnectTimeout.",
+        "Verificar a saúde e configuração da rede entre orders-service e users-service.",
+        "Analisar o tratamento de timeouts e exceções na orders-service para mitigar impacto em erros cascata.",
+        "Monitorar a gateway para garantir tolerância em cascata e resiliência a falhas em serviços dependentes.",
+        "Rever timeout configurado nas chamadas entre serviços para evitar longas esperas e impactos em cascata."
+      ],
+      "limitations": [
+        "Não há logs explícitos detalhando o motivo da indisponibilidade da users-service além do ConnectTimeout.",
+        "As métricas coletadas do snapshot não incluem dados da users-service devido à inacessibilidade no momento.",
+        "Health checks locais indicam serviços orders-service e gateway saudáveis no momento do snapshot, mas não garantem funcionamento pleno das dependências.",
+        "A janela temporal das evidências é limitada, podendo não representar eventos anteriores ou posteriores relevantes.",
+        "Não há evidências de métricas de rede, recursos ou configurações específicas que possam explicar a causa técnica do timeout."
+      ]
+    },
+    "simulated": false
+  }
+}

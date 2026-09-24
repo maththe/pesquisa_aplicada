@@ -1,6 +1,6 @@
 from alembic import context
 
-from app.observability.storage import metadata
+from app.monitoring.storage import metadata
 
 connection = context.config.attributes["connection"]
 context.configure(connection=connection, target_metadata=metadata)

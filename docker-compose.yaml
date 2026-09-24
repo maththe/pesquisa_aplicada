@@ -140,7 +140,6 @@ services:
     command: ["history"]
     environment:
       <<: *monitor-environment
-      OBS_LLM_PROVIDER: ${OBS_LLM_PROVIDER:-fake}
       OBS_LLM_URL: ${OBS_LLM_URL:-}
       OBS_LLM_MODEL: ${OBS_LLM_MODEL:-}
       OBS_LLM_API_KEY: ${OBS_LLM_API_KEY:-}

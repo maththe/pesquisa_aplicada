@@ -47,7 +47,7 @@ cache-dir = ".cache/ruff"
 target-version = "py312"
 line-length = 100
 src = ["app", "tests"]
-include = ["app/**/*.py", "tests/**/*.py", "scripts/**/*.py", "pyproject.toml"]
+include = ["app/**/*.py", "tests/**/*.py", "experiments/**/*.py", "pyproject.toml"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "ASYNC"]
@@ -56,7 +56,7 @@ select = ["E", "F", "I", "UP", "B", "ASYNC"]
 cache_dir = ".cache/mypy"
 python_version = "3.12"
 strict = true
-files = ["app", "tests", "scripts"]
+files = ["app", "tests", "experiments"]
 
 [project.scripts]
 diagnostics = "app.cli:main"

@@ -2,20 +2,19 @@ import argparse
 import asyncio
 import json
 import sys
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 from pydantic import BaseModel
 
-from app.observability.collector import collect_once
-from app.observability.config import MonitorSettings
-from app.observability.context import build_context
-from app.observability.current import CurrentState
-from app.observability.database import migrate
-from app.observability.diagnostics import diagnose
-from app.observability.models import DiagnosticRequest, utcnow
-from app.observability.providers import make_provider
-from app.observability.storage import History
+from app.config import MonitorSettings
+from app.monitoring.collector import collect_once
+from app.monitoring.context import build_context
+from app.monitoring.current import CurrentState
+from app.monitoring.diagnostics import diagnose
+from app.monitoring.models import DiagnosticRequest, utcnow
+from app.monitoring.providers import LangChainProvider
+from app.monitoring.storage import History, migrate
 
 
 def emit(value: Any) -> None:
@@ -45,6 +44,12 @@ def parser() -> argparse.ArgumentParser:
 
 
 async def execute(args: argparse.Namespace, settings: MonitorSettings) -> int:
+    if args.command == "diagnose":
+        try:
+            settings.require_llm()
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
     history = History(settings.database_url)
     try:
         if args.command == "init-db":
@@ -73,8 +78,6 @@ async def execute(args: argparse.Namespace, settings: MonitorSettings) -> int:
                 current.close()
         elif args.command in ("context", "diagnose"):
             end = args.end or utcnow().isoformat()
-            from datetime import datetime
-
             start = args.start or (datetime.fromisoformat(end) - timedelta(minutes=5)).isoformat()
             request = DiagnosticRequest.model_validate(
                 {
@@ -88,7 +91,7 @@ async def execute(args: argparse.Namespace, settings: MonitorSettings) -> int:
             if args.command == "context":
                 emit(context)
             else:
-                run = await diagnose(context, make_provider(settings), history)
+                run = await diagnose(context, LangChainProvider(settings), history)
                 emit(run)
                 return 1 if run.response.outcome == "failure" else 0
         elif args.command == "history":

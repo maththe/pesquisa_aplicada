@@ -1,0 +1,298 @@
+{
+  "phase": "recuperacao",
+  "http_status": 200,
+  "request_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af",
+  "window": {
+    "start": "2026-09-24T22:20:29.689453+00:00",
+    "end": "2026-09-24T22:20:36.695365+00:00"
+  },
+  "collection": {
+    "snapshot_id": "1b8db58b-263f-4f6c-a1d9-d933040b2e0d",
+    "timestamp": "2026-09-24T22:20:32.713222+00:00",
+    "ingestion": {
+      "inserted": 33,
+      "duplicates": 0,
+      "rejected": 0,
+      "missing_files": 0
+    },
+    "current_published": true,
+    "current_error": null
+  },
+  "current": {
+    "snapshot_id": "1b8db58b-263f-4f6c-a1d9-d933040b2e0d",
+    "timestamp": "2026-09-24T22:20:32.713222Z",
+    "services": [
+      {
+        "service": "gateway",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 25.282830999969974,
+        "error_type": null,
+        "metrics": {
+          "service": "gateway",
+          "timestamp": "2026-09-24T22:20:32.647188Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58851328,
+          "process_threads": 3,
+          "system_cpu_percent": 2.5,
+          "system_memory_percent": 11.2
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "orders-service",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 7.85213599999679,
+        "error_type": null,
+        "metrics": {
+          "service": "orders-service",
+          "timestamp": "2026-09-24T22:20:32.647475Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58621952,
+          "process_threads": 3,
+          "system_cpu_percent": 2.5,
+          "system_memory_percent": 11.2
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "users-service",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 8.184842999980901,
+        "error_type": null,
+        "metrics": {
+          "service": "users-service",
+          "timestamp": "2026-09-24T22:20:32.659277Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58216448,
+          "process_threads": 2,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 11.2
+        },
+        "metrics_error": null
+      }
+    ]
+  },
+  "run": {
+    "run_id": "702ac13a-7567-4362-9014-d934038b942c",
+    "timestamp": "2026-09-24T22:20:43.572780Z",
+    "context": {
+      "context_id": "e471152c-d901-46f4-8f3f-4b8957e24c50",
+      "request": {
+        "request_id": "1f05e5e3-e7bf-4971-8186-740733858d2f",
+        "start": "2026-09-24T22:20:29.689453Z",
+        "end": "2026-09-24T22:20:36.695365Z",
+        "service": "gateway",
+        "correlation_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af"
+      },
+      "services": [
+        "gateway",
+        "orders-service",
+        "users-service"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "23c51230-e233-4c94-9bdb-1933cb576ebc",
+          "kind": "log",
+          "data": {
+            "log_id": "23c51230-e233-4c94-9bdb-1933cb576ebc",
+            "timestamp": "2026-09-24T22:20:29.997435Z",
+            "service": "gateway",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af",
+            "dependency": null,
+            "duration_ms": 10.133944000017436,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "1b8db58b-263f-4f6c-a1d9-d933040b2e0d",
+          "kind": "snapshot",
+          "data": {
+            "snapshot_id": "1b8db58b-263f-4f6c-a1d9-d933040b2e0d",
+            "timestamp": "2026-09-24T22:20:32.713222Z",
+            "services": [
+              {
+                "service": "gateway",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 25.282830999969974,
+                "error_type": null,
+                "metrics": {
+                  "service": "gateway",
+                  "timestamp": "2026-09-24T22:20:32.647188Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58851328,
+                  "process_threads": 3,
+                  "system_cpu_percent": 2.5,
+                  "system_memory_percent": 11.2
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "orders-service",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 7.85213599999679,
+                "error_type": null,
+                "metrics": {
+                  "service": "orders-service",
+                  "timestamp": "2026-09-24T22:20:32.647475Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58621952,
+                  "process_threads": 3,
+                  "system_cpu_percent": 2.5,
+                  "system_memory_percent": 11.2
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "users-service",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 8.184842999980901,
+                "error_type": null,
+                "metrics": {
+                  "service": "users-service",
+                  "timestamp": "2026-09-24T22:20:32.659277Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58216448,
+                  "process_threads": 2,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 11.2
+                },
+                "metrics_error": null
+              }
+            ]
+          }
+        },
+        {
+          "evidence_id": "790f226b-980d-4a59-8a34-24ce1a7a50b4",
+          "kind": "log",
+          "data": {
+            "log_id": "790f226b-980d-4a59-8a34-24ce1a7a50b4",
+            "timestamp": "2026-09-24T22:20:29.996813Z",
+            "service": "gateway",
+            "level": "INFO",
+            "event": "dependency_completed",
+            "message": "Consulta à dependência concluída",
+            "request_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af",
+            "dependency": "orders-service",
+            "duration_ms": 9.328907999986313,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "6b0895fb-c130-47e8-a1f4-6d48320cf12e",
+          "kind": "log",
+          "data": {
+            "log_id": "6b0895fb-c130-47e8-a1f4-6d48320cf12e",
+            "timestamp": "2026-09-24T22:20:29.994935Z",
+            "service": "orders-service",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af",
+            "dependency": null,
+            "duration_ms": 4.971883999985494,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "2b8231b8-3b1b-49e0-911d-b193da19391a",
+          "kind": "log",
+          "data": {
+            "log_id": "2b8231b8-3b1b-49e0-911d-b193da19391a",
+            "timestamp": "2026-09-24T22:20:29.994371Z",
+            "service": "orders-service",
+            "level": "INFO",
+            "event": "dependency_completed",
+            "message": "Consulta à dependência concluída",
+            "request_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af",
+            "dependency": "users-service",
+            "duration_ms": 4.101114999969013,
+            "method": "GET",
+            "path": "/users/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "364942fb-3d6a-4ff4-b244-8f0afa9b6cba",
+          "kind": "log",
+          "data": {
+            "log_id": "364942fb-3d6a-4ff4-b244-8f0afa9b6cba",
+            "timestamp": "2026-09-24T22:20:29.993593Z",
+            "service": "users-service",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af",
+            "dependency": null,
+            "duration_ms": 0.6165579999901638,
+            "method": "GET",
+            "path": "/users/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        }
+      ],
+      "missing_data": [
+        "Health verifica o processo local; CPU/memória do sistema refletem o ambiente visível ao processo, não uma medição isolada de limites do container."
+      ],
+      "truncated": false,
+      "omitted_count": 0,
+      "prompt_version": "v1"
+    },
+    "executions": [
+      {
+        "execution_id": "0142d213-e55e-46e5-a85c-d870a8f89010",
+        "timestamp": "2026-09-24T22:20:43.572720Z",
+        "provider": "langchain",
+        "model": "gpt-4.1-mini",
+        "simulated": false,
+        "attempt": 1,
+        "duration_ms": 4335.817439999972,
+        "raw_response": "{\n  \"outcome\": \"no_incident\",\n  \"summary\": \"Durante o intervalo analisado, a requisição GET /orders/1 realizada via gateway completou com sucesso, retornando status 200 e baixa latência. O gateway consultou a orders-service com sucesso, que por sua vez consultou a users-service, ambas respondendo com status 200 e tempos de resposta baixos. Snapshots indicam que todos os serviços estavam alcançáveis, com métricas de CPU e memória dentro dos parâmetros normais. Não há evidência de falhas ou incidentes nas interações entre serviços ou nos serviços isolados.\",\n  \"evidence_ids\": [\n    \"23c51230-e233-4c94-9bdb-1933cb576ebc\",\n    \"1b8db58b-263f-4f6c-a1d9-d933040b2e0d\",\n    \"790f226b-980d-4a59-8a34-24ce1a7a50b4\",\n    \"6b0895fb-c130-47e8-a1f4-6d48320cf12e\",\n    \"2b8231b8-3b1b-49e0-911d-b193da19391a\",\n    \"364942fb-3d6a-4ff4-b244-8f0afa9b6cba\"\n  ],\n  \"hypotheses\": [],\n  \"recommendations\": [\n    \"Continuar monitorando a comunicação entre serviços para garantir a manutenção da disponibilidade.\",\n    \"Verificar periodicamente métricas de desempenho e uso de recursos para prevenir eventual degradação.\",\n    \"Manter registros detalhados para facilitar investigações futuras caso incidentes ocorram.\"\n  ],\n  \"limitations\": [\n    \"Os dados de health check refletem somente o processo local e não garantem o comportamento integral das dependências externas.\",\n    \"Não há logs ou métricas que cubram exatamente o mesmo intervalo de tempo para todas as camadas, podendo haver lacunas não evidenciadas.\",\n    \"Ausência de erros ou falhas nos logs não assegura ausência completa de problemas, apenas que não foram detectados nas evidências disponíveis.\"\n  ]\n}",
+        "validation_error": null
+      }
+    ],
+    "response": {
+      "outcome": "no_incident",
+      "summary": "Durante o intervalo analisado, a requisição GET /orders/1 realizada via gateway completou com sucesso, retornando status 200 e baixa latência. O gateway consultou a orders-service com sucesso, que por sua vez consultou a users-service, ambas respondendo com status 200 e tempos de resposta baixos. Snapshots indicam que todos os serviços estavam alcançáveis, com métricas de CPU e memória dentro dos parâmetros normais. Não há evidência de falhas ou incidentes nas interações entre serviços ou nos serviços isolados.",
+      "hypotheses": [],
+      "evidence_ids": [
+        "23c51230-e233-4c94-9bdb-1933cb576ebc",
+        "1b8db58b-263f-4f6c-a1d9-d933040b2e0d",
+        "790f226b-980d-4a59-8a34-24ce1a7a50b4",
+        "6b0895fb-c130-47e8-a1f4-6d48320cf12e",
+        "2b8231b8-3b1b-49e0-911d-b193da19391a",
+        "364942fb-3d6a-4ff4-b244-8f0afa9b6cba"
+      ],
+      "recommendations": [
+        "Continuar monitorando a comunicação entre serviços para garantir a manutenção da disponibilidade.",
+        "Verificar periodicamente métricas de desempenho e uso de recursos para prevenir eventual degradação.",
+        "Manter registros detalhados para facilitar investigações futuras caso incidentes ocorram."
+      ],
+      "limitations": [
+        "Os dados de health check refletem somente o processo local e não garantem o comportamento integral das dependências externas.",
+        "Não há logs ou métricas que cubram exatamente o mesmo intervalo de tempo para todas as camadas, podendo haver lacunas não evidenciadas.",
+        "Ausência de erros ou falhas nos logs não assegura ausência completa de problemas, apenas que não foram detectados nas evidências disponíveis."
+      ]
+    },
+    "simulated": false
+  }
+}

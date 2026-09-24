@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import TextIO
 
 from app.config import LogLevel, ServiceName
-from app.schemas.logs import StructuredLog
+from app.models import StructuredLog
 
 request_id_context: ContextVar[str | None] = ContextVar("request_id", default=None)
 

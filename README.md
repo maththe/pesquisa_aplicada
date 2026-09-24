@@ -5,9 +5,9 @@ Protótipo acadêmico para apoiar um operador na investigação de falhas no flu
 estado atual no etcd e histórico no PostgreSQL, constrói um contexto delimitado
 e registra diagnósticos com evidências rastreáveis.
 
-A interface desta versão é uma CLI. O provedor LangChain aceita uma API no formato
-Chat Completions; o provedor `fake` é um stub explícito e **não realiza diagnóstico
-de IA**. A execução com o provedor real depende de configurar modelo, URL e chave.
+A interface desta versão é uma CLI. O diagnóstico usa LangChain com uma API no
+formato Chat Completions e exige modelo, URL e chave. Coleta e consultas ao
+histórico funcionam independentemente dessas credenciais.
 
 ## Entregas acadêmicas
 
@@ -15,12 +15,13 @@ de IA**. A execução com o provedor real depende de configurar modelo, URL e ch
 
 - [Cenário, caso de uso e critérios de demonstração](docs/caso-de-uso.md).
 - [Roteiro de apresentação e execução](docs/demonstracao.md).
-- [Estado da implementação e limitações](docs/implementation-plan.md).
+- [Estado da implementação e limitações](docs/estado-da-implementacao.md).
 - `docs/evidencias/`: registros gerados a cada execução, sem sobrescrever anteriores.
 
 ## Executar
 
-Com Docker Engine e Compose disponíveis:
+Com Docker Engine e Compose disponíveis, configure o `.env` conforme a seção
+seguinte antes de executar o diagnóstico:
 
 ```powershell
 docker compose up --build -d --wait
@@ -54,7 +55,6 @@ dados, execute `docker compose down`.
 Copie `.env.example` para `.env` e configure localmente:
 
 ```dotenv
-OBS_LLM_PROVIDER=langchain
 OBS_LLM_URL=https://seu-provedor/endereco-completo/chat/completions
 OBS_LLM_MODEL=seu-modelo
 OBS_LLM_API_KEY=sua-chave-local
@@ -62,9 +62,9 @@ OBS_LLM_API_KEY=sua-chave-local
 
 O endereço acima é um marcador: use o endpoint real do seu provedor.
 Também é aceita a URL base, como `https://seu-provedor/v1`; nesse caso,
-o cliente acrescenta `/chat/completions`. `OBS_LLM_PROVIDER=http` continua
-aceito como alias e também utiliza LangChain. A chave é
-enviada como Bearer e pode ficar vazia em APIs locais sem autenticação.
+o cliente acrescenta `/chat/completions`. A chave é obrigatória e enviada como
+Bearer. O seletor `OBS_LLM_PROVIDER` foi removido: LangChain é o único provedor.
+Sem URL, modelo ou chave, `diagnose` termina com uma mensagem de configuração.
 O provedor precisa aceitar `messages` e `response_format: {"type":"json_object"}`
 e retornar `choices[0].message.content`. Outros protocolos exigem um adaptador.
 Em Docker Desktop, uma API no computador pode ser acessada por
@@ -78,7 +78,7 @@ Há no máximo uma nova tentativa para corrigir saída inválida; falha de trans
 
 ## Integração com LangChain
 
-O fluxo em `app/observability/providers.py` utiliza:
+O fluxo em `app/monitoring/providers.py` utiliza:
 
 1. `ChatPromptTemplate` para compor instruções, schema e contexto.
 2. `init_chat_model` com a integração `langchain-openai` para o protocolo Chat Completions.
@@ -92,8 +92,7 @@ adicional para corrigir uma resposta inválida.
 
 O uso de `langchain-openai` identifica o protocolo atual; não fixa o modelo nem
 o servidor. Campos específicos de outros provedores e APIs em outro formato
-exigem a integração correspondente. O stub `fake` permanece disponível para
-testes de infraestrutura. As execuções reais deste adaptador são registradas
+exigem a integração correspondente. As execuções deste adaptador são registradas
 com `provider: langchain`.
 
 Referências: [modelos no LangChain](https://docs.langchain.com/oss/python/langchain/models)
@@ -103,15 +102,14 @@ e [integração ChatOpenAI](https://docs.langchain.com/oss/python/integrations/c
 
 ```powershell
 .\.venv\Scripts\python.exe -m pip install -e ".[dev]"
-.\.venv\Scripts\python.exe -B scripts\demonstrate.py --require-real
+.\.venv\Scripts\python.exe -B experiments\demonstrate.py
 ```
 
 O script executa sucesso → parada de Users → recuperação, verificando HTTP,
 correlação, snapshot atual, histórico e persistência do diagnóstico. Users e o
 coletor são restaurados no bloco de finalização. Execute no ambiente de demonstração.
 
-Sem `--require-real`, o mesmo script permite verificar a infraestrutura com
-`OBS_LLM_PROVIDER=fake`; os relatórios marcam a simulação e não atestam inferência.
+O roteiro sempre exige diagnóstico real e verifica os resultados das três etapas.
 `--port` permite alterar a porta do Gateway e `--project` seleciona o projeto Compose.
 Cada execução cria uma pasta própria em `docs/evidencias/`, com relatório Markdown
 e JSONs de cada etapa. O controle experimental fica em arquivo separado.
@@ -133,12 +131,15 @@ docker compose logs --tail 30 collector
 ## Organização
 
 ```text
-app/api/                      APIs e correlação HTTP
-app/observability/            Coleta, persistência, contexto e diagnóstico
+app/microservices/            APIs Gateway, Orders e Users, cliente HTTP e middleware
+app/monitoring/               Coleta, histórico, contexto e diagnóstico LangChain
 app/migrations/               Schema versionado com Alembic
+app/config.py                 Configuração dos serviços e do monitoramento
+app/models.py                 Contratos HTTP e logs estruturados
+app/telemetry.py              Emissão de logs e correlação de requisições
 app/cli.py                    Interface de investigação
-tests/                        Testes sem Docker ou provedor externo
-scripts/demonstrate.py         Controlador experimental separado
+tests/                        Testes unitários e de integração
+experiments/demonstrate.py    Cenário automatizado de falha e recuperação
 docs/                         Caso de uso, roteiro e registros
 ```
 
@@ -179,4 +180,5 @@ correção semântica do diagnóstico: isso pertence à avaliação formal poste
 
 Python 3.12+; imagem Docker Python 3.12. Os testes automatizados usam SQLite
 temporário e transportes simulados. A demonstração usa PostgreSQL, etcd e HTTP
-reais em containers; o campo `simulated` informa separadamente o modo da LLM.
+reais em containers e exige credenciais de LLM. O campo `simulated` é mantido
+para leitura dos registros antigos; os novos diagnósticos usam LangChain.

@@ -1,0 +1,36 @@
+{
+  "executed_at": "2026-09-24T22:21:16.685902+00:00",
+  "pipeline_passed": true,
+  "users_restored": true,
+  "error": null,
+  "real_llm_used": true,
+  "diagnostic_demonstration_passed": true,
+  "expected_outcomes_observed": true,
+  "phases": [
+    {
+      "phase": "normal",
+      "http_status": 200,
+      "request_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4",
+      "run_id": "4f59cba0-d369-49be-a02f-df2d6c27b691",
+      "outcome": "no_incident",
+      "simulated": false
+    },
+    {
+      "phase": "indisponibilidade",
+      "http_status": 504,
+      "request_id": "demo-7802f864-54d5-4ad7-bb3b-e41c562e90d2",
+      "run_id": "a8c72b22-e99c-450a-a0d5-7f5b24430d1e",
+      "outcome": "incident",
+      "simulated": false
+    },
+    {
+      "phase": "recuperacao",
+      "http_status": 200,
+      "request_id": "demo-7e76fdcd-482b-408f-b5c5-f36e137ef5af",
+      "run_id": "702ac13a-7567-4362-9014-d934038b942c",
+      "outcome": "no_incident",
+      "simulated": false
+    }
+  ],
+  "scope": "Demonstração de viabilidade; não é avaliação formal de acurácia."
+}

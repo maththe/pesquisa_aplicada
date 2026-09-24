@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 
-from app.api.factory import build_app
 from app.config import Settings
+from app.microservices.factory import build_app
 
 
 def create_app() -> FastAPI:

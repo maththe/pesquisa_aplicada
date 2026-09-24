@@ -1,0 +1,298 @@
+{
+  "phase": "normal",
+  "http_status": 200,
+  "request_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4",
+  "window": {
+    "start": "2026-09-24T22:18:56.474865+00:00",
+    "end": "2026-09-24T22:19:04.004699+00:00"
+  },
+  "collection": {
+    "snapshot_id": "3ac830d5-3c92-471a-86a3-aef9cb3e1cb3",
+    "timestamp": "2026-09-24T22:18:59.890670+00:00",
+    "ingestion": {
+      "inserted": 17,
+      "duplicates": 0,
+      "rejected": 0,
+      "missing_files": 0
+    },
+    "current_published": true,
+    "current_error": null
+  },
+  "current": {
+    "snapshot_id": "3ac830d5-3c92-471a-86a3-aef9cb3e1cb3",
+    "timestamp": "2026-09-24T22:18:59.890670Z",
+    "services": [
+      {
+        "service": "gateway",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 24.35643900000173,
+        "error_type": null,
+        "metrics": {
+          "service": "gateway",
+          "timestamp": "2026-09-24T22:18:59.836123Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58851328,
+          "process_threads": 3,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 11.2
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "orders-service",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 7.5778469999931986,
+        "error_type": null,
+        "metrics": {
+          "service": "orders-service",
+          "timestamp": "2026-09-24T22:18:59.836467Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 58621952,
+          "process_threads": 3,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 11.2
+        },
+        "metrics_error": null
+      },
+      {
+        "service": "users-service",
+        "reachable": true,
+        "status_code": 200,
+        "latency_ms": 7.920085000023391,
+        "error_type": null,
+        "metrics": {
+          "service": "users-service",
+          "timestamp": "2026-09-24T22:18:59.836610Z",
+          "scope": "service_process_and_visible_system",
+          "process_rss_bytes": 56975360,
+          "process_threads": 2,
+          "system_cpu_percent": 0.0,
+          "system_memory_percent": 11.2
+        },
+        "metrics_error": null
+      }
+    ]
+  },
+  "run": {
+    "run_id": "4f59cba0-d369-49be-a02f-df2d6c27b691",
+    "timestamp": "2026-09-24T22:19:12.519681Z",
+    "context": {
+      "context_id": "28494128-7456-4c22-90e2-c07981fa8ae7",
+      "request": {
+        "request_id": "82a750e1-bb5e-43c0-b9fe-d0f60ea361f0",
+        "start": "2026-09-24T22:18:56.474865Z",
+        "end": "2026-09-24T22:19:04.004699Z",
+        "service": "gateway",
+        "correlation_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4"
+      },
+      "services": [
+        "gateway",
+        "orders-service",
+        "users-service"
+      ],
+      "evidence": [
+        {
+          "evidence_id": "33909229-0e4e-4204-8f7c-fd8b2812f001",
+          "kind": "log",
+          "data": {
+            "log_id": "33909229-0e4e-4204-8f7c-fd8b2812f001",
+            "timestamp": "2026-09-24T22:18:56.868514Z",
+            "service": "gateway",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4",
+            "dependency": null,
+            "duration_ms": 19.107246999993777,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "3ac830d5-3c92-471a-86a3-aef9cb3e1cb3",
+          "kind": "snapshot",
+          "data": {
+            "snapshot_id": "3ac830d5-3c92-471a-86a3-aef9cb3e1cb3",
+            "timestamp": "2026-09-24T22:18:59.890670Z",
+            "services": [
+              {
+                "service": "gateway",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 24.35643900000173,
+                "error_type": null,
+                "metrics": {
+                  "service": "gateway",
+                  "timestamp": "2026-09-24T22:18:59.836123Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58851328,
+                  "process_threads": 3,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 11.2
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "orders-service",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 7.5778469999931986,
+                "error_type": null,
+                "metrics": {
+                  "service": "orders-service",
+                  "timestamp": "2026-09-24T22:18:59.836467Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 58621952,
+                  "process_threads": 3,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 11.2
+                },
+                "metrics_error": null
+              },
+              {
+                "service": "users-service",
+                "reachable": true,
+                "status_code": 200,
+                "latency_ms": 7.920085000023391,
+                "error_type": null,
+                "metrics": {
+                  "service": "users-service",
+                  "timestamp": "2026-09-24T22:18:59.836610Z",
+                  "scope": "service_process_and_visible_system",
+                  "process_rss_bytes": 56975360,
+                  "process_threads": 2,
+                  "system_cpu_percent": 0.0,
+                  "system_memory_percent": 11.2
+                },
+                "metrics_error": null
+              }
+            ]
+          }
+        },
+        {
+          "evidence_id": "9ecdc923-4d54-4e43-ba07-c1fc56cb570d",
+          "kind": "log",
+          "data": {
+            "log_id": "9ecdc923-4d54-4e43-ba07-c1fc56cb570d",
+            "timestamp": "2026-09-24T22:18:56.867825Z",
+            "service": "gateway",
+            "level": "INFO",
+            "event": "dependency_completed",
+            "message": "Consulta à dependência concluída",
+            "request_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4",
+            "dependency": "orders-service",
+            "duration_ms": 17.766793000021153,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "a5da6b1c-a5f8-4c16-a13c-9e507befb1ef",
+          "kind": "log",
+          "data": {
+            "log_id": "a5da6b1c-a5f8-4c16-a13c-9e507befb1ef",
+            "timestamp": "2026-09-24T22:18:56.866612Z",
+            "service": "orders-service",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4",
+            "dependency": null,
+            "duration_ms": 13.105344999985391,
+            "method": "GET",
+            "path": "/orders/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "144ce979-1868-4e65-b143-e9088507add9",
+          "kind": "log",
+          "data": {
+            "log_id": "144ce979-1868-4e65-b143-e9088507add9",
+            "timestamp": "2026-09-24T22:18:56.865402Z",
+            "service": "orders-service",
+            "level": "INFO",
+            "event": "dependency_completed",
+            "message": "Consulta à dependência concluída",
+            "request_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4",
+            "dependency": "users-service",
+            "duration_ms": 9.353497999995852,
+            "method": "GET",
+            "path": "/users/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        },
+        {
+          "evidence_id": "d6e7c321-0431-4ffc-84c7-e33beceafdda",
+          "kind": "log",
+          "data": {
+            "log_id": "d6e7c321-0431-4ffc-84c7-e33beceafdda",
+            "timestamp": "2026-09-24T22:18:56.863720Z",
+            "service": "users-service",
+            "level": "INFO",
+            "event": "request_completed",
+            "message": "Requisição concluída",
+            "request_id": "demo-3b8952e1-7d0c-4d04-9f0a-f92881bc0ed4",
+            "dependency": null,
+            "duration_ms": 0.8821230000251035,
+            "method": "GET",
+            "path": "/users/1",
+            "status_code": 200,
+            "error_type": null
+          }
+        }
+      ],
+      "missing_data": [
+        "Health verifica o processo local; CPU/memória do sistema refletem o ambiente visível ao processo, não uma medição isolada de limites do container."
+      ],
+      "truncated": false,
+      "omitted_count": 0,
+      "prompt_version": "v1"
+    },
+    "executions": [
+      {
+        "execution_id": "b8a46d73-702c-4016-88f7-ca85474fb6f0",
+        "timestamp": "2026-09-24T22:19:12.519569Z",
+        "provider": "langchain",
+        "model": "gpt-4.1-mini",
+        "simulated": false,
+        "attempt": 1,
+        "duration_ms": 5529.6472880000065,
+        "raw_response": "{\n  \"outcome\": \"no_incident\",\n  \"summary\": \"Todos os serviços (gateway, orders-service, users-service) responderam com sucesso durante o intervalo analisado. Logs indicam que as requisições foram concluídas com status 200, sem erros reportados. As dependências foram acessadas e responderam corretamente, com latências dentro de valores aceitáveis. O snapshot confirma que os serviços estavam alcançáveis e estáveis com uso razoável de recursos.\",\n  \"evidence_ids\": [\n    \"33909229-0e4e-4204-8f7c-fd8b2812f001\",\n    \"3ac830d5-3c92-471a-86a3-aef9cb3e1cb3\",\n    \"9ecdc923-4d54-4e43-ba07-c1fc56cb570d\",\n    \"a5da6b1c-a5f8-4c16-a13c-9e507befb1ef\",\n    \"144ce979-1868-4e65-b143-e9088507add9\",\n    \"d6e7c321-0431-4ffc-84c7-e33beceafdda\"\n  ],\n  \"hypotheses\": [],\n  \"recommendations\": [\n    \"Continuar monitorando a estabilidade das requisições e dependências.\",\n    \"Verificar com alertas caso ocorram alterações significativas na latência ou erros.\",\n    \"Considerar análise mais ampla em períodos maiores para detectar possíveis incidentes intermitentes.\"\n  ],\n  \"limitations\": [\n    \"Health verifica apenas o processo local; métricas de CPU/memória refletem ambiente visível, não controles isolados do container.\",\n    \"Não há logs suficientes para avaliar comportamentos fora do intervalo de análise.\",\n    \"Ausência de falhas nas evidências não garante que incidentes antigos ou fora da janela temporal não tenham ocorrido.\"\n  ]\n}",
+        "validation_error": null
+      }
+    ],
+    "response": {
+      "outcome": "no_incident",
+      "summary": "Todos os serviços (gateway, orders-service, users-service) responderam com sucesso durante o intervalo analisado. Logs indicam que as requisições foram concluídas com status 200, sem erros reportados. As dependências foram acessadas e responderam corretamente, com latências dentro de valores aceitáveis. O snapshot confirma que os serviços estavam alcançáveis e estáveis com uso razoável de recursos.",
+      "hypotheses": [],
+      "evidence_ids": [
+        "33909229-0e4e-4204-8f7c-fd8b2812f001",
+        "3ac830d5-3c92-471a-86a3-aef9cb3e1cb3",
+        "9ecdc923-4d54-4e43-ba07-c1fc56cb570d",
+        "a5da6b1c-a5f8-4c16-a13c-9e507befb1ef",
+        "144ce979-1868-4e65-b143-e9088507add9",
+        "d6e7c321-0431-4ffc-84c7-e33beceafdda"
+      ],
+      "recommendations": [
+        "Continuar monitorando a estabilidade das requisições e dependências.",
+        "Verificar com alertas caso ocorram alterações significativas na latência ou erros.",
+        "Considerar análise mais ampla em períodos maiores para detectar possíveis incidentes intermitentes."
+      ],
+      "limitations": [
+        "Health verifica apenas o processo local; métricas de CPU/memória refletem ambiente visível, não controles isolados do container.",
+        "Não há logs suficientes para avaliar comportamentos fora do intervalo de análise.",
+        "Ausência de falhas nas evidências não garante que incidentes antigos ou fora da janela temporal não tenham ocorrido."
+      ]
+    },
+    "simulated": false
+  }
+}
