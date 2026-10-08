@@ -1,3 +1,4 @@
+import asyncio
 import re
 from time import perf_counter
 from uuid import uuid4
@@ -69,3 +70,60 @@ class RequestLoggingMiddleware:
                 )
             finally:
                 request_id_context.reset(token)
+
+
+class OverloadGuardMiddleware:
+    """Recusa excesso de concorrência em um experimento explicitamente habilitado."""
+
+    def __init__(
+        self,
+        app: ASGIApp,
+        events: EventLogger,
+        concurrency_limit: int,
+        delay_ms: int,
+    ) -> None:
+        self.app = app
+        self.events = events
+        self.concurrency_limit = concurrency_limit
+        self.delay_seconds = delay_ms / 1000
+        self.in_flight = 0
+        self.lock = asyncio.Lock()
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if (
+            scope["type"] != "http"
+            or self.concurrency_limit == 0
+            or scope["path"] in ("/health", "/metrics")
+        ):
+            await self.app(scope, receive, send)
+            return
+
+        async with self.lock:
+            self.in_flight += 1
+            current = self.in_flight
+        try:
+            if current > self.concurrency_limit:
+                self.events.emit(
+                    "ERROR",
+                    "overload_rejected",
+                    (
+                        f"Sobrecarga: {current} requisições simultâneas excederam "
+                        f"o limite {self.concurrency_limit}; requisição recusada"
+                    ),
+                    method=scope["method"],
+                    path=scope["path"],
+                    status_code=503,
+                    error_type="ConcurrencyLimitExceeded",
+                )
+                response = JSONResponse(
+                    {"detail": "Serviço saturado por excesso de requisições"},
+                    status_code=503,
+                )
+                await response(scope, receive, send)
+                return
+            if self.delay_seconds:
+                await asyncio.sleep(self.delay_seconds)
+            await self.app(scope, receive, send)
+        finally:
+            async with self.lock:
+                self.in_flight -= 1

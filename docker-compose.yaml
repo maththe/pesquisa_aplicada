@@ -52,6 +52,8 @@ services:
     environment:
       <<: *app-environment
       SERVICE_NAME: users-service
+      OVERLOAD_CONCURRENCY_LIMIT: ${USERS_OVERLOAD_CONCURRENCY_LIMIT:-0}
+      OVERLOAD_DELAY_MS: ${USERS_OVERLOAD_DELAY_MS:-0}
     ports:
       - "127.0.0.1:${USERS_PORT:-8001}:8000"
 

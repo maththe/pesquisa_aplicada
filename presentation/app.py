@@ -3,9 +3,11 @@
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import threading
 import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
@@ -19,11 +21,15 @@ HTML = Path(__file__).with_name("index.html")
 ACTION_LOCK = threading.Lock()
 
 
-def compose(*args: str) -> None:
+def compose(*args: str, env_overrides: dict[str, str] | None = None) -> None:
+    environment = os.environ.copy()
+    if env_overrides:
+        environment.update(env_overrides)
     result = subprocess.run(
         ["docker", "compose", *args],
         cwd=ROOT,
         capture_output=True,
+        env=environment,
         text=True,
         timeout=120,
     )
@@ -79,6 +85,21 @@ def wait_for_users() -> None:
             return
         time.sleep(0.5)
     raise RuntimeError("Users não ficou disponível")
+
+
+def configure_users_overload(limit: int, delay_ms: int) -> None:
+    compose(
+        "up",
+        "-d",
+        "--force-recreate",
+        "--no-deps",
+        "users-service",
+        env_overrides={
+            "USERS_OVERLOAD_CONCURRENCY_LIMIT": str(limit),
+            "USERS_OVERLOAD_DELAY_MS": str(delay_ms),
+        },
+    )
+    wait_for_users()
 
 
 def observe(scenario: str, correlation: str) -> dict[str, Any]:
@@ -138,6 +159,7 @@ def compact_evidence(run: dict[str, Any]) -> list[dict[str, Any]]:
                     "dependency": data.get("dependency"),
                     "status": data.get("status_code"),
                     "error": data.get("error_type"),
+                    "message": data.get("message"),
                 }
             )
         else:
@@ -157,7 +179,15 @@ def compact_evidence(run: dict[str, Any]) -> list[dict[str, Any]]:
                     "states": states,
                 }
             )
-    return compact
+    priorities = {
+        "overload_rejected": 0,
+        "dependency_http_error": 1,
+        "dependency_unavailable": 1,
+        "dependency_timeout": 1,
+        "request_completed": 2,
+    }
+    compact.sort(key=lambda item: priorities.get(item.get("event", ""), 3))
+    return compact[:12]
 
 
 def add_ai_diagnosis(observation: dict[str, Any], start: str) -> dict[str, Any]:
@@ -193,12 +223,70 @@ def add_ai_diagnosis(observation: dict[str, Any], start: str) -> dict[str, Any]:
     return observation
 
 
+def run_overload_action() -> dict[str, Any]:
+    # Mantém a cadeia causal completa dentro da janela máxima de 80 evidências:
+    # cada falha produz logs em Users, Orders e Gateway.
+    total_requests = 12
+    concurrency = 12
+    configured_limit = 3
+    delay_ms = 350
+    configure_users_overload(configured_limit, delay_ms)
+    compose("stop", "collector")
+    start = datetime.now(UTC).isoformat()
+    correlation = f"web-load-{uuid4()}"
+    try:
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
+            responses = list(
+                executor.map(
+                    lambda _: request("http://127.0.0.1:8000/orders/1", correlation),
+                    range(total_requests),
+                )
+            )
+        failures = [response for response in responses if response["status"] != 200]
+        representative = failures[0] if failures else responses[0]
+        gateway = request("http://127.0.0.1:8000/health")
+        orders = request("http://127.0.0.1:8002/health")
+        users = request("http://127.0.0.1:8001/health")
+        observation = {
+            "scenario": "overload",
+            "ok": bool(failures) and gateway["status"] == 200 and orders["status"] == 200,
+            "title": "Sobrecarga derrubou a operação",
+            "summary": (
+                f"Uma rajada de {total_requests} consultas concorrentes excedeu o limite "
+                f"experimental de {configured_limit} em Users. {len(failures)} consultas "
+                "falharam, embora os health checks locais continuassem respondendo."
+            ),
+            "timestamp": datetime.now().astimezone().isoformat(timespec="seconds"),
+            "request_id": correlation,
+            "load": {
+                "total_requests": total_requests,
+                "concurrency": concurrency,
+                "configured_limit": configured_limit,
+                "delay_ms": delay_ms,
+                "failed_requests": len(failures),
+                "successful_requests": total_requests - len(failures),
+            },
+            "checks": {
+                "gateway": gateway,
+                "orders": orders,
+                "users": users,
+                "order": representative,
+            },
+        }
+        return add_ai_diagnosis(observation, start)
+    finally:
+        configure_users_overload(0, 0)
+        compose("start", "collector")
+
+
 def run_action(action: str) -> dict[str, Any]:
     with ACTION_LOCK:
+        if action == "overload":
+            return run_overload_action()
         if action in ("normal", "recover"):
-            compose("start", "users-service")
-            wait_for_users()
+            configure_users_overload(0, 0)
         elif action == "failure":
+            configure_users_overload(0, 0)
             compose("stop", "users-service")
         elif action == "status":
             return observe("status", f"web-status-{uuid4()}")
@@ -242,7 +330,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def do_POST(self) -> None:  # noqa: N802
         action = self.path.removeprefix("/api/")
-        if action not in {"normal", "failure", "recover"}:
+        if action not in {"normal", "failure", "recover", "overload"}:
             self.send_error(404)
             return
         try:
@@ -262,7 +350,8 @@ def main() -> None:
     except KeyboardInterrupt:
         pass
     finally:
-        compose("start", "users-service", "collector")
+        configure_users_overload(0, 0)
+        compose("start", "collector")
         server.server_close()
 
 
