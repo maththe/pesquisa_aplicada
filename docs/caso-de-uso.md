@@ -1,5 +1,9 @@
 # Cenário de aplicação e caso de uso
 
+O [caso elaborado para apresentação](caso-de-uso-apresentacao.md) aplica este
+fluxo a um incidente no atendimento de uma loja virtual, com narrativa,
+investigação guiada e critérios de evidência.
+
 ## Problema investigado
 
 Em uma aplicação distribuída, uma falha percebida no serviço de entrada pode ter

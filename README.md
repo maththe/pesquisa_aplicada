@@ -11,6 +11,7 @@ histórico funcionam independentemente dessas credenciais.
 
 ## Entregas acadêmicas
 
+- [O que foi feito e como foi feito](docs/o-que-foi-feito.md).
 - [Entrega consolidada e resultados observados](docs/entrega.md).
 
 - [Cenário, caso de uso e critérios de demonstração](docs/caso-de-uso.md).

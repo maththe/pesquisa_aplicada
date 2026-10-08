@@ -3,6 +3,11 @@
 Duração sugerida: 8 a 12 minutos, além da construção inicial das imagens.
 Abra o terminal na raiz do projeto e deixe a pasta de evidências disponível.
 
+Para uma apresentação centrada no problema e na decisão do operador, use o
+[caso de atendimento da loja virtual](caso-de-uso-apresentacao.md). Ele inclui
+história, impacto da falha, perguntas de investigação, critérios de sucesso e
+falas para a banca.
+
 ## Preparação
 
 1. Execute `docker compose up --build -d --wait`.
@@ -30,6 +35,19 @@ Execute o cenário com a LLM real:
 .\.venv\Scripts\python.exe -B experiments\demonstrate.py
 ```
 
+Para conduzir a apresentação com pausas e três consultas adicionais por etapa:
+
+```powershell
+.\.venv\Scripts\python.exe -B experiments\demonstrate.py --interactive --samples 3
+```
+
+O terminal mostra o diagnóstico, o número de consultas com falha, a latência
+média medida no cliente e o health local do Gateway. A pausa anterior à
+recuperação permite consultar uma evidência enquanto o incidente está ativo.
+As consultas adicionais são sequenciais; não representam carga concorrente.
+O relatório compara as medições entre as três etapas e inclui hipóteses, IDs
+de evidências e limitações. Esses novos dados exigem uma nova execução.
+
 O script pausa o coletor periódico, faz coletas delimitadas por etapa e reinicia
 o coletor ao final. Interrompe somente Users para produzir a indisponibilidade;
 o bloco de finalização tenta restaurá-lo inclusive quando uma verificação falha.
@@ -51,6 +69,7 @@ Cada execução cria uma pasta `docs/evidencias/<data>-<id>/`.
 | `resumo.json` | Resultado das verificações e identificação do modo da LLM |
 | `relatorio.md` | Registro resumido para apresentação |
 | `controle-experimental.json` | Ações externas e horários, sem ingestão pelo artefato |
+| `<etapa>-operacao.json` | Consultas adicionais, status HTTP, latências e health do Gateway |
 
 Durante a apresentação, abra `indisponibilidade.json` e localize:
 
