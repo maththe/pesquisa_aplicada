@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Diagnóstico distribuído — Loja virtual</title>
+  <meta name="description" content="Demonstração do incidente de consulta de pedidos.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23131a2a'/%3E%3Cpath d='M14 19h9l4 24h24l5-17H25' fill='none' stroke='%235ee6a8' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='31' cy='50' r='3' fill='%235ee6a8'/%3E%3Ccircle cx='48' cy='50' r='3' fill='%235ee6a8'/%3E%3C/svg%3E">
+  <style>
+    :root{color-scheme:dark;--bg:#0a0e18;--panel:#121827;--line:#283149;--text:#f4f7ff;--muted:#9aa7bd;--green:#5ee6a8;--red:#ff6b78;--blue:#7cb8ff;--amber:#ffc46b}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,#18213a 0,transparent 34%),var(--bg);color:var(--text);font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+    main{width:min(1120px,calc(100% - 32px));margin:auto;padding:32px 0 48px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+    h1{font-size:clamp(1.8rem,4vw,3rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.04em}.lead{max-width:720px;margin:0;color:var(--muted);font-size:1.05rem}.live{display:flex;align-items:center;gap:9px;white-space:nowrap;color:var(--muted)}.dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green)}
+    .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}button{border:1px solid var(--line);border-radius:14px;padding:17px 18px;background:#171e30;color:var(--text);font:700 1rem/1.2 inherit;cursor:pointer;transition:.18s transform,.18s border-color,.18s background}button:hover{transform:translateY(-2px);border-color:var(--blue)}button:disabled{opacity:.45;cursor:wait;transform:none}.normal{border-color:#28684f}.failure{border-color:#7b3540}.recover{border-color:#315c8c}.overload{border-color:#8a6330;color:#ffd08a}
+    .result{border:1px solid var(--line);background:linear-gradient(145deg,#141b2c,#0f1421);border-radius:20px;padding:24px;min-height:220px}.result-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}h2{margin:4px 0 6px;font-size:1.6rem}.summary{margin:0;color:var(--muted);max-width:740px}.badge{padding:7px 11px;border-radius:999px;background:#233047;color:var(--blue);font-weight:800;font-size:.82rem}.badge.ok{background:#173c31;color:var(--green)}.badge.bad{background:#4b2027;color:#ff9aa3}
+    .checks{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}.card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#0c111d}.label{color:var(--muted);font-size:.85rem}.value{font-size:1.45rem;font-weight:850;margin-top:3px}.value.good{color:var(--green)}.value.bad{color:var(--red)}.value.warn{color:var(--amber)}.meta{font-size:.78rem;color:var(--muted);margin-top:3px}
+    .flow{display:flex;align-items:center;gap:10px;margin-top:20px;overflow:auto;padding-bottom:2px}.node{padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#0c111d;min-width:120px;text-align:center;font-weight:750}.node.good{border-color:#28684f}.node.bad{border-color:#7b3540;color:#ff9aa3}.arrow{color:var(--muted);font-size:1.3rem}.details{display:flex;justify-content:space-between;gap:16px;margin-top:18px;color:var(--muted);font-size:.84rem;flex-wrap:wrap}code{color:#b8d8ff}.empty{display:grid;place-items:center;min-height:170px;color:var(--muted);text-align:center}.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}
+    .load-banner{margin-top:18px;padding:14px 16px;border:1px solid #8a6330;background:#2e2417;border-radius:12px;color:#ffdca5;font-weight:700}.ai{margin-top:22px;border-top:1px solid var(--line);padding-top:22px}.ai-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.ai h3{font-size:1.3rem;margin:4px 0}.ai-summary{font-size:1rem;margin:12px 0;color:#dce5f6}.real{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:.8rem;font-weight:800}.real:before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}
+    .hypotheses{display:grid;gap:10px;margin:15px 0}.hypothesis{background:#0c111d;border:1px solid var(--line);border-radius:12px;padding:14px}.hypothesis strong{color:var(--blue)}.ids{margin-top:8px;color:var(--muted);font-size:.78rem;word-break:break-all}.evidence-title{margin:20px 0 10px;font-size:1rem}.evidence-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.evidence{border-left:3px solid var(--blue);background:#0c111d;border-radius:8px;padding:11px 12px;font-size:.84rem}.evidence.bad{border-color:var(--red)}.evidence small{display:block;color:var(--muted);margin-top:5px;word-break:break-all}.trace{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:18px;padding-top:15px;border-top:1px dashed var(--line);color:var(--muted);font-size:.82rem}.trace code{word-break:break-all}.note{margin:18px 2px 0;color:var(--muted);font-size:.9rem}.note strong{color:var(--text)}
+    @media(max-width:760px){main{padding-top:22px}.top{display:block}.live{margin-top:14px}.actions,.checks,.evidence-grid{grid-template-columns:1fr}.result-head,.ai-head{display:block}.badge{display:inline-block;margin-top:12px}.flow{gap:6px}.node{min-width:104px}}
+  </style>
+</head>
+<body>
+  <main>
+    <section class="top">
+      <div><div class="eyebrow">Caso de uso · Loja virtual</div><h1>Consulta de pedido</h1><p class="lead">Mostre como uma dependência indisponível interrompe a operação mesmo quando o Gateway continua saudável.</p></div>
+      <div class="live"><span class="dot"></span> Ambiente local</div>
+    </section>
+
+    <section class="actions" aria-label="Cenários da demonstração">
+      <button class="normal" data-action="normal">1 · Testar tudo certo</button>
+      <button class="failure" data-action="failure">2 · Provocar falha</button>
+      <button class="recover" data-action="recover">3 · Recuperar serviço</button>
+      <button class="overload" data-action="overload">4 · Sobrecarga + IA</button>
+    </section>
+
+    <section class="result" id="result" aria-live="polite">
+      <div class="empty">Escolha um cenário para executar o teste real.</div>
+    </section>
+    <p class="note"><strong>Leitura principal:</strong> health local responde se o processo está ativo; a consulta do pedido valida a operação completa e suas dependências.</p>
+  </main>
+  <script>
+    const result = document.querySelector('#result');
+    const buttons = [...document.querySelectorAll('button[data-action]')];
+    const labels = {normal:'Testando o fluxo e solicitando o diagnóstico à IA…',failure:'Interrompendo Users, coletando evidências e analisando com IA…',recover:'Restaurando Users e validando a recuperação com IA…',overload:'Disparando requisições concorrentes, coletando logs e analisando com IA…'};
+    const esc = value => String(value ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const statusText = check => check.status == null ? 'OFFLINE' : `HTTP ${check.status}`;
+    const statusClass = (name, check, scenario) => {
+      if (name === 'users' && scenario === 'failure' && check.status == null) return 'bad';
+      if (name === 'order' && check.status !== 200) return 'bad';
+      return check.status === 200 ? 'good' : 'warn';
+    };
+    const evidenceText = item => {
+      if(item.kind==='snapshot') return item.states.map(s=>`${s.service}: ${s.reachable?'alcançável':'indisponível'}${s.status?` (HTTP ${s.status})`:''}`).join(' · ');
+      const dependency=item.dependency?` → ${item.dependency}`:'';
+      const status=item.status?` · HTTP ${item.status}`:'';
+      const error=item.error?` · ${item.error}`:'';
+      const message=item.message?` · ${item.message}`:'';
+      return `${item.service}${dependency} · ${item.event}${status}${error}${message}`;
+    };
+    function render(data){
+      const c=data.checks; const ai=data.ai; const isLoad=data.scenario==='overload'; const isBad=data.scenario==='failure'||isLoad;
+      const cards=[['gateway','Gateway',statusText(c.gateway),c.gateway.elapsed_ms==null?'sem resposta':`${c.gateway.elapsed_ms} ms`],['orders','Orders',statusText(c.orders),c.orders.elapsed_ms==null?'sem resposta':`${c.orders.elapsed_ms} ms`],['users','Users',isLoad?'SATURADO':statusText(c.users),isLoad?'health local ainda responde':(c.users.elapsed_ms==null?'sem resposta':`${c.users.elapsed_ms} ms`)],['order',isLoad?'Falhas na rajada':'Pedido 1',isLoad?`${data.load.failed_requests}/${data.load.total_requests}`:statusText(c.order),isLoad?`${data.load.concurrency} simultâneas · limite ${data.load.configured_limit}`:(c.order.elapsed_ms==null?'sem resposta':`${c.order.elapsed_ms} ms`)]];
+      result.innerHTML=`
+        <div class="result-head"><div><div class="eyebrow">Resultado observado</div><h2>${esc(data.title)}</h2><p class="summary">${esc(data.summary)}</p></div><span class="badge ${data.ok?(isBad?'bad':'ok'):'bad'}">${data.ok?'CENÁRIO CONFIRMADO':'VERIFICAR AMBIENTE'}</span></div>
+        <div class="checks">
+          ${cards.map(([key,label,value,meta])=>`<div class="card"><div class="label">${label}</div><div class="value ${isLoad&&(key==='users'||key==='order')?'bad':statusClass(key,c[key],data.scenario)}">${value}</div><div class="meta">${meta}</div></div>`).join('')}
+        </div>
+        ${isLoad?`<div class="load-banner">${data.load.total_requests} funções simultâneas → limite ${data.load.configured_limit} → ${data.load.failed_requests} falhas observadas</div>`:''}
+        <div class="flow"><div class="node good">Gateway</div><div class="arrow">→</div><div class="node good">Orders</div><div class="arrow">→</div><div class="node ${(isLoad||c.users.status!==200)?'bad':'good'}">${isLoad?'Users saturado':'Users'}</div><div class="arrow">→</div><div class="node ${(isLoad||c.order.status!==200)?'bad':'good'}">${isLoad?'Clientes afetados':(c.order.status===200?'Pedido exibido':'Cliente afetado')}</div></div>
+        <div class="details"><span>Request ID: <code>${esc(data.request_id)}</code></span><span>${esc(data.timestamp)}</span></div>
+        <section class="ai">
+          <div class="ai-head"><div><div class="eyebrow">Diagnóstico do artefato</div><h3>Conclusão da IA: ${esc(ai.outcome)}</h3></div><div class="real">IA REAL · ${esc(ai.model)}</div></div>
+          <p class="ai-summary">${esc(ai.summary)}</p>
+          <div class="hypotheses">${ai.hypotheses.map(h=>`<div class="hypothesis"><strong>${esc(h.service||'Cadeia distribuída')}</strong><br>${esc(h.description)}<div class="ids">Evidências citadas: ${h.evidence_ids.map(esc).join(', ')}</div></div>`).join('')}</div>
+          <h4 class="evidence-title">Evidências entregues à IA</h4>
+          <div class="evidence-grid">${ai.evidence.map(e=>`<div class="evidence ${(e.error||e.states?.some(s=>!s.reachable))?'bad':''}">${esc(evidenceText(e))}<small>ID ${esc(e.id)}</small></div>`).join('')}</div>
+          <div class="trace"><span>Execução persistida: <code>${esc(ai.run_id)}</code></span><span>${esc(ai.provider)} · ${Math.round(ai.duration_ms)} ms · simulado: ${ai.simulated?'sim':'não'}</span></div>
+        </section>`;
+    }
+    async function run(action){
+      buttons.forEach(b=>b.disabled=true);
+      result.innerHTML=`<div class="empty"><div><div class="spinner"></div>${labels[action]}</div></div>`;
+      try{const response=await fetch(`/api/${action}`,{method:'POST'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Falha no teste');render(data)}catch(error){result.innerHTML=`<div class="empty"><div><strong>Não foi possível executar.</strong><br>${esc(error.message)}</div></div>`}finally{buttons.forEach(b=>b.disabled=false)}
+    }
+    buttons.forEach(button=>button.addEventListener('click',()=>run(button.dataset.action)));
+  </script>
+</body>
+</html>

@@ -158,6 +158,36 @@ Essa verificação é manual e não está entre as três etapas automatizadas.
 Registre o status observado se a utilizar. O roteiro atual não testa a
 classificação de 404 pela LLM; não atribua esse resultado ao diagnóstico.
 
+## Extensão ao vivo — sobrecarga concorrente e diagnóstico por IA
+
+Na interface de apresentação em `http://127.0.0.1:8090`, use o botão
+**“4 · Sobrecarga + IA”**. A cena habilita temporariamente um limite experimental
+de três operações simultâneas em Users e dispara doze consultas concorrentes ao
+pedido 1, todas com o mesmo identificador de correlação.
+
+O resultado esperado é:
+
+- três consultas concluídas e nove recusadas com HTTP 503;
+- health checks de Gateway, Orders e Users respondendo HTTP 200 após a rajada;
+- logs `overload_rejected` em Users com erro `ConcurrencyLimitExceeded`;
+- propagação do 503 de Users para Orders e, então, para o Gateway;
+- diagnóstico `incident` da LLM real, apontando a saturação de Users e citando
+  as evidências que sustentam a hipótese.
+
+### Fala sugerida
+
+> “Agora não vou desligar nenhum container. Vou provocar várias consultas ao
+> mesmo tempo. Users aceita somente três operações simultâneas neste experimento
+> e rejeita o excesso. O artefato coleta os logs dos três serviços, correlaciona
+> a cadeia e envia esse contexto à IA. A conclusão não foi escrita na tela: ela
+> veio do modelo configurado, e abaixo estão o modelo, o ID da execução e os
+> registros citados.”
+
+O limite e o atraso são artificiais e só ficam ativos durante essa cena. O
+experimento demonstra rejeição por saturação e indisponibilidade parcial da
+operação, não a queda do processo ou a capacidade máxima real do sistema. Ao
+terminar, a interface recria Users sem o limite e reativa o coletor contínuo.
+
 ## Evidência histórica disponível
 
 A execução de 24/09/2026, registrada em

@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     http_timeout_seconds: float = Field(default=2.0, gt=0)
     log_level: LogLevel = "INFO"
     log_dir: Path | None = None
+    overload_concurrency_limit: int = Field(default=0, ge=0, le=10000)
+    overload_delay_ms: int = Field(default=0, ge=0, le=30000)
 
 
 class MonitorSettings(BaseSettings):
