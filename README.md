@@ -5,9 +5,44 @@ Protótipo acadêmico para apoiar um operador na investigação de falhas no flu
 estado atual no etcd e histórico no PostgreSQL, constrói um contexto delimitado
 e registra diagnósticos com evidências rastreáveis.
 
-A interface desta versão é uma CLI. O diagnóstico usa LangChain com uma API no
-formato Chat Completions e exige modelo, URL e chave. Coleta e consultas ao
-histórico funcionam independentemente dessas credenciais.
+O núcleo de diagnóstico usa uma CLI e LangChain com API compatível com Chat
+Completions. A versão 2 acrescenta a **Nexo**, loja experimental executável na
+Vercel, com carrinho persistente local, pagamento sandbox, circuito de proteção,
+aviso interno de recuperação e avaliação pela interface.
+
+## Demonstração visual — versão 2
+
+Sem VPS ou credenciais para o fluxo de compra de teste:
+
+```bash
+cd presentation
+node build.mjs
+node --test tests/*.test.mjs
+node dev.mjs
+```
+
+Na Vercel: **Root Directory `presentation`**, Framework **Other**, build
+`node build.mjs`, saída `public`, instalação vazia. A página e a API ficam na
+mesma origem. [Guia de publicação](docs/vercel.md).
+
+Os pagamentos e falhas são controlados; nenhum valor é cobrado. Carrinho,
+comprovantes, avisos e evidências são locais ao navegador. O modo **Regras**
+é o padrão e funciona sem IA; o modo **Agente IA** exige configuração no servidor. O painel Docker anterior permanece em `presentation/docker.html`.
+
+- [PBL 8 — melhorias e avaliação](docs/pbl8-melhorias.md).
+- [PJBL 3 — construção, demonstração e evidências](docs/pjbl3-artefato.md).
+
+## Agente IA
+
+O modo **Agente IA** separa a injeção de falha da decisão do modelo. O agente
+seleciona ferramentas, propõe uma ação e só a aplica após validação da política.
+A interface mostra a trilha de execução e permite verificar seu registro assinado.
+[Configuração e roteiro de demonstração](docs/agente-ia.md).
+
+Sem provedor configurado, o agente fica indisponível. O modo **Regras** e os oito
+testes funcionais continuam utilizáveis; seus resultados não são apresentados
+como execução real de IA. O modelo encontrado nas evidências históricas é
+`gpt-4.1-mini`; URL e credenciais não estão versionadas.
 
 ## Entregas acadêmicas
 

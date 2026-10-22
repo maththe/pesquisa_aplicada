@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Laboratório de testes para demonstrar contenção de falhas, recuperação e preservação do carrinho."
+    />
+    <title>Nexo — laboratório de testes e isolamento de falhas</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231c4236'/%3E%3Cpath d='M18 46V18l28 28V18' stroke='%23e7f7c0' stroke-width='7' fill='none'/%3E%3C/svg%3E"
+    />
+    <style>
+      /* STYLES */
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <a class="brand" href="#"
+        ><span class="brand-icon">n</span> nexo<span class="brand-dot"
+          >.</span
+        ></a
+      >
+      <nav aria-label="Navegação">
+        <a href="#lab">Testes</a><a href="#isolation">Isolamento</a
+        ><a href="#evidence">Evidências</a><a href="#application">Loja</a>
+      </nav>
+      <span class="demo-tag"><span></span> Ambiente de testes</span>
+    </header>
+    <div id="execution-status" class="execution-status" hidden role="status">
+      <span class="loading-spinner" aria-hidden="true"></span
+      ><span id="execution-label">Executando…</span
+      ><button id="cancel-execution" type="button">Cancelar</button>
+    </div>
+    <div id="execution-error" class="execution-error" hidden role="alert"></div>
+    <main>
+      <section class="dashboard-intro">
+        <div>
+          <h1>Testes de resiliência</h1>
+        </div>
+      </section>
+      <section class="lab" id="lab">
+        <div class="lab-head">
+          <div>
+            <h2>Cenários de teste</h2>
+          </div>
+        </div>
+        <div class="lab-layout">
+          <div>
+            <div class="scenario-buttons">
+              <button data-scenario="normal">
+                <span>↗</span><b>Operação normal</b></button
+              ><button data-scenario="outage">
+                <span>ϟ</span><b>Falha no pagamento</b></button
+              ><button data-scenario="slow">
+                <span>◷</span><b>Resposta perdida</b></button
+              ><button data-scenario="declined">
+                <span>⊘</span><b>Pagamento recusado</b>
+              </button>
+            </div>
+            <div class="lab-actions">
+              <button id="recover" class="recover-btn">
+                ↻ Restaurar e verificar pagamento</button
+              ><button id="run-tests" class="test-btn">
+                ▷ Testes funcionais (8)
+              </button>
+            </div>
+          </div>
+          <div class="status-panel">
+            <div class="status-row">
+              <span><i class="status-dot ok"></i> Catálogo e carrinho</span
+              ><b>Disponíveis</b>
+            </div>
+            <div class="status-row">
+              <span
+                ><i id="payment-dot" class="status-dot"></i> Pagamento de
+                teste</span
+              ><b id="payment-status">Aguardando verificação</b>
+            </div>
+            <div class="status-row">
+              <span
+                ><i id="circuit-dot" class="status-dot"></i> Proteção do
+                checkout</span
+              ><b id="circuit-status">Circuito fechado</b>
+            </div>
+
+            <div class="status-row">
+              <span>Última ação</span><b id="action-source">—</b>
+            </div>
+          </div>
+        </div>
+        <div
+          id="incident-explanation"
+          class="incident-explanation"
+          aria-live="polite"
+        ></div>
+        <div id="test-results" hidden aria-live="polite"></div>
+      </section>
+      <details class="agent-panel" id="agent-panel">
+        <summary>
+          Usar IA <span id="agent-status" class="mode-tag">Verificando…</span>
+        </summary>
+        <div class="agent-controls">
+          <select id="control-mode" hidden aria-label="Controle">
+            <option value="rules">Regras</option>
+            <option value="agent">Agente IA</option>
+          </select>
+          <label
+            >Senha de acesso<input
+              type="password"
+              id="llm-token"
+              autocomplete="off"
+              placeholder="OBS_DEMO_TOKEN"
+          /></label>
+          <button id="connect-agent" class="primary">Ativar IA</button>
+          <button id="run-agent" class="secondary" disabled>
+            Analisar novamente
+          </button>
+          <button id="disconnect-agent" class="text-btn" hidden>
+            Desativar IA
+          </button>
+        </div>
+        <p id="agent-feedback" class="agent-feedback" role="status">
+          Use a senha cadastrada em OBS_DEMO_TOKEN.
+        </p>
+        <details class="agent-audit">
+          <summary>Ver ações da IA</summary>
+          <div class="agent-run-heading">
+            <span id="agent-run-id"></span
+            ><button id="verify-agent" class="text-btn" hidden>
+              Verificar registro
+            </button>
+          </div>
+          <ol id="agent-trace" class="agent-trace"></ol>
+        </details>
+      </details>
+      <section class="isolation-section" id="isolation">
+        <div class="section-heading">
+          <div>
+            <h2>Isolamento do pagamento</h2>
+          </div>
+          <a class="text-btn" href="#application">Ver efeito na aplicação ↗</a>
+        </div>
+        <div
+          class="isolation-map"
+          aria-label="Estado dos componentes do sandbox"
+        >
+          <article class="component available">
+            <h3>Catálogo</h3>
+            <strong>Disponível</strong>
+          </article>
+          <span class="map-connector" aria-hidden="true">→</span>
+          <article class="component available">
+            <h3>Carrinho</h3>
+            <strong>Preservado</strong>
+          </article>
+          <span class="map-connector" aria-hidden="true">→</span>
+          <article class="component" id="payment-component">
+            <h3>Pagamento sandbox</h3>
+            <strong id="isolation-payment-status">Não verificado</strong>
+          </article>
+        </div>
+      </section>
+      <details class="evidence-section" id="evidence">
+        <summary>Evidências da execução</summary>
+        <section
+          class="experiment-metrics"
+          aria-label="Resumo observado"
+          aria-live="polite"
+        >
+          <article>
+            <span>Avaliação funcional</span
+            ><strong id="metric-tests">Não executada</strong>
+          </article>
+          <article>
+            <span>Último HTTP do cenário</span
+            ><strong id="metric-http">Não verificada</strong>
+          </article>
+          <article>
+            <span>Proteção do pagamento</span
+            ><strong id="metric-isolation">Liberado</strong>
+          </article>
+          <article>
+            <span>Eventos</span><strong id="metric-evidence">0 eventos</strong>
+          </article>
+        </section>
+
+        <div class="section-heading">
+          <div>
+            <h2>Respostas e eventos</h2>
+          </div>
+          <button id="export" class="text-btn">
+            ↓ Exportar relatório JSON
+          </button>
+        </div>
+        <div class="evidence-layout">
+          <div class="timeline-panel">
+            <div class="panel-heading">
+              <h3>Linha do tempo</h3>
+              <span id="event-count">0 eventos</span>
+            </div>
+            <div id="timeline" class="timeline"></div>
+          </div>
+          <div class="diagnosis-panel">
+            <div class="panel-heading">
+              <h3>Análise do incidente</h3>
+              <span id="diagnosis-mode" class="mode-tag">Por regras</span>
+            </div>
+            <p id="diagnosis-summary" hidden></p>
+            <div id="diagnosis-refs"></div>
+            <button id="analyze" class="secondary">
+              Analisar evidências atuais <span>↗</span>
+            </button>
+          </div>
+        </div>
+      </details>
+      <details class="application-demo" id="application">
+        <summary>
+          <div>
+            <h2>Compra e carrinho</h2>
+          </div>
+          <span class="expand-label">Abrir demonstração +</span>
+        </summary>
+        <div class="commerce-layout">
+          <section class="collection" id="products">
+            <div class="section-heading">
+              <div>
+                <h2>Produtos</h2>
+              </div>
+              <span class="count-label">3 produtos</span>
+            </div>
+            <div id="product-list" class="product-grid"></div>
+          </section>
+          <aside class="cart" aria-labelledby="cart-title">
+            <div class="cart-heading">
+              <h2 id="cart-title">Carrinho <span id="cart-count">0</span></h2>
+              <span>↗</span>
+            </div>
+            <div id="cart-items"></div>
+            <div id="payment-notice" class="payment-notice" hidden></div>
+            <div class="cart-total">
+              <span>Total</span><strong id="cart-total">R$ 0,00</strong>
+            </div>
+            <button class="primary checkout" id="checkout">
+              Finalizar compra <span>→</span></button
+            ><button id="reconcile" class="secondary" hidden>
+              Consultar pagamento pendente
+            </button>
+
+            <div id="order-result" role="status"></div>
+          </aside>
+        </div>
+        <section
+          class="notifications"
+          id="notifications"
+          aria-live="polite"
+        ></section>
+      </details>
+    </main>
+    <footer>
+      <a class="brand" href="#">nexo.</a>
+
+      <a href="docker.html">Experimento Docker original ↗</a>
+    </footer>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script type="module">
+      /* APPLICATION */
+    </script>
+  </body>
+</html>

@@ -1,89 +1,3563 @@
 <!doctype html>
 <html lang="pt-BR">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Diagnóstico distribuído — Loja virtual</title>
-  <meta name="description" content="Demonstração do incidente de consulta de pedidos.">
-  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23131a2a'/%3E%3Cpath d='M14 19h9l4 24h24l5-17H25' fill='none' stroke='%235ee6a8' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='31' cy='50' r='3' fill='%235ee6a8'/%3E%3Ccircle cx='48' cy='50' r='3' fill='%235ee6a8'/%3E%3C/svg%3E">
-  <style>
-    :root{color-scheme:dark;--bg:#0a0e18;--panel:#121827;--line:#283149;--text:#f4f7ff;--muted:#9aa7bd;--green:#5ee6a8;--red:#ff6b78;--blue:#7cb8ff;--amber:#ffc46b}
-    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,#18213a 0,transparent 34%),var(--bg);color:var(--text);font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
-    main{width:min(1120px,calc(100% - 32px));margin:auto;padding:32px 0 48px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
-    h1{font-size:clamp(1.8rem,4vw,3rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.04em}.lead{max-width:720px;margin:0;color:var(--muted);font-size:1.05rem}.live{display:flex;align-items:center;gap:9px;white-space:nowrap;color:var(--muted)}.dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green)}
-    .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}button{border:1px solid var(--line);border-radius:14px;padding:17px 18px;background:#171e30;color:var(--text);font:700 1rem/1.2 inherit;cursor:pointer;transition:.18s transform,.18s border-color,.18s background}button:hover{transform:translateY(-2px);border-color:var(--blue)}button:disabled{opacity:.45;cursor:wait;transform:none}.normal{border-color:#28684f}.failure{border-color:#7b3540}.recover{border-color:#315c8c}.overload{border-color:#8a6330;color:#ffd08a}
-    .result{border:1px solid var(--line);background:linear-gradient(145deg,#141b2c,#0f1421);border-radius:20px;padding:24px;min-height:220px}.result-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}h2{margin:4px 0 6px;font-size:1.6rem}.summary{margin:0;color:var(--muted);max-width:740px}.badge{padding:7px 11px;border-radius:999px;background:#233047;color:var(--blue);font-weight:800;font-size:.82rem}.badge.ok{background:#173c31;color:var(--green)}.badge.bad{background:#4b2027;color:#ff9aa3}
-    .checks{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}.card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#0c111d}.label{color:var(--muted);font-size:.85rem}.value{font-size:1.45rem;font-weight:850;margin-top:3px}.value.good{color:var(--green)}.value.bad{color:var(--red)}.value.warn{color:var(--amber)}.meta{font-size:.78rem;color:var(--muted);margin-top:3px}
-    .flow{display:flex;align-items:center;gap:10px;margin-top:20px;overflow:auto;padding-bottom:2px}.node{padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#0c111d;min-width:120px;text-align:center;font-weight:750}.node.good{border-color:#28684f}.node.bad{border-color:#7b3540;color:#ff9aa3}.arrow{color:var(--muted);font-size:1.3rem}.details{display:flex;justify-content:space-between;gap:16px;margin-top:18px;color:var(--muted);font-size:.84rem;flex-wrap:wrap}code{color:#b8d8ff}.empty{display:grid;place-items:center;min-height:170px;color:var(--muted);text-align:center}.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}
-    .load-banner{margin-top:18px;padding:14px 16px;border:1px solid #8a6330;background:#2e2417;border-radius:12px;color:#ffdca5;font-weight:700}.ai{margin-top:22px;border-top:1px solid var(--line);padding-top:22px}.ai-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.ai h3{font-size:1.3rem;margin:4px 0}.ai-summary{font-size:1rem;margin:12px 0;color:#dce5f6}.real{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:.8rem;font-weight:800}.real:before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}
-    .hypotheses{display:grid;gap:10px;margin:15px 0}.hypothesis{background:#0c111d;border:1px solid var(--line);border-radius:12px;padding:14px}.hypothesis strong{color:var(--blue)}.ids{margin-top:8px;color:var(--muted);font-size:.78rem;word-break:break-all}.evidence-title{margin:20px 0 10px;font-size:1rem}.evidence-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.evidence{border-left:3px solid var(--blue);background:#0c111d;border-radius:8px;padding:11px 12px;font-size:.84rem}.evidence.bad{border-color:var(--red)}.evidence small{display:block;color:var(--muted);margin-top:5px;word-break:break-all}.trace{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:18px;padding-top:15px;border-top:1px dashed var(--line);color:var(--muted);font-size:.82rem}.trace code{word-break:break-all}.note{margin:18px 2px 0;color:var(--muted);font-size:.9rem}.note strong{color:var(--text)}
-    @media(max-width:760px){main{padding-top:22px}.top{display:block}.live{margin-top:14px}.actions,.checks,.evidence-grid{grid-template-columns:1fr}.result-head,.ai-head{display:block}.badge{display:inline-block;margin-top:12px}.flow{gap:6px}.node{min-width:104px}}
-  </style>
-</head>
-<body>
-  <main>
-    <section class="top">
-      <div><div class="eyebrow">Caso de uso · Loja virtual</div><h1>Consulta de pedido</h1><p class="lead">Mostre como uma dependência indisponível interrompe a operação mesmo quando o Gateway continua saudável.</p></div>
-      <div class="live"><span class="dot"></span> Ambiente local</div>
-    </section>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta
+      name="description"
+      content="Laboratório de testes para demonstrar contenção de falhas, recuperação e preservação do carrinho."
+    />
+    <title>Nexo — laboratório de testes e isolamento de falhas</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%231c4236'/%3E%3Cpath d='M18 46V18l28 28V18' stroke='%23e7f7c0' stroke-width='7' fill='none'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+  --bg: #f8f9f5;
+  --ink: #1c332c;
+  --muted: #707d75;
+  --green: #244c3d;
+  --lime: #dcf1b3;
+  --line: #dfe5dc;
+  --cream: #f0f2e9;
+  --red: #9d3c35;
+  --amber: #89631d;
+  font:
+    15px/1.6 system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  scroll-behavior: smooth;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+button,
+input {
+  font: inherit;
+}
+button,
+a,
+input {
+  outline-offset: 5px;
+}
+button {
+  cursor: pointer;
+}
+button:disabled {
+  cursor: wait;
+  opacity: 0.5;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+button {
+  transition:
+    background 0.2s,
+    transform 0.2s;
+}
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+[hidden] {
+  display: none !important;
+}
+.header,
+main,
+footer {
+  max-width: 1336px;
+  margin: auto;
+}
+.header {
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 40px;
+  border-bottom: 1px solid var(--line);
+}
+.brand {
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -1.7px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.brand-icon {
+  display: grid;
+  place-items: center;
+  width: 33px;
+  height: 33px;
+  border-radius: 9px;
+  background: var(--green);
+  color: var(--lime);
+  font-size: 28px;
+  font-style: italic;
+}
+.brand-dot {
+  color: #80a25a;
+  margin-left: -9px;
+}
+.header nav {
+  display: flex;
+  gap: 34px;
+  font-size: 13px;
+}
+.header nav a:hover {
+  color: #7c944f;
+}
+.demo-tag {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11px;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  padding: 6px 12px;
+}
+.demo-tag > span,
+.small-dot {
+  width: 6px;
+  height: 6px;
+  background: #62945d;
+  border-radius: 50%;
+  display: inline-block;
+}
+main {
+  padding: 0 40px;
+}
+.hero {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 55px;
+  padding: 65px 0 48px;
+  align-items: center;
+}
+.eyebrow {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  margin: 0 0 19px;
+}
+.hero h1 {
+  font-size: clamp(42px, 4.4vw, 62px);
+  font-weight: 500;
+  line-height: 1.1;
+  letter-spacing: -3px;
+  margin: 0 0 24px;
+}
+.hero h1 em {
+  font-style: normal;
+  color: #6d8651;
+}
+.intro {
+  max-width: 380px;
+  font-size: 14px;
+  color: var(--muted);
+  margin-bottom: 27px;
+}
+.primary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  border: 0;
+  background: var(--green);
+  color: white;
+  border-radius: 7px;
+  padding: 15px 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.primary:hover {
+  background: #345f4c;
+}
+.hero-link {
+  display: inline-flex;
+  padding: 13px 20px;
+}
+.hero-note {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--muted);
+  margin-top: 24px;
+}
+.hero-note span {
+  font-size: 19px;
+  color: #789365;
+}
+.hero-art {
+  position: relative;
+  overflow: hidden;
+  height: 420px;
+  border-radius: 20px;
+  background: #e5ecda;
+}
+.art-disc {
+  width: 320px;
+  height: 320px;
+  border: 1px solid #cbd8bd;
+  border-radius: 50%;
+  position: absolute;
+  top: 40px;
+  left: calc(50% - 160px);
+  box-shadow:
+    0 0 0 35px #e1e9d5,
+    0 0 0 36px #d2ddc5;
+}
+.art-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    linear-gradient(#d6dfcb66 1px, transparent 1px),
+    linear-gradient(90deg, #d6dfcb66 1px, transparent 1px);
+  background-size: 45px 45px;
+  mask-image: linear-gradient(transparent, #0003);
+}
+.headphone-arc {
+  position: absolute;
+  width: 200px;
+  height: 220px;
+  border: 30px solid #365f4a;
+  border-bottom: 0;
+  border-radius: 120px 120px 20px 20px;
+  left: calc(50% - 100px);
+  top: 75px;
+  transform: rotate(-15deg);
+  box-shadow:
+    inset 7px 7px 8px #1d3b2b55,
+    6px -3px 0 #5c7e65;
+}
+.ear {
+  position: absolute;
+  width: 62px;
+  height: 116px;
+  border: 9px solid #335641;
+  border-radius: 25px;
+  background: linear-gradient(110deg, #567561, #233f2f);
+  top: 208px;
+  box-shadow: 7px 10px 10px #31503133;
+  transform: rotate(-15deg);
+}
+.ear.left {
+  left: calc(50% - 109px);
+}
+.ear.right {
+  left: calc(50% + 59px);
+  top: 160px;
+}
+.floating-label {
+  position: absolute;
+  bottom: 60px;
+  left: 30px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  padding: 11px 15px;
+  background: #fffffff0;
+  border: 1px solid #fff;
+  border-radius: 7px;
+  font-size: 10px;
+  box-shadow: 0 7px 30px #3856310d;
+}
+.art-caption {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  letter-spacing: 1.3px;
+  font-size: 8px;
+  color: #7a8d70;
+}
+.trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 21px 0;
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  font-size: 11px;
+  color: var(--muted);
+}
+.trust-strip b {
+  color: #7b925b;
+  font-weight: 500;
+  margin-right: 12px;
+}
+.trust-strip i {
+  height: 18px;
+  border-left: 1px solid var(--line);
+}
+.commerce-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 310px;
+  gap: 35px;
+  padding: 58px 0;
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  gap: 16px;
+  margin-bottom: 27px;
+}
+.section-heading .eyebrow {
+  margin-bottom: 9px;
+  font-size: 8px;
+  letter-spacing: 1.6px;
+}
+h2 {
+  font-size: 27px;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: -1px;
+  margin: 0;
+}
+.count-label {
+  font-size: 9px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 17px;
+}
+.product {
+  min-width: 0;
+}
+.product-art {
+  height: 180px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  position: relative;
+  margin-bottom: 17px;
+  overflow: hidden;
+}
+.product-art::after {
+  content: "";
+  position: absolute;
+  bottom: 35px;
+  left: 20%;
+  right: 20%;
+  height: 14px;
+  border-radius: 50%;
+  background: #00000012;
+  filter: blur(7px);
+}
+.product-art svg {
+  width: 110px;
+  height: 110px;
+  position: relative;
+  z-index: 1;
+  transform: rotate(-9deg);
+  filter: drop-shadow(3px 6px 3px #0002);
+}
+.lavender {
+  background: #eae7f2;
+}
+.peach {
+  background: #f2e6d9;
+}
+.mint {
+  background: #e2ece4;
+}
+.product-category {
+  font-size: 9px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.product h3 {
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin: 3px 0;
+}
+.product-description {
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1.6;
+  min-height: 34px;
+  margin: 5px 0 15px;
+}
+.product-bottom {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.product-bottom strong {
+  font-size: 14px;
+  font-weight: 600;
+}
+.add-btn {
+  height: 32px;
+  width: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink);
+  font-size: 20px;
+}
+.add-btn:hover {
+  background: var(--lime);
+}
+.scope-note {
+  display: flex;
+  gap: 10px;
+  margin-top: 25px;
+  color: var(--muted);
+  font-size: 10px;
+}
+.scope-note p {
+  margin: 0;
+}
+.scope-note > span {
+  font-size: 15px;
+}
+.cart {
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 23px;
+  align-self: start;
+}
+.cart-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 18px;
+  margin-bottom: 12px;
+}
+.cart h2 {
+  font-size: 18px;
+  letter-spacing: -0.4px;
+}
+.cart h2 > span {
+  font-size: 10px;
+  border-radius: 50%;
+  padding: 3px 7px;
+  background: var(--cream);
+  margin-left: 7px;
+}
+.cart-heading > span {
+  font-size: 20px;
+}
+.empty-cart {
+  padding: 28px 0;
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+.empty-cart span {
+  display: block;
+  font-size: 28px;
+  margin-bottom: 8px;
+}
+.cart-item {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1eb;
+}
+.cart-item h4 {
+  font-size: 12px;
+  margin: 0;
+}
+.cart-item small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.remove {
+  border: 0;
+  background: none;
+  color: var(--muted);
+  font-size: 18px;
+  padding: 4px 6px;
+}
+.cart-total {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  margin: 21px 0;
+}
+.cart-total strong {
+  font-size: 19px;
+  letter-spacing: -0.5px;
+}
+.checkout {
+  width: 100%;
+  font-size: 11px;
+  padding: 13px 14px;
+}
+.cart-foot {
+  text-align: center;
+  font-size: 8px;
+  color: var(--muted);
+  margin: 12px 0 0;
+}
+.payment-notice {
+  background: #fff5e3;
+  color: #805c23;
+  border: 1px solid #eddfbe;
+  border-radius: 7px;
+  padding: 12px;
+  font-size: 10px;
+  margin-top: 15px;
+}
+.payment-notice p {
+  margin: 0 0 8px;
+}
+.payment-notice button {
+  font-size: 10px;
+  background: white;
+  color: var(--ink);
+  border: 1px solid #ddcba8;
+  border-radius: 5px;
+  padding: 7px 10px;
+}
+.order-success {
+  background: #eff6e8;
+  color: #41602c;
+  border-radius: 6px;
+  font-size: 11px;
+  padding: 12px;
+  margin-top: 15px;
+  overflow-wrap: anywhere;
+}
+.secondary {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: white;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 12px 15px;
+  font-size: 11px;
+  color: var(--ink);
+  margin-top: 12px;
+}
+.notifications:empty {
+  display: none;
+}
+.notification {
+  padding: 16px 20px;
+  border-radius: 8px;
+  border: 1px solid #b8cba0;
+  background: #edf4e1;
+  margin-bottom: 22px;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.notification b {
+  font-weight: 600;
+}
+.notification small {
+  display: block;
+  color: #6c7b5d;
+  font-size: 9px;
+}
+.lab {
+  padding: 35px;
+  background: #1d362d;
+  border-radius: 14px;
+  color: #f4f8f1;
+}
+.lab-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  margin-bottom: 28px;
+  gap: 20px;
+}
+.lab .eyebrow {
+  color: #b8d19a;
+  font-size: 8px;
+  margin-bottom: 10px;
+}
+.lab h2 {
+  font-size: 29px;
+  letter-spacing: -0.7px;
+}
+.lab-head p:not(.eyebrow) {
+  font-size: 11px;
+  color: #a3b5a8;
+  margin: 12px 0 0;
+}
+.lab-badge {
+  font-size: 7px;
+  letter-spacing: 1px;
+  border: 1px solid #49604e;
+  color: #c4d8af;
+  border-radius: 4px;
+  padding: 6px 9px;
+  white-space: nowrap;
+}
+.lab-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 35px;
+}
+.scenario-label {
+  font-size: 8px;
+  letter-spacing: 1.4px;
+  color: #97ac9d;
+  margin-bottom: 14px;
+}
+.scenario-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.scenario-buttons button {
+  text-align: left;
+  background: #284337;
+  color: #e6eee1;
+  border: 1px solid #3e5848;
+  border-radius: 7px;
+  padding: 14px;
+  display: grid;
+  grid-template-columns: 25px 1fr;
+  align-items: center;
+  gap: 2px 5px;
+}
+.scenario-buttons button > span {
+  grid-row: span 2;
+  font-size: 23px;
+  color: #bad4a1;
+}
+.scenario-buttons b {
+  font-size: 10px;
+  font-weight: 600;
+}
+.scenario-buttons small {
+  font-size: 8px;
+  color: #9db29f;
+}
+.scenario-buttons button.active {
+  background: #d9edb2;
+  border-color: #d9edb2;
+  color: #243f2e;
+}
+.scenario-buttons button.active > span,
+.scenario-buttons button.active small {
+  color: #526c3e;
+}
+.lab-actions {
+  display: flex;
+  gap: 9px;
+  margin-top: 14px;
+}
+.recover-btn,
+.test-btn {
+  border: 1px solid #52694f;
+  background: transparent;
+  color: #deebd3;
+  border-radius: 5px;
+  padding: 10px 12px;
+  font-size: 9px;
+}
+.test-btn {
+  background: #33513e;
+}
+.lab-note {
+  font-size: 9px;
+  color: #95ab9b;
+  margin: 15px 0 0;
+}
+.status-panel {
+  background: #172d25;
+  border: 1px solid #3c5242;
+  border-radius: 8px;
+  padding: 20px;
+}
+.status-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  border-bottom: 1px solid #34473a;
+  padding: 13px 0;
+  font-size: 10px;
+}
+.status-row > span {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #bdcdbd;
+}
+.status-row b {
+  font-weight: 500;
+  font-size: 9px;
+}
+.status-dot {
+  height: 6px;
+  width: 6px;
+  border-radius: 50%;
+  background: #c8a75d;
+  display: inline-block;
+}
+.status-dot.ok {
+  background: #accf83;
+}
+.status-dot.bad {
+  background: #eb9b88;
+}
+.status-explanation {
+  font-size: 9px;
+  color: #8da491;
+  line-height: 1.8;
+  margin-top: 15px;
+}
+.architecture {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 7px;
+  color: #a4b49f;
+  margin-top: 20px;
+}
+.architecture span {
+  border: 1px solid #3b5040;
+  border-radius: 4px;
+  padding: 4px 6px;
+}
+.architecture b {
+  font-weight: 400;
+}
+.evidence-section {
+  padding: 58px 0;
+}
+.text-btn {
+  background: none;
+  border: 0;
+  font-size: 10px;
+  color: var(--green);
+  padding: 6px 0;
+}
+.evidence-layout {
+  display: grid;
+  grid-template-columns: 1.15fr 1fr;
+  gap: 25px;
+}
+.timeline-panel,
+.diagnosis-panel {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+  padding: 22px;
+  min-width: 0;
+}
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.panel-heading h3 {
+  font-size: 14px;
+  margin: 0;
+  font-weight: 600;
+}
+.panel-heading > span {
+  font-size: 9px;
+  color: var(--muted);
+}
+.timeline {
+  max-height: 310px;
+  overflow: auto;
+}
+.event {
+  display: grid;
+  grid-template-columns: 45px 1fr auto;
+  gap: 10px;
+  padding: 12px 0;
+  border-bottom: 1px solid #eef1eb;
+  font-size: 9px;
+}
+.event time {
+  color: var(--muted);
+  font-size: 8px;
+}
+.event b {
+  display: block;
+  font-weight: 500;
+  font-size: 10px;
+}
+.event p {
+  font-size: 9px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 4px 0;
+}
+.event code {
+  font-size: 7px;
+  color: #7c887b;
+  overflow-wrap: anywhere;
+}
+.http {
+  align-self: start;
+  font-size: 8px;
+  background: #eff4e9;
+  color: #4d723c;
+  padding: 2px 5px;
+  border-radius: 3px;
+}
+.http.bad {
+  background: #fbece6;
+  color: #994f42;
+}
+.mode-tag {
+  border: 1px solid var(--line);
+  padding: 3px 7px;
+  border-radius: 4px;
+  font-size: 8px !important;
+}
+.diagnosis-panel > p {
+  font-size: 12px;
+  color: #657464;
+  line-height: 1.9;
+}
+.diagnosis-limit {
+  font-size: 9px !important;
+  color: #899284 !important;
+  border-top: 1px solid var(--line);
+  padding-top: 12px;
+}
+.refs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin: 15px 0;
+}
+.ref {
+  background: #f0f4eb;
+  color: #687d59;
+  border: 0;
+  padding: 4px 7px;
+  border-radius: 3px;
+  font-family: monospace;
+  font-size: 8px;
+}
+.llm-settings {
+  margin-top: 14px;
+  font-size: 9px;
+  color: var(--muted);
+}
+.llm-settings summary {
+  cursor: pointer;
+}
+.llm-settings label {
+  display: block;
+  margin-top: 12px;
+}
+.llm-settings input {
+  display: block;
+  width: 100%;
+  border: 1px solid var(--line);
+  padding: 8px;
+  font-size: 11px;
+  border-radius: 4px;
+  margin-top: 5px;
+}
+.delivery {
+  display: grid;
+  grid-template-columns: 1fr 1.2fr;
+  gap: 55px;
+  border-top: 1px solid var(--line);
+  padding: 40px 0 50px;
+}
+.delivery .eyebrow {
+  font-size: 8px;
+  margin-bottom: 12px;
+}
+.delivery h2 {
+  font-size: 27px;
+}
+.delivery p {
+  font-size: 11px;
+  color: var(--muted);
+  max-width: 350px;
+}
+.delivery > div:last-child {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+.delivery article > span {
+  font-size: 8px;
+  color: #829068;
+  letter-spacing: 1px;
+}
+.delivery h3 {
+  font-weight: 600;
+  font-size: 13px;
+  margin: 7px 0;
+}
+.delivery article p {
+  font-size: 10px;
+}
+footer {
+  border-top: 1px solid var(--line);
+  padding: 23px 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+footer .brand {
+  font-size: 23px;
+}
+footer p,
+footer > a:last-child {
+  font-size: 9px;
+  color: var(--muted);
+}
+.toast {
+  position: fixed;
+  bottom: 25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: #263c2f;
+  color: #f0f7e5;
+  padding: 14px 22px;
+  border-radius: 8px;
+  box-shadow: 0 8px 30px #142a2433;
+  font-size: 12px;
+  max-width: min(90vw, 600px);
+  z-index: 20;
+}
+.test-report {
+  margin-top: 25px;
+  padding: 22px;
+  border: 1px solid #4b614c;
+  border-radius: 8px;
+  background: #172d25;
+}
+.test-report h3 {
+  font-weight: 500;
+  font-size: 17px;
+  margin: 0 0 15px;
+}
+.test-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 7px 0;
+  font-size: 11px;
+  border-bottom: 1px solid #334a39;
+}
+.test-row small {
+  color: #c8dfae;
+}
+.test-row.fail small {
+  color: #f3b2a2;
+}
+.test-report p {
+  font-size: 10px;
+  color: #9cb09e;
+}
+.event:target {
+  background: #eef4e5;
+}
+a:hover {
+  text-decoration: underline;
+}
+.hero-link:hover,
+.brand:hover {
+  text-decoration: none;
+}
+@media (min-width: 1500px) {
+  .hero {
+    gap: 90px;
+  }
+  .hero-art {
+    height: 450px;
+  }
+}
+@media (max-width: 1000px) {
+  .commerce-layout {
+    grid-template-columns: 1fr 280px;
+    gap: 22px;
+  }
+  .product-grid {
+    gap: 12px;
+  }
+  .product-art {
+    height: 140px;
+  }
+  .product-art svg {
+    width: 85px;
+    height: 85px;
+  }
+  .product-description {
+    min-height: 48px;
+  }
+  .lab {
+    padding: 26px;
+  }
+  .lab-layout {
+    gap: 20px;
+  }
+  .hero {
+    gap: 30px;
+  }
+  .hero-art {
+    height: 370px;
+  }
+  .hero h1 {
+    font-size: 46px;
+  }
+}
+@media (max-width: 760px) {
+  .header {
+    height: 78px;
+    padding: 0 20px;
+  }
+  .header nav {
+    gap: 16px;
+    font-size: 11px;
+  }
+  .demo-tag {
+    display: none;
+  }
+  main {
+    padding: 0 20px;
+  }
+  .hero {
+    grid-template-columns: 1fr;
+    padding: 40px 0 30px;
+    gap: 30px;
+  }
+  .hero h1 {
+    font-size: 48px;
+  }
+  .hero-art {
+    height: 330px;
+  }
+  .headphone-arc {
+    top: 40px;
+  }
+  .ear.left {
+    top: 173px;
+  }
+  .ear.right {
+    top: 125px;
+  }
+  .art-disc {
+    top: 5px;
+  }
+  .floating-label {
+    bottom: 32px;
+  }
+  .trust-strip {
+    gap: 12px;
+    font-size: 8px;
+    justify-content: space-between;
+  }
+  .trust-strip b {
+    display: block;
+    margin-bottom: 4px;
+  }
+  .commerce-layout {
+    grid-template-columns: 1fr;
+    padding: 35px 0;
+    gap: 30px;
+  }
+  .product-grid {
+    gap: 14px;
+  }
+  .product-art {
+    height: 150px;
+  }
+  .product-description {
+    min-height: 45px;
+  }
+  .cart {
+    width: 100%;
+  }
+  .lab-layout,
+  .evidence-layout,
+  .delivery {
+    grid-template-columns: 1fr;
+  }
+  .lab-head {
+    display: block;
+  }
+  .lab-badge {
+    display: inline-block;
+    margin-top: 15px;
+  }
+  .lab h2 {
+    font-size: 26px;
+  }
+  .lab-layout {
+    gap: 25px;
+  }
+  .lab-actions {
+    flex-wrap: wrap;
+  }
+  .evidence-section {
+    padding: 40px 0;
+  }
+  .section-heading {
+    align-items: start;
+  }
+  .count-label {
+    display: none;
+  }
+  .section-heading h2 {
+    font-size: 25px;
+  }
+  .delivery {
+    gap: 25px;
+    padding: 35px 0;
+  }
+  .delivery > div:last-child {
+    gap: 20px;
+  }
+  footer {
+    padding: 20px;
+    flex-wrap: wrap;
+  }
+  .product h3 {
+    font-size: 13px;
+  }
+  .product-bottom strong {
+    font-size: 12px;
+  }
+  .product-description {
+    font-size: 9px;
+  }
+  .eyebrow {
+    font-size: 9px;
+  }
+  .header .brand {
+    font-size: 25px;
+  }
+}
+@media (max-width: 430px) {
+  .product-grid {
+    grid-template-columns: 1fr;
+  }
+  .product {
+    display: grid;
+    grid-template-columns: 110px 1fr;
+    gap: 0 15px;
+  }
+  .product-art {
+    grid-row: span 4;
+    height: 130px;
+    margin: 0;
+  }
+  .product-description {
+    min-height: 0;
+    margin: 0 0 7px;
+  }
+  .product-category {
+    align-self: end;
+  }
+  .product h3 {
+    font-size: 16px;
+  }
+  .product-bottom {
+    align-self: start;
+  }
+  .product-bottom strong {
+    font-size: 14px;
+  }
+  .product-grid {
+    gap: 24px;
+  }
+  .hero h1 {
+    font-size: 44px;
+  }
+  .hero-art {
+    height: 300px;
+  }
+  .lab {
+    padding: 23px 18px;
+  }
+  .section-heading {
+    flex-wrap: wrap;
+  }
+  .scenario-buttons b {
+    font-size: 9px;
+  }
+}
 
-    <section class="actions" aria-label="Cenários da demonstração">
-      <button class="normal" data-action="normal">1 · Testar tudo certo</button>
-      <button class="failure" data-action="failure">2 · Provocar falha</button>
-      <button class="recover" data-action="recover">3 · Recuperar serviço</button>
-      <button class="overload" data-action="overload">4 · Sobrecarga + IA</button>
-    </section>
+/* The experiment leads; the commerce UI is supporting evidence. */
+.dashboard-intro {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 65px;
+  padding: 45px 0 30px;
+  align-items: center;
+}
+.dashboard-intro h1 {
+  font-size: clamp(32px, 3.5vw, 48px);
+  font-weight: 500;
+  letter-spacing: -1.8px;
+  line-height: 1.15;
+  margin: 0 0 16px;
+}
+.dashboard-intro h1 em {
+  font-style: normal;
+  color: #6d8651;
+}
+.dashboard-intro .eyebrow {
+  font-size: 9px;
+  margin-bottom: 13px;
+}
+.dashboard-intro > div > p:last-child {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 600px;
+  margin: 0;
+}
+.experiment-scope {
+  border-left: 2px solid #c6d5b3;
+  padding: 5px 0 5px 22px;
+}
+.experiment-scope > span {
+  font-size: 8px;
+  letter-spacing: 1.5px;
+  color: var(--muted);
+}
+.experiment-scope strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 8px;
+}
+.experiment-scope p {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 0;
+}
+.experiment-metrics {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 0 0 28px;
+}
+.experiment-metrics article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 17px 18px;
+  background: white;
+}
+.experiment-metrics span {
+  display: block;
+  font-size: 10px;
+  color: var(--muted);
+}
+.experiment-metrics strong {
+  display: block;
+  font-size: 21px;
+  font-weight: 500;
+  margin: 5px 0;
+  letter-spacing: -0.6px;
+}
+.experiment-metrics small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+}
+.lab-actions .test-btn {
+  order: -1;
+  background: var(--lime);
+  color: #243f2e;
+  border-color: var(--lime);
+  font-size: 12px;
+  font-weight: 600;
+  padding: 13px 20px;
+}
+.test-empty {
+  padding: 18px 20px;
+  border: 1px dashed #50654e;
+  border-radius: 8px;
+  margin-top: 24px;
+  color: #dce9d1;
+}
+.test-empty strong {
+  font-size: 12px;
+  font-weight: 500;
+}
+.test-empty p {
+  font-size: 10px;
+  color: #a3b5a8;
+  margin-bottom: 0;
+  max-width: 800px;
+}
+.test-empty:has(.test-report) {
+  padding: 0;
+  border: 0;
+  margin: 0;
+}
+.isolation-section {
+  padding: 35px 0 0;
+}
+.isolation-map {
+  display: grid;
+  grid-template-columns: 1fr 25px 1fr 25px 1fr;
+  align-items: center;
+  gap: 10px;
+}
+.component {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  background: white;
+  padding: 22px;
+  min-height: 175px;
+}
+.component > span {
+  font-size: 8px;
+  color: var(--muted);
+  letter-spacing: 1px;
+}
+.component h3 {
+  font-size: 17px;
+  font-weight: 500;
+  margin: 12px 0 8px;
+}
+.component strong {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 500;
+}
+.component p {
+  font-size: 10px;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+.component.available {
+  border-top: 3px solid #89a96d;
+}
+.component.available strong {
+  color: #577442;
+}
+.component.isolated {
+  border: 1px solid #e1b9a9;
+  border-top: 3px solid #b96749;
+  background: #fff7f1;
+}
+.component.isolated strong {
+  color: #a05038;
+}
+.map-connector {
+  text-align: center;
+  color: #8c9b7e;
+}
+.isolation-conclusion {
+  background: #ecf1e5;
+  border-radius: 7px;
+  padding: 14px 18px;
+  font-size: 12px;
+  margin-top: 16px;
+}
+.isolation-section > .scope-note {
+  margin-top: 10px;
+  font-size: 9px;
+}
+.evidence-section {
+  padding: 35px 0;
+}
+.application-demo {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #f0f3eb;
+  margin-bottom: 35px;
+  padding: 0 25px;
+}
+.application-demo > summary {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 22px 0;
+  list-style: none;
+}
+.application-demo > summary::-webkit-details-marker {
+  display: none;
+}
+.application-demo > summary .eyebrow {
+  font-size: 8px;
+  margin: 0 0 7px;
+}
+.application-demo > summary h2 {
+  font-size: 21px;
+}
+.application-demo > summary p {
+  font-size: 11px;
+  color: var(--muted);
+  margin: 8px 0 0;
+}
+.expand-label {
+  font-size: 10px;
+  color: var(--green);
+  white-space: nowrap;
+}
+.application-demo[open] .expand-label {
+  font-size: 0;
+}
+.application-demo[open] .expand-label:after {
+  content: "Recolher demonstração −";
+  font-size: 10px;
+}
+.application-demo .commerce-layout {
+  padding: 18px 0 25px;
+  gap: 28px;
+}
+.application-demo .product-art {
+  height: 125px;
+}
+.application-demo .product-art svg {
+  height: 85px;
+  width: 85px;
+}
+.application-demo .notifications {
+  padding-bottom: 12px;
+}
+.delivery h2 {
+  font-size: 22px;
+}
+@media (max-width: 900px) {
+  .dashboard-intro {
+    gap: 25px;
+  }
+  .experiment-metrics {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .component {
+    padding: 16px;
+    min-height: 185px;
+  }
+  .header nav {
+    gap: 15px;
+    font-size: 11px;
+  }
+  .demo-tag {
+    display: none;
+  }
+}
+@media (max-width: 600px) {
+  .dashboard-intro {
+    grid-template-columns: 1fr;
+    padding: 28px 0 24px;
+    gap: 20px;
+  }
+  .dashboard-intro h1 {
+    font-size: 35px;
+  }
+  .experiment-scope {
+    padding-left: 15px;
+  }
+  .experiment-metrics {
+    gap: 9px;
+  }
+  .experiment-metrics article {
+    padding: 12px;
+  }
+  .experiment-metrics strong {
+    font-size: 18px;
+  }
+  .header {
+    flex-wrap: wrap;
+    height: auto;
+    min-height: 85px;
+    padding-top: 14px;
+    padding-bottom: 14px;
+    gap: 10px;
+  }
+  .header nav {
+    gap: 12px;
+    font-size: 9px;
+  }
+  .isolation-map {
+    grid-template-columns: 1fr;
+  }
+  .component {
+    min-height: 0;
+  }
+  .map-connector {
+    transform: rotate(90deg);
+  }
+  .application-demo {
+    padding: 0 16px;
+  }
+  .application-demo > summary {
+    align-items: start;
+  }
+  .expand-label {
+    max-width: 70px;
+    white-space: normal;
+  }
+  .isolation-section .section-heading {
+    flex-wrap: wrap;
+  }
+  .lab-actions .test-btn {
+    font-size: 11px;
+    padding: 12px 16px;
+  }
+}
 
-    <section class="result" id="result" aria-live="polite">
-      <div class="empty">Escolha um cenário para executar o teste real.</div>
-    </section>
-    <p class="note"><strong>Leitura principal:</strong> health local responde se o processo está ativo; a consulta do pedido valida a operação completa e suas dependências.</p>
-  </main>
-  <script>
-    const result = document.querySelector('#result');
-    const buttons = [...document.querySelectorAll('button[data-action]')];
-    const labels = {normal:'Testando o fluxo e solicitando o diagnóstico à IA…',failure:'Interrompendo Users, coletando evidências e analisando com IA…',recover:'Restaurando Users e validando a recuperação com IA…',overload:'Disparando requisições concorrentes, coletando logs e analisando com IA…'};
-    const esc = value => String(value ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const statusText = check => check.status == null ? 'OFFLINE' : `HTTP ${check.status}`;
-    const statusClass = (name, check, scenario) => {
-      if (name === 'users' && scenario === 'failure' && check.status == null) return 'bad';
-      if (name === 'order' && check.status !== 200) return 'bad';
-      return check.status === 200 ? 'good' : 'warn';
-    };
-    const evidenceText = item => {
-      if(item.kind==='snapshot') return item.states.map(s=>`${s.service}: ${s.reachable?'alcançável':'indisponível'}${s.status?` (HTTP ${s.status})`:''}`).join(' · ');
-      const dependency=item.dependency?` → ${item.dependency}`:'';
-      const status=item.status?` · HTTP ${item.status}`:'';
-      const error=item.error?` · ${item.error}`:'';
-      const message=item.message?` · ${item.message}`:'';
-      return `${item.service}${dependency} · ${item.event}${status}${error}${message}`;
-    };
-    function render(data){
-      const c=data.checks; const ai=data.ai; const isLoad=data.scenario==='overload'; const isBad=data.scenario==='failure'||isLoad;
-      const cards=[['gateway','Gateway',statusText(c.gateway),c.gateway.elapsed_ms==null?'sem resposta':`${c.gateway.elapsed_ms} ms`],['orders','Orders',statusText(c.orders),c.orders.elapsed_ms==null?'sem resposta':`${c.orders.elapsed_ms} ms`],['users','Users',isLoad?'SATURADO':statusText(c.users),isLoad?'health local ainda responde':(c.users.elapsed_ms==null?'sem resposta':`${c.users.elapsed_ms} ms`)],['order',isLoad?'Falhas na rajada':'Pedido 1',isLoad?`${data.load.failed_requests}/${data.load.total_requests}`:statusText(c.order),isLoad?`${data.load.concurrency} simultâneas · limite ${data.load.configured_limit}`:(c.order.elapsed_ms==null?'sem resposta':`${c.order.elapsed_ms} ms`)]];
-      result.innerHTML=`
-        <div class="result-head"><div><div class="eyebrow">Resultado observado</div><h2>${esc(data.title)}</h2><p class="summary">${esc(data.summary)}</p></div><span class="badge ${data.ok?(isBad?'bad':'ok'):'bad'}">${data.ok?'CENÁRIO CONFIRMADO':'VERIFICAR AMBIENTE'}</span></div>
-        <div class="checks">
-          ${cards.map(([key,label,value,meta])=>`<div class="card"><div class="label">${label}</div><div class="value ${isLoad&&(key==='users'||key==='order')?'bad':statusClass(key,c[key],data.scenario)}">${value}</div><div class="meta">${meta}</div></div>`).join('')}
+.application-demo .product {
+  padding: 14px;
+  border: 1px solid #e1e7dc;
+  border-radius: 12px;
+  background: #fff;
+  transition:
+    border-color 0.18s,
+    box-shadow 0.18s;
+}
+.application-demo .product:hover {
+  border-color: #b4c6a5;
+  box-shadow: 0 5px 18px #243f2e08;
+}
+.application-demo .product-art {
+  margin-bottom: 13px;
+  border-radius: 8px;
+}
+.application-demo .product-category {
+  font-size: 9px;
+  letter-spacing: 0.7px;
+}
+.application-demo .product h3 {
+  margin: 5px 0 17px;
+  font-size: 15px;
+  font-weight: 600;
+}
+.application-demo .product-bottom strong {
+  font-size: 15px;
+  letter-spacing: -0.4px;
+}
+.application-demo .add-btn {
+  background: #eef3e8;
+  border: 0;
+  color: #365337;
+}
+.application-demo .add-btn:hover {
+  background: #dcebc9;
+}
+.application-demo .cart {
+  border-radius: 12px;
+  box-shadow: 0 3px 12px #243f2e04;
+}
+.application-demo > summary p {
+  max-width: 480px;
+}
+@media (max-width: 430px) {
+  .application-demo .product {
+    grid-template-columns: 85px 1fr;
+    padding: 12px;
+  }
+  .application-demo .product-art {
+    grid-row: span 3;
+    height: 100px;
+    margin: 0;
+  }
+  .application-demo .product-art svg {
+    width: 72px;
+    height: 72px;
+  }
+  .application-demo .product h3 {
+    font-size: 15px;
+    margin: 2px 0 10px;
+  }
+  .application-demo .product-category {
+    align-self: end;
+  }
+}
+
+/* Only controls, measured results and operational messages. */
+.dashboard-intro {
+  grid-template-columns: 1fr;
+  padding: 32px 0 24px;
+}
+.dashboard-intro h1 {
+  font-size: 36px;
+  margin: 0;
+  letter-spacing: -1.2px;
+}
+.experiment-metrics article {
+  padding: 16px 18px;
+}
+.experiment-metrics strong {
+  margin-bottom: 0;
+}
+.lab-head {
+  margin-bottom: 22px;
+}
+.component {
+  min-height: 115px;
+  padding: 22px;
+}
+.component h3 {
+  margin: 0 0 12px;
+}
+.application-demo > summary {
+  padding: 21px 0;
+}
+.collection .section-heading {
+  margin-bottom: 20px;
+}
+@media (max-width: 600px) {
+  .dashboard-intro h1 {
+    font-size: 29px;
+  }
+  .component {
+    min-height: 95px;
+  }
+}
+
+.agent-panel {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  padding: 24px;
+  margin-bottom: 25px;
+}
+.agent-panel h2 {
+  font-size: 23px;
+}
+.agent-controls {
+  display: grid;
+  grid-template-columns: 140px 1fr auto auto;
+  gap: 12px;
+  align-items: end;
+}
+.agent-controls label {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+.agent-controls select,
+.agent-controls input {
+  width: 100%;
+  display: block;
+  margin-top: 6px;
+  border: 1px solid var(--line);
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 10px;
+  font: inherit;
+  color: var(--ink);
+  font-size: 12px;
+  height: 41px;
+}
+.agent-controls .primary,
+.agent-controls .secondary {
+  margin: 0;
+  height: 41px;
+  width: auto;
+  padding: 10px 15px;
+}
+.agent-run-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 10px;
+  color: var(--muted);
+  overflow-wrap: anywhere;
+}
+.agent-run-heading:has(span:not(:empty)) {
+  margin-top: 20px;
+  border-top: 1px solid var(--line);
+  padding-top: 14px;
+}
+.agent-trace {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  max-height: 420px;
+  overflow: auto;
+}
+.agent-step {
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #f8faf5;
+  min-width: 0;
+}
+.agent-step b {
+  display: block;
+  font-size: 10px;
+  color: var(--green);
+  margin-bottom: 4px;
+}
+.agent-step span {
+  font-size: 11px;
+  display: block;
+  overflow-wrap: anywhere;
+}
+.agent-step code {
+  display: block;
+  font-size: 8px;
+  color: var(--muted);
+  margin-top: 5px;
+}
+.agent-step.applied {
+  border-color: #a3bf83;
+  background: #eef5e4;
+}
+@media (max-width: 800px) {
+  .agent-controls {
+    grid-template-columns: 1fr 1fr;
+  }
+  .agent-trace {
+    grid-template-columns: 1fr;
+  }
+  .agent-panel {
+    padding: 18px;
+  }
+  .agent-run-heading {
+    flex-wrap: wrap;
+  }
+}
+
+.incident-explanation {
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  margin-top: 28px;
+  padding: 28px;
+  border: 1px solid #63816a;
+  border-radius: 16px;
+  background: #263f33;
+  color: #f2f6eb;
+}
+.incident-explanation h3 {
+  font-size: 26px;
+  margin: 12px 0;
+}
+.incident-explanation p {
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 760px;
+  margin: 0;
+  color: #e1e9dc;
+}
+.incident-badge {
+  color: #dbefa9;
+  font-size: 13px;
+  font-weight: 600;
+}
+.incident-proof {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  min-width: 155px;
+}
+.incident-proof b {
+  font-size: 28px;
+  white-space: nowrap;
+}
+.incident-proof span {
+  font-size: 12px;
+  color: #c2d0bd;
+}
+.test-cards {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+.test-card {
+  padding: 24px;
+  background: #f5f7ef;
+  color: #203c30;
+  border-radius: 14px;
+  min-width: 0;
+}
+.test-card header {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+}
+.test-card header b {
+  color: #346441;
+}
+.test-card h4 {
+  font-size: 22px;
+  line-height: 1.3;
+  margin: 20px 0;
+}
+.test-card dl {
+  margin: 0;
+}
+.test-card dt {
+  font-size: 12px;
+  font-weight: 700;
+  margin-top: 18px;
+  color: #516b58;
+}
+.test-card dd {
+  margin: 6px 0 0;
+  font-size: 16px;
+  line-height: 1.6;
+}
+.test-card footer {
+  font-size: 12px;
+  color: #526b5a;
+  margin-top: 22px;
+}
+.test-card details {
+  border-top: 1px solid #d5dfce;
+  margin-top: 16px;
+  padding-top: 14px;
+}
+.test-card summary {
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 600;
+}
+.test-card .test-observation {
+  padding: 12px 0;
+  border-bottom: 1px solid #d5dfce;
+  overflow-wrap: anywhere;
+}
+.test-card .test-observation code {
+  font-size: 12px;
+}
+.test-card .test-observation p {
+  font-size: 14px;
+  color: #3f5847;
+  line-height: 1.5;
+  margin: 6px 0;
+}
+.test-card.fail {
+  border: 2px solid #cb7967;
+}
+.test-card.fail header b,
+.test-card .test-error {
+  color: #953c29;
+}
+@media (max-width: 720px) {
+  .test-cards {
+    grid-template-columns: 1fr;
+  }
+  .incident-explanation {
+    flex-direction: column;
+    padding: 22px;
+  }
+  .incident-proof {
+    min-width: 0;
+  }
+  .test-card {
+    padding: 20px;
+  }
+}
+
+[hidden] {
+  display: none !important;
+}
+.agent-panel {
+  margin-top: 24px;
+}
+.agent-panel > summary,
+.evidence-section > summary {
+  cursor: pointer;
+  font-size: 19px;
+  font-weight: 600;
+  padding: 6px 0;
+}
+.agent-panel > summary .mode-tag {
+  float: right;
+  font-size: 12px;
+}
+.agent-controls {
+  grid-template-columns: minmax(180px, 1fr) auto auto auto;
+  margin-top: 20px;
+}
+.agent-controls label {
+  font-size: 14px;
+}
+.agent-feedback {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--muted);
+  margin: 14px 0;
+}
+.agent-audit {
+  border-top: 1px solid var(--line);
+  padding-top: 16px;
+}
+.agent-audit summary {
+  cursor: pointer;
+  font-size: 14px;
+}
+.evidence-section > summary {
+  margin-bottom: 24px;
+}
+.execution-status {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: max-content;
+  max-width: calc(100vw - 32px);
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: #1d392e;
+  color: #f3f6ec;
+  box-shadow: 0 8px 40px #0003;
+  font-size: 14px;
+}
+.execution-status button {
+  color: #e1f5af;
+  background: transparent;
+  border: 1px solid #738b65;
+  padding: 8px 12px;
+  border-radius: 8px;
+  cursor: pointer;
+}
+.loading-spinner {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  border: 2px solid #80966f;
+  border-top-color: #e3f6b3;
+  border-radius: 50%;
+  animation: loading-spin 1s linear infinite;
+}
+@keyframes loading-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+.execution-error {
+  margin: 20px auto 0;
+  max-width: 1200px;
+  padding: 18px 24px;
+  background: #fff0e9;
+  color: #873d27;
+  border: 1px solid #dfb9a9;
+  border-radius: 12px;
+  font-size: 16px;
+}
+@media (max-width: 720px) {
+  .agent-controls {
+    grid-template-columns: 1fr;
+  }
+  .execution-status {
+    font-size: 12px;
+    padding: 12px;
+  }
+  .agent-panel > summary .mode-tag {
+    float: none;
+    margin-left: 12px;
+  }
+}
+.scenario-buttons button b {
+  font-size: 16px;
+}
+.status-panel .status-row {
+  font-size: 14px;
+}
+.lab-actions button {
+  font-size: 14px;
+  min-height: 52px;
+}
+
+    </style>
+  </head>
+  <body>
+    <header class="header">
+      <a class="brand" href="#"
+        ><span class="brand-icon">n</span> nexo<span class="brand-dot"
+          >.</span
+        ></a
+      >
+      <nav aria-label="Navegação">
+        <a href="#lab">Testes</a><a href="#isolation">Isolamento</a
+        ><a href="#evidence">Evidências</a><a href="#application">Loja</a>
+      </nav>
+      <span class="demo-tag"><span></span> Ambiente de testes</span>
+    </header>
+    <div id="execution-status" class="execution-status" hidden role="status">
+      <span class="loading-spinner" aria-hidden="true"></span
+      ><span id="execution-label">Executando…</span
+      ><button id="cancel-execution" type="button">Cancelar</button>
+    </div>
+    <div id="execution-error" class="execution-error" hidden role="alert"></div>
+    <main>
+      <section class="dashboard-intro">
+        <div>
+          <h1>Testes de resiliência</h1>
         </div>
-        ${isLoad?`<div class="load-banner">${data.load.total_requests} funções simultâneas → limite ${data.load.configured_limit} → ${data.load.failed_requests} falhas observadas</div>`:''}
-        <div class="flow"><div class="node good">Gateway</div><div class="arrow">→</div><div class="node good">Orders</div><div class="arrow">→</div><div class="node ${(isLoad||c.users.status!==200)?'bad':'good'}">${isLoad?'Users saturado':'Users'}</div><div class="arrow">→</div><div class="node ${(isLoad||c.order.status!==200)?'bad':'good'}">${isLoad?'Clientes afetados':(c.order.status===200?'Pedido exibido':'Cliente afetado')}</div></div>
-        <div class="details"><span>Request ID: <code>${esc(data.request_id)}</code></span><span>${esc(data.timestamp)}</span></div>
-        <section class="ai">
-          <div class="ai-head"><div><div class="eyebrow">Diagnóstico do artefato</div><h3>Conclusão da IA: ${esc(ai.outcome)}</h3></div><div class="real">IA REAL · ${esc(ai.model)}</div></div>
-          <p class="ai-summary">${esc(ai.summary)}</p>
-          <div class="hypotheses">${ai.hypotheses.map(h=>`<div class="hypothesis"><strong>${esc(h.service||'Cadeia distribuída')}</strong><br>${esc(h.description)}<div class="ids">Evidências citadas: ${h.evidence_ids.map(esc).join(', ')}</div></div>`).join('')}</div>
-          <h4 class="evidence-title">Evidências entregues à IA</h4>
-          <div class="evidence-grid">${ai.evidence.map(e=>`<div class="evidence ${(e.error||e.states?.some(s=>!s.reachable))?'bad':''}">${esc(evidenceText(e))}<small>ID ${esc(e.id)}</small></div>`).join('')}</div>
-          <div class="trace"><span>Execução persistida: <code>${esc(ai.run_id)}</code></span><span>${esc(ai.provider)} · ${Math.round(ai.duration_ms)} ms · simulado: ${ai.simulated?'sim':'não'}</span></div>
-        </section>`;
+      </section>
+      <section class="lab" id="lab">
+        <div class="lab-head">
+          <div>
+            <h2>Cenários de teste</h2>
+          </div>
+        </div>
+        <div class="lab-layout">
+          <div>
+            <div class="scenario-buttons">
+              <button data-scenario="normal">
+                <span>↗</span><b>Operação normal</b></button
+              ><button data-scenario="outage">
+                <span>ϟ</span><b>Falha no pagamento</b></button
+              ><button data-scenario="slow">
+                <span>◷</span><b>Resposta perdida</b></button
+              ><button data-scenario="declined">
+                <span>⊘</span><b>Pagamento recusado</b>
+              </button>
+            </div>
+            <div class="lab-actions">
+              <button id="recover" class="recover-btn">
+                ↻ Restaurar e verificar pagamento</button
+              ><button id="run-tests" class="test-btn">
+                ▷ Testes funcionais (8)
+              </button>
+            </div>
+          </div>
+          <div class="status-panel">
+            <div class="status-row">
+              <span><i class="status-dot ok"></i> Catálogo e carrinho</span
+              ><b>Disponíveis</b>
+            </div>
+            <div class="status-row">
+              <span
+                ><i id="payment-dot" class="status-dot"></i> Pagamento de
+                teste</span
+              ><b id="payment-status">Aguardando verificação</b>
+            </div>
+            <div class="status-row">
+              <span
+                ><i id="circuit-dot" class="status-dot"></i> Proteção do
+                checkout</span
+              ><b id="circuit-status">Circuito fechado</b>
+            </div>
+
+            <div class="status-row">
+              <span>Última ação</span><b id="action-source">—</b>
+            </div>
+          </div>
+        </div>
+        <div
+          id="incident-explanation"
+          class="incident-explanation"
+          aria-live="polite"
+        ></div>
+        <div id="test-results" hidden aria-live="polite"></div>
+      </section>
+      <details class="agent-panel" id="agent-panel">
+        <summary>
+          Usar IA <span id="agent-status" class="mode-tag">Verificando…</span>
+        </summary>
+        <div class="agent-controls">
+          <select id="control-mode" hidden aria-label="Controle">
+            <option value="rules">Regras</option>
+            <option value="agent">Agente IA</option>
+          </select>
+          <label
+            >Senha de acesso<input
+              type="password"
+              id="llm-token"
+              autocomplete="off"
+              placeholder="OBS_DEMO_TOKEN"
+          /></label>
+          <button id="connect-agent" class="primary">Ativar IA</button>
+          <button id="run-agent" class="secondary" disabled>
+            Analisar novamente
+          </button>
+          <button id="disconnect-agent" class="text-btn" hidden>
+            Desativar IA
+          </button>
+        </div>
+        <p id="agent-feedback" class="agent-feedback" role="status">
+          Use a senha cadastrada em OBS_DEMO_TOKEN.
+        </p>
+        <details class="agent-audit">
+          <summary>Ver ações da IA</summary>
+          <div class="agent-run-heading">
+            <span id="agent-run-id"></span
+            ><button id="verify-agent" class="text-btn" hidden>
+              Verificar registro
+            </button>
+          </div>
+          <ol id="agent-trace" class="agent-trace"></ol>
+        </details>
+      </details>
+      <section class="isolation-section" id="isolation">
+        <div class="section-heading">
+          <div>
+            <h2>Isolamento do pagamento</h2>
+          </div>
+          <a class="text-btn" href="#application">Ver efeito na aplicação ↗</a>
+        </div>
+        <div
+          class="isolation-map"
+          aria-label="Estado dos componentes do sandbox"
+        >
+          <article class="component available">
+            <h3>Catálogo</h3>
+            <strong>Disponível</strong>
+          </article>
+          <span class="map-connector" aria-hidden="true">→</span>
+          <article class="component available">
+            <h3>Carrinho</h3>
+            <strong>Preservado</strong>
+          </article>
+          <span class="map-connector" aria-hidden="true">→</span>
+          <article class="component" id="payment-component">
+            <h3>Pagamento sandbox</h3>
+            <strong id="isolation-payment-status">Não verificado</strong>
+          </article>
+        </div>
+      </section>
+      <details class="evidence-section" id="evidence">
+        <summary>Evidências da execução</summary>
+        <section
+          class="experiment-metrics"
+          aria-label="Resumo observado"
+          aria-live="polite"
+        >
+          <article>
+            <span>Avaliação funcional</span
+            ><strong id="metric-tests">Não executada</strong>
+          </article>
+          <article>
+            <span>Último HTTP do cenário</span
+            ><strong id="metric-http">Não verificada</strong>
+          </article>
+          <article>
+            <span>Proteção do pagamento</span
+            ><strong id="metric-isolation">Liberado</strong>
+          </article>
+          <article>
+            <span>Eventos</span><strong id="metric-evidence">0 eventos</strong>
+          </article>
+        </section>
+
+        <div class="section-heading">
+          <div>
+            <h2>Respostas e eventos</h2>
+          </div>
+          <button id="export" class="text-btn">
+            ↓ Exportar relatório JSON
+          </button>
+        </div>
+        <div class="evidence-layout">
+          <div class="timeline-panel">
+            <div class="panel-heading">
+              <h3>Linha do tempo</h3>
+              <span id="event-count">0 eventos</span>
+            </div>
+            <div id="timeline" class="timeline"></div>
+          </div>
+          <div class="diagnosis-panel">
+            <div class="panel-heading">
+              <h3>Análise do incidente</h3>
+              <span id="diagnosis-mode" class="mode-tag">Por regras</span>
+            </div>
+            <p id="diagnosis-summary" hidden></p>
+            <div id="diagnosis-refs"></div>
+            <button id="analyze" class="secondary">
+              Analisar evidências atuais <span>↗</span>
+            </button>
+          </div>
+        </div>
+      </details>
+      <details class="application-demo" id="application">
+        <summary>
+          <div>
+            <h2>Compra e carrinho</h2>
+          </div>
+          <span class="expand-label">Abrir demonstração +</span>
+        </summary>
+        <div class="commerce-layout">
+          <section class="collection" id="products">
+            <div class="section-heading">
+              <div>
+                <h2>Produtos</h2>
+              </div>
+              <span class="count-label">3 produtos</span>
+            </div>
+            <div id="product-list" class="product-grid"></div>
+          </section>
+          <aside class="cart" aria-labelledby="cart-title">
+            <div class="cart-heading">
+              <h2 id="cart-title">Carrinho <span id="cart-count">0</span></h2>
+              <span>↗</span>
+            </div>
+            <div id="cart-items"></div>
+            <div id="payment-notice" class="payment-notice" hidden></div>
+            <div class="cart-total">
+              <span>Total</span><strong id="cart-total">R$ 0,00</strong>
+            </div>
+            <button class="primary checkout" id="checkout">
+              Finalizar compra <span>→</span></button
+            ><button id="reconcile" class="secondary" hidden>
+              Consultar pagamento pendente
+            </button>
+
+            <div id="order-result" role="status"></div>
+          </aside>
+        </div>
+        <section
+          class="notifications"
+          id="notifications"
+          aria-live="polite"
+        ></section>
+      </details>
+    </main>
+    <footer>
+      <a class="brand" href="#">nexo.</a>
+
+      <a href="docker.html">Experimento Docker original ↗</a>
+    </footer>
+    <div id="toast" class="toast" role="status" hidden></div>
+    <script type="module">
+      const PRODUCTS = [
+  {
+    id: "headphones",
+    name: "Fone Studio",
+    category: "Áudio",
+    price: 18990,
+    icon: "headphones",
+    color: "lavender",
+  },
+  {
+    id: "keyboard",
+    name: "Teclado Compact",
+    category: "Workspace",
+    price: 24990,
+    icon: "keyboard",
+    color: "peach",
+  },
+  {
+    id: "speaker",
+    name: "Caixa Pocket",
+    category: "Áudio",
+    price: 12990,
+    icon: "speaker",
+    color: "mint",
+  },
+];
+const fresh = () => ({
+  version: 1,
+  cart: [],
+  scenario: "normal",
+  breaker: "closed",
+  incident: null,
+  subscription: null,
+  notices: [],
+  evidence: [],
+  orders: [],
+  attempt: null,
+  controlMode: "rules",
+  agentExperiment: null,
+  agentRuns: [],
+  actionSource: null,
+});
+function readState(storage) {
+  try {
+    const value = JSON.parse(storage.getItem("nexo-demo-v1"));
+    if (!value || value.version !== 1) return fresh();
+    if (
+      !Array.isArray(value.cart) ||
+      !Array.isArray(value.evidence) ||
+      !Array.isArray(value.orders) ||
+      !Array.isArray(value.notices) ||
+      !["normal", "outage", "slow", "declined"].includes(value.scenario) ||
+      !["closed", "open", "half-open"].includes(value.breaker)
+    )
+      return fresh();
+    if (
+      value.cart.some(
+        (item) =>
+          !PRODUCTS.some((p) => p.id === item.id) ||
+          !Number.isInteger(item.quantity) ||
+          item.quantity < 1 ||
+          item.quantity > 20,
+      )
+    )
+      return fresh();
+    const state = { ...fresh(), ...value };
+    if (state.controlMode !== "agent" || !state.agentExperiment?.token)
+      state.controlMode = "rules";
+    return state;
+  } catch {
+    return fresh();
+  }
+}
+class Store {
+  constructor({
+    state = fresh(),
+    persist = () => {},
+    call,
+    changed = () => {},
+  }) {
+    this.state = state;
+    this.persist = persist;
+    this.call = call;
+    this.changed = changed;
+  }
+  save() {
+    this.persist(this.state);
+    this.changed();
+  }
+  event(event, status, details) {
+    const entry = {
+      id: crypto.randomUUID(),
+      timestamp: new Date().toISOString(),
+      event,
+      status,
+      details,
+    };
+    this.state.evidence.push(entry);
+    this.state.evidence = this.state.evidence.slice(-200);
+    this.save();
+    return entry;
+  }
+  total() {
+    return this.state.cart.reduce(
+      (sum, item) =>
+        sum + PRODUCTS.find((p) => p.id === item.id).price * item.quantity,
+      0,
+    );
+  }
+  add(id) {
+    if (this.state.attempt?.unknown)
+      throw new Error(
+        "Consulte o pagamento pendente antes de alterar o carrinho.",
+      );
+    if (!PRODUCTS.some((p) => p.id === id))
+      throw new Error("Produto inválido.");
+    const found = this.state.cart.find((item) => item.id === id);
+    if (found && found.quantity >= 20)
+      throw new Error("Limite de 20 unidades por produto.");
+    if (found) found.quantity++;
+    else this.state.cart.push({ id, quantity: 1 });
+    this.state.attempt = null;
+    this.event("cart_item_added", null, `${id}; itens salvos neste navegador`);
+  }
+  remove(id) {
+    if (this.state.attempt?.unknown)
+      throw new Error(
+        "Consulte o pagamento pendente antes de alterar o carrinho.",
+      );
+    this.state.cart = this.state.cart.filter((item) => item.id !== id);
+    this.state.attempt = null;
+    this.event("cart_item_removed", null, id);
+  }
+  async request(operation, attempt = this.state.attempt) {
+    const started = performance.now();
+    let result;
+    try {
+      result = await this.call({
+        operation,
+        scenario:
+          operation === "reconcile" ? attempt.scenario : this.state.scenario,
+        attemptId: attempt?.id,
+        items: attempt?.items,
+      });
+    } catch (error) {
+      this.event(
+        "payment_transport_error",
+        null,
+        "Não foi possível obter resposta da API. O status do serviço não foi confirmado.",
+      );
+      throw error;
     }
-    async function run(action){
-      buttons.forEach(b=>b.disabled=true);
-      result.innerHTML=`<div class="empty"><div><div class="spinner"></div>${labels[action]}</div></div>`;
-      try{const response=await fetch(`/api/${action}`,{method:'POST'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Falha no teste');render(data)}catch(error){result.innerHTML=`<div class="empty"><div><strong>Não foi possível executar.</strong><br>${esc(error.message)}</div></div>`}finally{buttons.forEach(b=>b.disabled=false)}
+    this.event(
+      `payment_${operation}`,
+      result.status,
+      `${result.data.outcome || result.data.status || result.data.error}; ${Math.round(performance.now() - started)} ms`,
+    );
+    return result;
+  }
+  openCircuit(source = "rules") {
+    this.state.actionSource = source;
+    this.state.breaker = "open";
+    this.state.incident ||= crypto.randomUUID();
+    this.event(
+      "circuit_opened",
+      null,
+      source === "agent"
+        ? "Isolamento aplicado após decisão do agente e validação da política."
+        : "Proteção por regra técnica; novas finalizações suspensas. A IA não executou esta ação.",
+    );
+  }
+  async scenario(scenario) {
+    if (!["normal", "outage", "slow", "declined"].includes(scenario))
+      throw new Error("Cenário inválido.");
+    if (this.state.attempt?.unknown)
+      throw new Error(
+        "Reconcilie o pagamento pendente antes de trocar o cenário.",
+      );
+    this.state.scenario = scenario;
+    this.event("experiment_scenario_changed", null, scenario);
+    if (scenario === "outage") {
+      let response;
+      try {
+        response = await this.request("probe");
+      } catch (error) {
+        this.openCircuit();
+        throw error;
+      }
+      if (response.status >= 500) this.openCircuit();
+      else throw new Error("A API não confirmou a falha solicitada.");
+    } else if (this.state.breaker !== "closed") {
+      this.state.breaker = "half-open";
+      this.save();
+      for (let i = 0; i < 2; i++) {
+        let response;
+        try {
+          response = await this.request("probe");
+        } catch {
+          this.openCircuit();
+          return false;
+        }
+        if (response.status !== 200 || response.data.status !== "available") {
+          this.openCircuit();
+          return false;
+        }
+      }
+      this.closeCircuit();
+    } else {
+      const response = await this.request("probe");
+      if (response.status >= 500 && scenario !== "slow") this.openCircuit();
     }
-    buttons.forEach(button=>button.addEventListener('click',()=>run(button.dataset.action)));
-  </script>
-</body>
+    return true;
+  }
+  closeCircuit(source = "rules") {
+    this.state.actionSource = source;
+    this.state.breaker = "closed";
+    this.event(
+      "circuit_closed",
+      200,
+      source === "agent"
+        ? "Liberação aplicada após decisão do agente e validação da política."
+        : "Duas sondagens funcionais confirmaram a recuperação no sandbox.",
+    );
+    if (
+      this.state.subscription?.incident === this.state.incident &&
+      !this.state.subscription.sent
+    ) {
+      this.state.subscription.sent = true;
+      this.state.notices = this.state.notices.slice(-19);
+      this.state.notices.push({
+        id: crypto.randomUUID(),
+        incident: this.state.incident,
+        at: new Date().toISOString(),
+        text: "O pagamento voltou a funcionar. Seu carrinho está salvo; você já pode retomar a compra.",
+      });
+      this.event(
+        "recovery_notice_created",
+        null,
+        "Aviso interno único, solicitado pelo comprador. Nenhum e-mail enviado.",
+      );
+    }
+    this.state.incident = null;
+    this.save();
+  }
+  connectExperiment(payload) {
+    if (
+      !payload?.experiment ||
+      !["closed", "open"].includes(payload.experiment.checkout) ||
+      typeof payload.stateToken !== "string"
+    )
+      throw new Error("Experimento inválido.");
+    this.state.agentExperiment = {
+      ...payload.experiment,
+      token: payload.stateToken,
+    };
+    this.state.breaker = payload.experiment.checkout;
+    this.save();
+  }
+  injectExperiment(payload, scenario) {
+    this.state.agentExperiment = {
+      ...payload.experiment,
+      token: payload.stateToken,
+    };
+    this.state.scenario = scenario;
+    this.event("fault_injected", null, scenario);
+    // No isolation action here. The model must investigate and propose it.
+  }
+  applyAgentRun(payload) {
+    const current = this.state.agentExperiment;
+    if (
+      !current ||
+      payload.run.experimentId !== current.id ||
+      payload.run.revision !== current.revision
+    )
+      throw new Error("Execução desatualizada. Execute o agente novamente.");
+    this.state.agentRuns ||= [];
+    this.state.agentRuns.push({
+      run: payload.run,
+      signature: payload.signature,
+    });
+    this.state.agentRuns = this.state.agentRuns.slice(-10);
+    if (payload.run.status === "completed") {
+      this.state.agentExperiment = {
+        ...payload.experiment,
+        token: payload.stateToken,
+      };
+      if (payload.run.applied?.action === "isolate_checkout")
+        this.openCircuit("agent");
+      if (payload.run.applied?.action === "resume_checkout")
+        this.closeCircuit("agent");
+    }
+    this.event(
+      payload.run.status === "completed" ? "agent_completed" : "agent_failed",
+      null,
+      payload.run.id,
+    );
+  }
+  subscribe() {
+    if (!this.state.incident)
+      throw new Error("Não há incidente ativo para acompanhar.");
+    if (this.state.subscription?.incident === this.state.incident) return;
+    this.state.subscription = {
+      incident: this.state.incident,
+      sent: false,
+      at: new Date().toISOString(),
+    };
+    this.event(
+      "recovery_notice_requested",
+      null,
+      "Consentimento para aviso dentro desta aplicação.",
+    );
+  }
+  finish(data) {
+    if (
+      !this.state.orders.some((order) => order.receiptId === data.receiptId)
+    ) {
+      this.state.orders = this.state.orders.slice(-19);
+      this.state.orders.push({
+        receiptId: data.receiptId,
+        total: data.total,
+        at: new Date().toISOString(),
+        items: data.items,
+      });
+    }
+    this.state.cart = [];
+    this.state.attempt = null;
+    this.event(
+      "order_confirmed",
+      200,
+      `${data.receiptId}; pagamento simulado, sem cobrança real`,
+    );
+    return data;
+  }
+  async checkout() {
+    if (!this.state.cart.length)
+      throw new Error("Adicione um produto ao carrinho.");
+    if (this.state.attempt?.unknown)
+      throw new Error(
+        "Existe uma tentativa pendente. Consulte o resultado antes de tentar novamente.",
+      );
+    if (this.state.breaker !== "closed") {
+      this.event(
+        "checkout_blocked",
+        null,
+        "Circuito aberto; chamada de pagamento evitada e carrinho preservado.",
+      );
+      throw new Error("Pagamento indisponível. Seus itens continuam salvos.");
+    }
+    this.state.attempt ||= {
+      id: crypto.randomUUID(),
+      items: structuredClone(this.state.cart),
+      scenario: this.state.scenario,
+      unknown: false,
+    };
+    this.state.attempt.scenario = this.state.scenario;
+    this.save();
+    let result;
+    try {
+      result = await this.request("pay");
+    } catch (error) {
+      // Lost response: don't assume failure or create another payment.
+      this.state.attempt.unknown = true;
+      this.event(
+        "payment_response_lost",
+        null,
+        "Resultado desconhecido. Nova finalização bloqueada.",
+      );
+      throw error;
+    }
+    if (result.status === 200 && result.data.outcome === "approved")
+      return this.finish(result.data);
+    if (result.status === 504) {
+      this.state.attempt.unknown = true;
+      this.openCircuit();
+      throw new Error(
+        "Resposta de pagamento desconhecida. Consulte a tentativa pendente antes de continuar.",
+      );
+    }
+    if (result.status === 503) this.openCircuit();
+    else this.state.attempt = null;
+    this.save();
+    throw new Error(result.data.error || "Pagamento não concluído.");
+  }
+  async reconcile() {
+    if (!this.state.attempt?.unknown)
+      throw new Error("Nenhum pagamento pendente.");
+    const result = await this.request("reconcile");
+    if (
+      result.status === 402 ||
+      (result.status === 503 && this.state.attempt.scenario === "outage")
+    ) {
+      this.state.attempt = null;
+      this.save();
+      throw new Error(
+        "Consulta confirmou que o pagamento de teste não foi aprovado. Carrinho preservado.",
+      );
+    }
+    if (result.status !== 200 || result.data.outcome !== "approved")
+      throw new Error(
+        "Resultado ainda não confirmado. Carrinho preservado; não inicie nova cobrança.",
+      );
+    return this.finish(result.data);
+  }
+}
+function rules(evidence) {
+  const recent = evidence.slice(-32);
+  const failures = recent.filter((item) => item.status >= 500);
+  const declined = recent.filter((item) => item.status === 402);
+  return {
+    mode: "rules",
+    outcome: failures.length
+      ? "incident"
+      : recent.length
+        ? "no_incident"
+        : "insufficient_evidence",
+    summary: failures.length
+      ? "Foram observadas falhas técnicas no serviço de pagamento. O circuito protege a finalização e o carrinho permanece disponível. Um timeout exige consulta da tentativa; não comprova que o pagamento falhou. A origem interna da falha não pode ser inferida só pelo HTTP."
+      : declined.length
+        ? "Foi observada uma recusa de pagamento (HTTP 402). Isso é diferente de indisponibilidade técnica e não deve abrir o circuito."
+        : "As evidências selecionadas não mostram falha técnica de pagamento. Isso não comprova disponibilidade fora desta janela.",
+    evidence_ids: (failures.length
+      ? failures
+      : declined.length
+        ? declined
+        : recent.slice(-3)
+    ).map((item) => item.id),
+  };
+}
+
+const $ = (selector) => document.querySelector(selector);
+const esc = (value) =>
+  String(value ?? "").replace(
+    /[&<>"']/g,
+    (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[
+        c
+      ],
+  );
+const money = (cents) =>
+  new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(
+    cents / 100,
+  );
+const time = (date) =>
+  new Date(date).toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  });
+let actionController = null;
+let busy = false,
+  diagnosis = null,
+  testReport = null,
+  storageAvailable = true,
+  timer;
+let agentConfigured = false,
+  agentVerified = null;
+const icons = {
+  headphones:
+    '<path d="M28 83V60a32 32 0 0 1 64 0v23" fill="none" stroke="#665f83" stroke-width="12"/><rect x="20" y="60" width="20" height="38" rx="8" fill="#9186b1"/><rect x="80" y="60" width="20" height="38" rx="8" fill="#9186b1"/><path d="M30 41a34 34 0 0 1 58-2" fill="none" stroke="#c0b7da" stroke-width="4"/>',
+  keyboard:
+    '<rect x="6" y="35" width="110" height="56" rx="7" fill="#b79d80"/><rect x="9" y="32" width="104" height="52" rx="6" fill="#e1ccb2"/><path d="M18 43h87M18 55h87M18 67h87M27 38v33M42 38v33M57 38v22M72 38v22M87 38v33M102 38v33" stroke="#af967b" stroke-width="6"/><path d="M44 72h35" stroke="#f9efdc" stroke-width="7"/>',
+  speaker:
+    '<rect x="31" y="17" width="58" height="88" rx="18" fill="#456b56"/><rect x="35" y="20" width="50" height="80" rx="15" fill="#87a58c"/><circle cx="60" cy="60" r="20" fill="#52785f"/><circle cx="60" cy="60" r="14" fill="#6d9277"/><path d="M48 30h24" stroke="#d0e2cb" stroke-width="4" stroke-linecap="round"/>',
+};
+$("#product-list").innerHTML = PRODUCTS.map(
+  (p) =>
+    `<article class="product"><div class="product-art ${p.color}"><svg viewBox="0 0 120 120" aria-hidden="true">${icons[p.icon]}</svg></div><span class="product-category">${p.category}</span><h3>${p.name}</h3><div class="product-bottom"><strong>${money(p.price)}</strong><button class="add-btn" data-add="${p.id}" aria-label="Adicionar ${p.name} ao carrinho">+</button></div></article>`,
+).join("");
+function toast(message) {
+  clearTimeout(timer);
+  $("#toast").textContent = message;
+  $("#toast").hidden = false;
+  timer = setTimeout(() => ($("#toast").hidden = true), 6500);
+}
+async function call(body, useExperiment = true) {
+  const headers = { "Content-Type": "application/json" };
+  if (
+    useExperiment &&
+    store.state.controlMode === "agent" &&
+    store.state.agentExperiment?.token
+  )
+    headers["X-Experiment-State"] = store.state.agentExperiment.token;
+  const response = await fetch("/api/payments", {
+    method: "POST",
+    headers,
+    body: JSON.stringify(body),
+    cache: "no-store",
+    signal: requestSignal(12000),
+  });
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error(
+      "A API não respondeu em JSON. Confira se este deploy contém as funções /api.",
+    );
+  }
+  return { status: response.status, data };
+}
+let saved;
+try {
+  saved = readState(localStorage);
+} catch {
+  saved = fresh();
+  storageAvailable = false;
+}
+// Access password is intentionally not persisted; activate the agent explicitly after reload.
+saved.controlMode = "rules";
+const store = new Store({
+  state: saved,
+  call,
+  persist: (state) => {
+    try {
+      localStorage.setItem("nexo-demo-v1", JSON.stringify(state));
+    } catch {
+      storageAvailable = false;
+    }
+  },
+  changed: () => render(),
+});
+let storageWarningShown = false;
+function render() {
+  const s = store.state,
+    blocked = s.breaker !== "closed",
+    unknown = s.attempt?.unknown;
+  const lastRun = s.agentRuns?.at(-1)?.run;
+  const currentRun =
+    s.controlMode === "agent" &&
+    lastRun &&
+    lastRun.experimentId === s.agentExperiment?.id &&
+    s.agentExperiment.revision === lastRun.revision + (lastRun.applied ? 1 : 0)
+      ? lastRun
+      : null;
+  const agentPayment = currentRun?.observations
+    .filter((item) => item.service === "payment")
+    .at(-1);
+
+  $("#cart-count").textContent = s.cart.reduce((n, i) => n + i.quantity, 0);
+  $("#cart-total").textContent = money(store.total());
+  $("#cart-items").innerHTML = s.cart.length
+    ? s.cart
+        .map((item) => {
+          const p = PRODUCTS.find((p) => p.id === item.id);
+          return `<div class="cart-item"><div><h4>${p.name}</h4><small>${item.quantity} un. × ${money(p.price)}</small></div><button class="remove" data-remove="${p.id}" aria-label="Remover ${p.name}">×</button></div>`;
+        })
+        .join("")
+    : '<div class="empty-cart"><span>⌑</span>Carrinho vazio.</div>';
+  $("#checkout").disabled = busy || !s.cart.length || blocked || unknown;
+  $("#checkout").innerHTML = unknown
+    ? "Pagamento pendente de consulta"
+    : blocked
+      ? "Pagamento temporariamente suspenso"
+      : "Finalizar compra <span>→</span>";
+  $("#reconcile").hidden = !unknown;
+  $("#reconcile").disabled = busy;
+  $("#payment-notice").hidden = !blocked && !unknown;
+  $("#payment-notice").innerHTML = unknown
+    ? "<p><strong>Não tente pagar novamente.</strong> A resposta é desconhecida. Consulte a tentativa pendente; seus itens estão preservados.</p>"
+    : `<p>O processamento de pagamentos está temporariamente indisponível. Seus itens continuam salvos. Deseja receber um aviso quando voltar?</p>${s.subscription?.incident === s.incident ? "<strong>Aviso solicitado. Acompanhe a recuperação nesta página.</strong>" : '<button id="subscribe">Quero receber um aviso</button>'}`;
+  $("#payment-status").textContent = unknown
+    ? "Resultado desconhecido"
+    : blocked
+      ? "Indisponível"
+      : s.scenario === "declined"
+        ? "Ativo · recusa de teste"
+        : s.scenario === "slow"
+          ? "Timeout preparado"
+          : s.evidence.some(
+                (e) => e.event === "payment_probe" || e.event === "payment_pay",
+              )
+            ? "Disponível"
+            : "Não verificado";
+  if (!blocked && !unknown && s.controlMode === "agent")
+    $("#payment-status").textContent = agentPayment
+      ? agentPayment.status >= 500
+        ? "Falha observada"
+        : agentPayment.status === 402
+          ? "Recusa · serviço ativo"
+          : "Disponível"
+      : "Não verificado";
+  $("#payment-dot").className =
+    "status-dot " +
+    (blocked || unknown || agentPayment?.status >= 500 ? "bad" : "ok");
+  $("#circuit-status").textContent = {
+    open: "Aberto · compra protegida",
+    "half-open": "Validando recuperação",
+    closed: "Fechado · compra liberada",
+  }[s.breaker];
+  $("#circuit-dot").className = "status-dot " + (blocked ? "bad" : "ok");
+  $("#notifications").innerHTML = s.notices
+    .slice(-3)
+    .map(
+      (n) =>
+        `<div class="notification"><span>✓</span><div>${esc(n.text)}<small>Aviso de recuperação · ${time(n.at)}</small></div></div>`,
+    )
+    .join("");
+  $("#order-result").innerHTML = s.orders.length
+    ? `<div class="order-success"><b>Compra confirmada ✓</b><br>${esc(s.orders.at(-1).receiptId)}<br>${money(s.orders.at(-1).total)}</div>`
+    : "";
+  $("#event-count").textContent = `${s.evidence.length} eventos`;
+  $("#metric-evidence").textContent = `${s.evidence.length} eventos`;
+  const lastHttp =
+    s.controlMode === "agent"
+      ? agentPayment
+      : s.evidence.findLast((event) => event.status != null);
+  const lastAction = s.evidence.findLast((e) =>
+    ["circuit_opened", "circuit_closed"].includes(e.event),
+  );
+  let incident = [
+    "Escolha um cenário",
+    "O resultado da execução aparece aqui.",
+    "Aguardando teste",
+  ];
+  if (lastHttp)
+    incident = [
+      "Pagamento respondeu",
+      `Última resposta: HTTP ${lastHttp.status}.`,
+      "Resposta recebida",
+    ];
+  if (s.scenario === "slow" && !unknown)
+    incident = [
+      "Resposta perdida selecionada",
+      "Execute uma compra para provocar o timeout e verificar a consulta da tentativa original.",
+      "Pronto para testar",
+    ];
+  if (s.scenario === "declined" && !blocked)
+    incident = [
+      "Recusa de pagamento",
+      "A recusa é uma resposta de negócio. Quando a compra retorna HTTP 402, o carrinho é mantido e o serviço continua liberado.",
+      "Sem isolamento técnico",
+    ];
+  if (blocked)
+    incident = [
+      "Pagamento isolado",
+      "O checkout foi suspenso após a falha. O catálogo continua disponível e os itens permanecem no carrinho.",
+      "Compra suspensa",
+    ];
+  if (unknown)
+    incident = [
+      "Pagamento sem confirmação",
+      "A resposta da compra se perdeu. Uma nova tentativa fica bloqueada até consultar o resultado pelo mesmo identificador, evitando repetir a compra.",
+      "Consulta necessária",
+    ];
+  if (
+    !blocked &&
+    !unknown &&
+    s.scenario === "normal" &&
+    lastAction?.event === "circuit_closed"
+  )
+    incident = [
+      "Conexão restabelecida no teste",
+      "O cenário de falha foi removido. Duas verificações confirmaram o pagamento disponível antes de liberar o checkout; o carrinho foi preservado.",
+      "Checkout liberado",
+    ];
+  $("#incident-explanation").innerHTML =
+    `<div><span class="incident-badge">${esc(incident[2])}</span><h3>${esc(incident[0])}</h3><p>${esc(incident[1])}</p></div><div class="incident-proof"><b>${lastHttp ? `HTTP ${esc(lastHttp.status)}` : "—"}</b><span>${s.controlMode === "agent" ? "Controle: agente IA" : "Controle: regras automáticas"}</span></div>`;
+  $("#metric-http").textContent = lastHttp
+    ? `HTTP ${lastHttp.status}`
+    : "Não verificada";
+  $("#metric-isolation").textContent = unknown
+    ? "Consulta pendente"
+    : blocked
+      ? "Falha contida"
+      : "Liberado";
+  $("#payment-component").className =
+    "component" +
+    (blocked || unknown ? " isolated" : lastHttp ? " available" : "");
+  $("#isolation-payment-status").textContent = unknown
+    ? "Resultado desconhecido"
+    : blocked
+      ? "Finalização isolada"
+      : lastHttp
+        ? "Finalização liberada"
+        : "Não verificado";
+  if (testReport) {
+    const passed = testReport.results.filter((result) => result.passed).length;
+    $("#metric-tests").textContent =
+      `${passed}/${testReport.results.length} aprovados`;
+  }
+
+  $("#timeline").innerHTML = s.evidence.length
+    ? s.evidence
+        .slice()
+        .reverse()
+        .map(
+          (e) =>
+            `<article class="event" id="event-${esc(e.id)}"><time>${time(e.timestamp)}</time><div><b>${esc(e.event)}</b><p>${esc(e.details)}</p><code>${esc(e.id)}</code></div>${e.status ? `<span class="http ${e.status >= 400 ? "bad" : ""}">${esc(e.status)}</span>` : ""}</article>`,
+        )
+        .join("")
+    : '<p class="empty-cart">As evidências da sua sessão aparecerão aqui.</p>';
+  document.querySelectorAll("[data-scenario]").forEach((button) => {
+    button.classList.toggle("active", button.dataset.scenario === s.scenario);
+    button.disabled = busy || unknown;
+    button.setAttribute("aria-pressed", button.dataset.scenario === s.scenario);
+  });
+  document
+    .querySelectorAll("[data-add],[data-remove]")
+    .forEach((button) => (button.disabled = busy || unknown));
+  for (const id of ["recover", "analyze", "run-tests"])
+    $("#" + id).disabled = busy || (id === "recover" && unknown);
+  $("#export").disabled = busy;
+  const agentMode = s.controlMode === "agent";
+  $("#control-mode option[value=agent]").disabled = !agentConfigured;
+  $("#analyze").hidden = agentMode;
+  if (!diagnosis)
+    $("#diagnosis-mode").textContent = agentMode
+      ? "Sem execução"
+      : "Por regras";
+  $("#control-mode").value = agentMode ? "agent" : "rules";
+  $("#control-mode").disabled = busy;
+  $("#llm-token").disabled = busy;
+  $("#connect-agent").disabled = busy || !agentConfigured;
+  $("#connect-agent").textContent =
+    busy && !agentMode ? "Conectando…" : agentMode ? "Reconectar" : "Ativar IA";
+  $("#disconnect-agent").hidden = !agentMode;
+  $("#disconnect-agent").disabled = busy;
+  $("#run-agent").hidden = !agentMode;
+  $("#execution-status").hidden = !busy;
+  $("#run-agent").disabled =
+    busy || !agentMode || !agentConfigured || !s.agentExperiment;
+
+  $("#action-source").textContent =
+    s.actionSource === "agent"
+      ? "Agente · política validada"
+      : s.actionSource === "rules"
+        ? "Regras"
+        : "—";
+  renderAgentTrace();
+
+  if (diagnosis) {
+    $("#diagnosis-mode").textContent =
+      diagnosis.mode === "llm"
+        ? `LLM real · ${diagnosis.model}`
+        : "Por regras · sem IA";
+    $("#diagnosis-summary").hidden = false;
+    $("#diagnosis-summary").textContent = diagnosis.summary;
+    $("#diagnosis-refs").innerHTML =
+      `<div class="refs">${diagnosis.evidence_ids.map((id) => `<a class="ref" href="#event-${esc(id)}" title="${esc(id)}">${esc(id.slice(0, 8))} ↗</a>`).join("")}</div>`;
+  }
+  if (!storageAvailable && !storageWarningShown) {
+    storageWarningShown = true;
+    toast("Não foi possível salvar o carrinho.");
+  }
+}
+function requestSignal(ms) {
+  return actionController
+    ? AbortSignal.any([actionController.signal, AbortSignal.timeout(ms)])
+    : AbortSignal.timeout(ms);
+}
+function stage(message) {
+  $("#execution-label").textContent = message;
+}
+async function action(fn) {
+  if (busy) return;
+  busy = true;
+  actionController = new AbortController();
+  const timeout = setTimeout(
+    () =>
+      actionController?.abort(new DOMException("Tempo limite", "TimeoutError")),
+    60000,
+  );
+  $("#execution-error").hidden = true;
+  stage("Executando…");
+  render();
+  try {
+    await fn();
+  } catch (error) {
+    const message =
+      error.name === "AbortError"
+        ? "Execução cancelada. Você já pode tentar novamente."
+        : error.name === "TimeoutError"
+          ? "A resposta demorou demais. Tente novamente."
+          : error.message;
+    if ($("#test-results").dataset.running === "true") {
+      $("#test-results").dataset.running = "false";
+      $("#test-results").innerHTML =
+        '<div class="test-report"><h3>Execução interrompida</h3></div>';
+    }
+    $("#execution-error").textContent = message;
+    $("#execution-error").hidden = false;
+    toast(message);
+  } finally {
+    clearTimeout(timeout);
+    actionController = null;
+    busy = false;
+    render();
+  }
+}
+$("#cancel-execution").addEventListener("click", () =>
+  actionController?.abort(),
+);
+$("#product-list").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-add]");
+  if (b)
+    action(() => {
+      store.add(b.dataset.add);
+      toast(
+        store.state.breaker === "closed"
+          ? "Item adicionado ao carrinho."
+          : "Item adicionado. O pagamento está indisponível, mas seu carrinho está salvo.",
+      );
+    });
+});
+$("#cart-items").addEventListener("click", (e) => {
+  const b = e.target.closest("[data-remove]");
+  if (b) action(() => store.remove(b.dataset.remove));
+});
+$("#payment-notice").addEventListener("click", (e) => {
+  if (e.target.closest("#subscribe"))
+    action(() => {
+      store.subscribe();
+      toast(
+        "Combinado. Você receberá um aviso aqui quando a recuperação for confirmada.",
+      );
+    });
+});
+$("#checkout").addEventListener("click", () =>
+  action(async () => {
+    await store.checkout();
+    toast("Compra confirmada.");
+  }),
+);
+$("#reconcile").addEventListener("click", () =>
+  action(async () => {
+    await store.reconcile();
+    toast(
+      "Resultado consultado: pagamento de teste confirmado, sem criar outra tentativa.",
+    );
+  }),
+);
+document.querySelectorAll("[data-scenario]").forEach((b) =>
+  b.addEventListener("click", () =>
+    action(async () => {
+      if (store.state.controlMode === "agent") {
+        const data = await agentRequest("/api/experiment", {
+          operation: "inject",
+          scenario: b.dataset.scenario,
+        });
+        store.injectExperiment(data, b.dataset.scenario);
+        await executeAgent();
+      } else {
+        await store.scenario(b.dataset.scenario);
+        diagnosis = rules(store.state.evidence);
+      }
+    }),
+  ),
+);
+$("#recover").addEventListener("click", () =>
+  action(async () => {
+    if (store.state.controlMode === "agent") {
+      const data = await agentRequest("/api/experiment", {
+        operation: "inject",
+        scenario: "normal",
+      });
+      store.injectExperiment(data, "normal");
+      await executeAgent();
+    } else {
+      if (await store.scenario("normal")) toast("Pagamento restaurado.");
+      diagnosis = rules(store.state.evidence);
+    }
+  }),
+);
+async function agentRequest(path, body) {
+  const token = $("#llm-token").value.trim();
+  if (!token)
+    throw new Error("Digite a senha OBS_DEMO_TOKEN para ativar a IA.");
+  if (token.startsWith("sk-"))
+    throw new Error(
+      "Este campo usa OBS_DEMO_TOKEN. A chave da OpenAI fica somente na Vercel.",
+    );
+  const response = await fetch(path, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${$("#llm-token").value.trim()}`,
+      ...(store.state.agentExperiment?.token
+        ? { "X-Experiment-State": store.state.agentExperiment.token }
+        : {}),
+    },
+    body: JSON.stringify(body),
+    signal: requestSignal(body.operation === "run" ? 50000 : 8000),
+  });
+  let data;
+  try {
+    data = await response.json();
+  } catch {
+    throw new Error("A API não respondeu. Tente novamente após o deploy.");
+  }
+  if (response.status === 401 || response.status === 403)
+    throw new Error("Senha incorreta. Use o valor de OBS_DEMO_TOKEN.");
+  if (!response.ok && !data.run)
+    throw new Error(data.error || "Agente indisponível.");
+  return data;
+}
+function renderAgentTrace() {
+  const entry = store.state.agentRuns?.at(-1);
+  $("#verify-agent").hidden = !entry;
+  if (!entry) {
+    $("#agent-run-id").textContent = "";
+    $("#agent-trace").innerHTML = "";
+    return;
+  }
+  $("#agent-run-id").textContent =
+    `${entry.run.model} · ${entry.run.id}${agentVerified === true ? " · assinatura válida" : agentVerified === false ? " · assinatura inválida" : ""}`;
+  const labels = {
+    model_response: "Modelo",
+    tool_call: "Ferramenta",
+    tool_result: "Resultado",
+    action_proposed: "Proposta do agente",
+    policy_decision: "Política",
+    diagnosis: "Diagnóstico",
+    action_applied: "Ação aplicada",
+    no_action: "Sem alteração",
+    run_failed: "Falha na execução",
+  };
+  $("#agent-trace").innerHTML = entry.run.trace
+    .map((step) => {
+      let detail;
+      if (step.type === "model_response")
+        detail =
+          step.toolCalls.map((call) => call.name).join(", ") ||
+          "Resposta final";
+      else if (step.type === "tool_call")
+        detail = `${step.name} ${JSON.stringify(step.args)}`;
+      else if (step.type === "tool_result")
+        detail = `${step.service} · ${step.status} · ${JSON.stringify(step.result)}`;
+      else if (step.type === "action_proposed")
+        detail = `${step.action} · ${step.reason}`;
+      else if (step.type === "policy_decision")
+        detail = `${step.accepted ? "Aceita" : "Rejeitada"} · ${step.reason}`;
+      else if (step.type === "diagnosis") detail = step.summary;
+      else if (step.type === "action_applied")
+        detail = `${step.action} · ${step.before} → ${step.after}`;
+      else detail = step.error || "Nenhuma ação aplicada";
+      return `<li id="event-${esc(step.id)}" class="agent-step ${step.type === "action_applied" ? "applied" : ""}"><b>${esc(labels[step.type] || step.type)}</b><span>${esc(detail)}</span>${step.providerRequestId ? `<code>${esc(step.providerRequestId)}</code>` : ""}${step.id ? `<code>${esc(step.id)}</code>` : ""}</li>`;
+    })
+    .join("");
+}
+$("#control-mode").addEventListener("change", () => {
+  store.state.controlMode = $("#control-mode").value;
+  store.save();
+});
+$("#connect-agent").addEventListener("click", () =>
+  action(async () => {
+    if (store.state.attempt?.unknown)
+      throw new Error(
+        "Consulte o pagamento pendente antes de conectar outro experimento.",
+      );
+    stage("Conectando à IA…");
+    store.connectExperiment(
+      await agentRequest("/api/experiment", { operation: "create" }),
+    );
+    store.state.controlMode = "agent";
+    store.event("experiment_connected", null, store.state.agentExperiment.id);
+    $("#agent-feedback").textContent = "IA ativada. Escolha um cenário acima.";
+    $("#agent-status").textContent = "Ativada";
+    toast("IA ativada. Escolha um cenário.");
+  }),
+);
+async function executeAgent() {
+  stage("IA verificando os serviços…");
+  $("#agent-status").textContent = "Analisando…";
+  $("#agent-feedback").textContent = "Análise em andamento…";
+  try {
+    const data = await agentRequest("/api/agent", {
+      operation: "run",
+      pendingPayment: Boolean(store.state.attempt?.unknown),
+    });
+    store.applyAgentRun(data);
+    agentVerified = null;
+    if (data.run.status !== "completed")
+      throw new Error(
+        "A IA não concluiu a análise. Nenhuma ação foi aplicada. Verifique a chave e o saldo da API.",
+      );
+    diagnosis = { ...data.run.diagnosis, mode: "llm", model: data.run.model };
+    $("#agent-status").textContent = "Concluído";
+    $("#agent-feedback").textContent = data.run.diagnosis.summary;
+  } catch (error) {
+    $("#agent-status").textContent = "Não concluído";
+    $("#agent-feedback").textContent = "Análise interrompida. Tente novamente.";
+    throw error;
+  }
+}
+$("#run-agent").addEventListener("click", () => action(executeAgent));
+$("#disconnect-agent").addEventListener("click", () => {
+  if (busy) return;
+  store.state.controlMode = "rules";
+  store.save();
+  $("#agent-feedback").textContent =
+    "IA desativada. Testes por regras disponíveis.";
+  $("#agent-status").textContent = "Disponível";
+});
+$("#verify-agent").addEventListener("click", () =>
+  action(async () => {
+    const entry = store.state.agentRuns.at(-1);
+    const result = await agentRequest("/api/agent", {
+      operation: "verify",
+      run: entry.run,
+      signature: entry.signature,
+    });
+    agentVerified = result.valid;
+  }),
+);
+fetch("/api/agent", { cache: "no-store", signal: AbortSignal.timeout(6000) })
+  .then((response) => {
+    if (!response.ok) throw new Error("Configuração indisponível");
+    return response.json();
+  })
+  .then((data) => {
+    agentConfigured = Boolean(data.configured);
+    if (!agentConfigured && store.state.controlMode === "agent") {
+      store.state.controlMode = "rules";
+      store.save();
+    }
+    $("#agent-status").textContent = agentConfigured
+      ? data.model
+      : "Não configurada";
+    $("#agent-feedback").textContent = agentConfigured
+      ? "Digite a senha OBS_DEMO_TOKEN e clique em Ativar IA."
+      : "IA não configurada na Vercel. Os testes estão disponíveis acima.";
+    render();
+  })
+  .catch(() => {
+    $("#agent-status").textContent = "Indisponível";
+    $("#agent-feedback").textContent =
+      "IA indisponível. Os testes continuam disponíveis acima.";
+    store.state.controlMode = "rules";
+    store.save();
+  });
+$("#analyze").addEventListener("click", () =>
+  action(async () => {
+    const evidence = store.state.evidence.slice(-32),
+      token = $("#llm-token").value.trim();
+    if (!token) {
+      diagnosis = rules(evidence);
+      toast("Análise por regras concluída. Nenhuma LLM foi consultada.");
+      return;
+    }
+    try {
+      const response = await fetch("/api/diagnose", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ evidence }),
+        signal: requestSignal(25000),
+      });
+      const data = await response.json();
+      if (!response.ok)
+        throw new Error(data.error || "Falha ao consultar a LLM.");
+      diagnosis = data;
+      store.event(
+        "llm_diagnosis_received",
+        200,
+        `Modelo: ${data.model}; análise sem execução de ações`,
+      );
+      toast("Diagnóstico da LLM recebido e referências validadas.");
+    } catch (error) {
+      diagnosis = rules(evidence);
+      toast(`${error.message} Exibindo análise por regras, sem IA.`);
+    }
+  }),
+);
+async function evaluate(api = (body) => call(body, false)) {
+  const results = [],
+    evidence = [];
+  const check = (value, message) => {
+    if (!value) throw new Error(message);
+  };
+  const explanations = [
+    [
+      "Compra aprovada",
+      "Nenhuma falha foi injetada.",
+      "A API confirmou o total e a compra esvaziou o carrinho.",
+    ],
+    [
+      "Serviço de pagamento indisponível",
+      "A compra recebeu HTTP 503.",
+      "A tentativa falhou sem remover o produto do carrinho.",
+    ],
+    [
+      "Falha contida no checkout",
+      "O pagamento ficou indisponível e o circuito abriu.",
+      "A próxima compra foi bloqueada antes de uma nova chamada ao pagamento.",
+    ],
+    [
+      "Carrinho restaurado",
+      "O estado foi salvo e carregado novamente.",
+      "O teclado e sua quantidade permaneceram no carrinho.",
+    ],
+    [
+      "Pagamento recuperado",
+      "O teste retirou a falha de pagamento.",
+      "Duas sondagens confirmaram disponibilidade. O circuito fechou, o carrinho foi mantido e um único aviso foi criado.",
+    ],
+    [
+      "Recusa sem derrubar o serviço",
+      "A compra recebeu HTTP 402.",
+      "O circuito permaneceu fechado e o produto continuou no carrinho.",
+    ],
+    [
+      "Resposta perdida e conciliada",
+      "A compra ficou sem confirmação e uma segunda tentativa foi bloqueada.",
+      "A consulta usou o mesmo identificador e confirmou uma única compra.",
+    ],
+    [
+      "Comprovante consistente",
+      "Duas chamadas usaram a mesma chave de tentativa.",
+      "As duas respostas HTTP 200 devolveram o mesmo comprovante no sandbox.",
+    ],
+  ];
+  async function test(name, fn) {
+    if (actionController?.signal.aborted) throw actionController.signal.reason;
+    stage(`Teste ${results.length + 1}/8 · ${name}`);
+    const start = performance.now();
+    const offset = evidence.length;
+    const [title, problem, outcome] = explanations[results.length];
+    try {
+      await fn();
+      results.push({
+        name,
+        title,
+        problem,
+        outcome,
+        observations: evidence.slice(offset),
+        passed: true,
+        durationMs: Math.round(performance.now() - start),
+      });
+    } catch (error) {
+      results.push({
+        name,
+        title,
+        problem,
+        outcome: "A verificação falhou. A recuperação não foi comprovada.",
+        observations: evidence.slice(offset),
+        passed: false,
+        error: error.message,
+      });
+    }
+  }
+  const make = () => new Store({ call: api });
+  await test("Compra normal retorna HTTP 200 e comprovante", async () => {
+    const s = make();
+    s.add("headphones");
+    const r = await s.checkout();
+    check(
+      r.total === 18990 && !s.state.cart.length,
+      "Total ou conclusão incorretos",
+    );
+    evidence.push(...s.state.evidence);
+  });
+  await test("Falha técnica retorna HTTP 503 sem perder o carrinho", async () => {
+    const s = make();
+    s.add("keyboard");
+    s.state.scenario = "outage";
+    try {
+      await s.checkout();
+    } catch {}
+    check(
+      s.state.evidence.some((e) => e.status === 503) &&
+        s.state.cart.length === 1,
+      "Falha HTTP ou preservação não comprovadas",
+    );
+    evidence.push(...s.state.evidence);
+  });
+  await test("Circuito aberto evita uma nova chamada de pagamento", async () => {
+    const s = make();
+    s.add("speaker");
+    await s.scenario("outage");
+    const count = s.state.evidence.filter(
+      (e) => e.event === "payment_pay",
+    ).length;
+    try {
+      await s.checkout();
+    } catch {}
+    check(
+      s.state.evidence.some((e) => e.event === "checkout_blocked") &&
+        count ===
+          s.state.evidence.filter((e) => e.event === "payment_pay").length,
+      "Checkout não foi protegido",
+    );
+    evidence.push(...s.state.evidence);
+  });
+  await test("Carrinho sobrevive à restauração do estado salvo", async () => {
+    const s = make();
+    s.add("keyboard");
+    const restored = readState({ getItem: () => JSON.stringify(s.state) });
+    check(
+      restored.cart[0].quantity === 1 && restored.cart[0].id === "keyboard",
+      "Carrinho não restaurado",
+    );
+  });
+  await test("Duas sondagens de recuperação e um único aviso", async () => {
+    const s = make();
+    s.add("speaker");
+    await s.scenario("outage");
+    s.subscribe();
+    const before = s.state.evidence.length;
+    await s.scenario("normal");
+    await s.scenario("normal");
+    check(
+      s.state.notices.length === 1 &&
+        s.state.breaker === "closed" &&
+        s.state.cart.length === 1 &&
+        s.state.evidence
+          .slice(before)
+          .filter((e) => e.event === "payment_probe" && e.status === 200)
+          .length >= 2,
+      "Recuperação ou aviso incorretos",
+    );
+    evidence.push(...s.state.evidence);
+  });
+  await test("Recusa HTTP 402 mantém o circuito fechado", async () => {
+    const s = make();
+    s.add("headphones");
+    await s.scenario("declined");
+    try {
+      await s.checkout();
+    } catch {}
+    check(
+      s.state.breaker === "closed" &&
+        s.state.evidence.some((e) => e.status === 402) &&
+        s.state.cart.length === 1,
+      "Recusa confundida com falha técnica",
+    );
+    evidence.push(...s.state.evidence);
+  });
+  await test("Timeout bloqueia nova tentativa até reconciliação", async () => {
+    const s = make();
+    s.add("keyboard");
+    await s.scenario("slow");
+    try {
+      await s.checkout();
+    } catch {}
+    const id = s.state.attempt.id;
+    try {
+      await s.checkout();
+    } catch {}
+    check(
+      s.state.attempt.unknown &&
+        s.state.evidence.filter((e) => e.event === "payment_pay").length === 1,
+      "Nova tentativa indevida",
+    );
+    const r = await s.reconcile();
+    check(
+      r.attemptId === id && s.state.orders.length === 1 && !s.state.cart.length,
+      "Reconciliação não comprovada",
+    );
+    evidence.push(...s.state.evidence);
+  });
+  await test("Mesma chave produz o mesmo comprovante de teste", async () => {
+    const body = {
+      operation: "pay",
+      scenario: "normal",
+      attemptId: crypto.randomUUID(),
+      items: [{ id: "speaker", quantity: 1 }],
+    };
+    const a = await api(body),
+      b = await api(body);
+    check(
+      a.status === 200 &&
+        b.status === 200 &&
+        a.data.receiptId === b.data.receiptId,
+      "Comprovantes divergiram",
+    );
+  });
+  return {
+    executedAt: new Date().toISOString(),
+    scope:
+      "Avaliação funcional do sandbox; não mede acurácia de IA, pagamentos reais ou durabilidade de transações.",
+    results,
+    evidence,
+  };
+}
+$("#run-tests").addEventListener("click", () =>
+  action(async () => {
+    $("#test-results").hidden = false;
+    $("#test-results").innerHTML =
+      '<div class="test-report"><h3>Executando avaliação pela API…</h3></div>';
+    $("#test-results").dataset.running = "true";
+    testReport = await evaluate();
+    $("#test-results").dataset.running = "false";
+    const passed = testReport.results.filter((r) => r.passed).length;
+    $("#test-results").innerHTML =
+      `<div class="test-report"><h3>${passed}/${testReport.results.length} verificações aprovadas</h3><div class="test-cards">${testReport.results.map((r, i) => `<article class="test-card ${r.passed ? "" : "fail"}"><header><span>TESTE ${String(i + 1).padStart(2, "0")}</span><b>${r.passed ? "✓ Aprovado" : "✕ Falhou"}</b></header><h4>${esc(r.title)}</h4><dl><dt>O que aconteceu</dt><dd>${esc(r.problem)}</dd><dt>${r.passed ? "Resultado confirmado" : "Resultado"}</dt><dd>${esc(r.outcome)}</dd></dl>${r.error ? `<p class="test-error">${esc(r.error)}</p>` : ""}<footer>${r.durationMs ?? "—"} ms${r.observations?.length ? ` · ${r.observations.length} eventos registrados` : ""}</footer>${r.observations?.length ? `<details><summary>Ver evidências</summary>${r.observations.map((e) => `<div class="test-observation"><code>${esc(e.event)}${e.status ? ` · HTTP ${esc(e.status)}` : ""}</code><p>${esc(e.details || "")}</p></div>`).join("")}</details>` : ""}</article>`).join("")}</div></div>`;
+    toast("Avaliação concluída. Confira os resultados observados.");
+  }),
+);
+$("#export").addEventListener("click", () => {
+  const report = {
+    artifact: "Nexo · Pesquisa Aplicada",
+    version: "3.0.0",
+    exportedAt: new Date().toISOString(),
+    scope:
+      "Sandbox serverless, carrinho e evidências locais neste navegador. Nenhuma cobrança real, envio externo ou reparo por IA.",
+    state: {
+      ...store.state,
+      agentExperiment: store.state.agentExperiment
+        ? { ...store.state.agentExperiment, token: undefined }
+        : null,
+    },
+    diagnosis,
+    evaluation: testReport,
+  };
+  const url = URL.createObjectURL(
+    new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }),
+  );
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `nexo-evidencias-${new Date().toISOString().replace(/[:.]/g, "-")}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+});
+render();
+
+    </script>
+  </body>
 </html>

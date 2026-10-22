@@ -1,6 +1,6 @@
 # O que foi feito e como foi feito
 
-Atualizado em 24/09/2026. Este documento resume o artefato presente nesta cópia do projeto e distingue a implementação dos resultados observados na demonstração.
+Registro do núcleo original, de 24/09/2026. Para a evolução atual, consulte [PBL 8](pbl8-melhorias.md) e [PJBL 3](pjbl3-artefato.md). Este documento resume o artefato presente nesta cópia do projeto e distingue a implementação dos resultados observados na demonstração.
 
 ## Objetivo e recorte
 
@@ -40,7 +40,11 @@ O registro mais recente disponível está em [`docs/evidencias/20260924T221853Z-
 
 Os JSONs de cada fase preservam requisição, contexto, evidências e execução. `controle-experimental.json` registra as intervenções externas e não é ingerido pelo sistema. Esse ensaio demonstra o funcionamento do cenário e da cadeia de diagnóstico; ele não mede a acurácia da solução em outros incidentes.
 
-O documento [`entrega.md`](entrega.md) descreve uma execução histórica anterior com LLM simulada. Ela não representa o estado do ensaio mais recente. Também registra 61 testes aprovados naquela etapa, mas a pasta `tests/` não está presente nesta cópia do projeto; portanto, essa contagem não foi repetida nem verificada aqui.
+O documento [`entrega.md`](entrega.md) registra 61 testes em uma execução
+histórica. Essa contagem não foi reproduzida nesta cópia. A suíte Python atual
+contém 13 testes; os testes Node e as verificações visuais da versão 2 são
+registrados separadamente. A evidência de setembro não deve ser apresentada
+como validação de alterações posteriores.
 
 ## Limites atuais
 
