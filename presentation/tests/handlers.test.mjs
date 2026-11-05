@@ -19,15 +19,15 @@ function response() {
     },
   };
 }
-test("payment handler rejects unsupported method and malformed JSON", () => {
+test("payment handler rejects unsupported method and malformed JSON", async () => {
   let res = response();
-  payments({ method: "GET" }, res);
+  await payments({ method: "GET" }, res);
   assert.equal(res.code, 405);
   res = response();
-  payments({ method: "POST", body: "{broken" }, res);
+  await payments({ method: "POST", body: "{broken" }, res);
   assert.equal(res.code, 400);
   res = response();
-  payments(
+  await payments(
     {
       method: "POST",
       body: {
@@ -41,9 +41,9 @@ test("payment handler rejects unsupported method and malformed JSON", () => {
   );
   assert.equal(res.code, 400);
 });
-test("payment handler returns actual sandbox status and correlation", () => {
+test("payment handler returns actual sandbox status and correlation", async () => {
   const res = response();
-  payments(
+  await payments(
     {
       method: "POST",
       body: {

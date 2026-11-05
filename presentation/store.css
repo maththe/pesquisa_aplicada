@@ -613,6 +613,14 @@ h2 {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+.scenario-group {
+  margin: 14px 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #9db29f;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 .scenario-buttons button {
   text-align: left;
   background: #284337;

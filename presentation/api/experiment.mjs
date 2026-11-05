@@ -7,7 +7,9 @@ import {
   signExperiment,
   publicExperiment,
 } from "../lib/experiment.mjs";
-export default function handler(req, res) {
+import { scenarios } from "../lib/payment.mjs";
+import { recordEvent } from "../lib/log.mjs";
+export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   try {
     if (req.method !== "POST")
@@ -22,12 +24,20 @@ export default function handler(req, res) {
         ? createExperiment()
         : readExperiment(req.headers["x-experiment-state"], secret);
     if (body.operation === "inject") {
-      if (!["normal", "outage", "slow", "declined"].includes(body.scenario))
+      if (!scenarios.has(body.scenario))
         return res.status(400).json({ error: "Cenário inválido." });
       state.fault = body.scenario;
       state.revision++;
       // Injection never changes checkout isolation. Only an accepted agent action does.
     }
+    await recordEvent({
+      type: "experiment",
+      operation: body.operation,
+      experimentId: state.id,
+      revision: state.revision,
+      scenario: state.fault,
+      checkout: state.checkout,
+    });
     return res.status(200).json({
       experiment: publicExperiment(state),
       stateToken: signExperiment(state, secret),

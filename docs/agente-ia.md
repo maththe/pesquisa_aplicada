@@ -22,7 +22,9 @@ agente; passar neles não demonstra qualidade de diagnóstico da LLM.
 ## Ciclo implementado
 
 1. `/api/experiment` cria um experimento assinado. Só o apresentador autenticado
-   pode injetar normalidade, indisponibilidade, timeout ou recusa.
+   pode injetar normalidade, indisponibilidade, timeout ou recusa, e os cenários
+   ambíguos da [avaliação](avaliacao-agente.md): health check enganoso, falha
+   intermitente, falha ampla e injeção de instrução.
 2. `/api/agent` recebe a tarefa e o estado de isolamento. O rótulo da intervenção
    não é incluído nas mensagens ao modelo. O modelo recebe resultados quando
    pede uma ferramenta, não a resposta do controlador experimental.
@@ -44,7 +46,9 @@ os componentes desta demonstração, não processos independentes monitorados.
 ## Política
 
 - `isolate_checkout`: exige verificações citadas dos três componentes, catálogo
-  e carrinho disponíveis e uma verificação funcional de pagamento com 503/504.
+  e carrinho disponíveis e ao menos uma verificação funcional de pagamento citada
+  com 503/504 nesta execução. Assim uma falha intermitente justifica o isolamento,
+  mesmo que o teste seguinte tenha passado.
 - `resume_checkout`: exige checkout já isolado, dois resultados funcionais
   consecutivos 200/402, sondagens disponíveis e nenhuma tentativa pendente.
 - `none`: mantém o estado. Exige investigação mínima e referências válidas.

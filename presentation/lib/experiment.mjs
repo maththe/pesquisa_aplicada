@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual, randomUUID } from "node:crypto";
+import { scenarios } from "./payment.mjs";
 export class AccessError extends Error {
   constructor(message, status = 401) {
     super(message);
@@ -63,7 +64,7 @@ export function readExperiment(token, secret, now = Date.now()) {
   }
   if (
     state.version !== 1 ||
-    !["normal", "outage", "slow", "declined"].includes(state.fault) ||
+    !scenarios.has(state.fault) ||
     !["closed", "open"].includes(state.checkout) ||
     !Number.isInteger(state.revision) ||
     state.expiresAt <= now

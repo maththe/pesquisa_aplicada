@@ -4,7 +4,7 @@ const core = (await readFile("lib/store.mjs", "utf8")).replace(
   "",
 );
 const app = (await readFile("store.mjs", "utf8"))
-  .replace(/^import .*\n/, "")
+  .replace(/^import .*\r?\n/, "")
   .replace(/^export /gm, "");
 const css = await readFile("store.css", "utf8");
 const html = (await readFile("page.html", "utf8"))

@@ -220,14 +220,14 @@ test("signed experiments reject tampering, expiry and changed audit records", ()
     false,
   );
 });
-test("injection only changes fault; authenticated server enforcement blocks isolated checkout", () => {
+test("injection only changes fault; authenticated server enforcement blocks isolated checkout", async () => {
   const backup = { ...process.env };
   process.env.OBS_DEMO_TOKEN = secret;
   process.env.OBS_EXPERIMENT_SECRET = serverSecret;
   try {
     const state = createExperiment();
     let result = res();
-    experimentHandler(
+    await experimentHandler(
       {
         method: "POST",
         headers: {
@@ -244,7 +244,7 @@ test("injection only changes fault; authenticated server enforcement blocks isol
     assert.equal(next.fault, "outage");
     next.checkout = "open";
     result = res();
-    paymentHandler(
+    await paymentHandler(
       {
         method: "POST",
         headers: { "x-experiment-state": signExperiment(next, serverSecret) },
@@ -260,7 +260,7 @@ test("injection only changes fault; authenticated server enforcement blocks isol
     assert.equal(result.code, 423);
     assert.equal(result.data.source, "agent");
     result = res();
-    experimentHandler(
+    await experimentHandler(
       { method: "POST", headers: {}, body: { operation: "create" } },
       result,
     );

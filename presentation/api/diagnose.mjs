@@ -1,4 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
+import { recordEvent } from "../lib/log.mjs";
 
 export function validateDiagnosis(value, evidence) {
   const ids = new Set(evidence.map((item) => item.id));
@@ -109,8 +110,22 @@ export default async function handler(req, res) {
       JSON.parse(data.choices[0].message.content),
       evidence,
     );
+    await recordEvent({
+      type: "diagnosis",
+      status: 200,
+      model,
+      evidence,
+      ...diagnosis,
+    });
     return res.status(200).json({ ...diagnosis, mode: "llm", model });
   } catch {
+    await recordEvent({
+      type: "diagnosis",
+      status: 502,
+      model,
+      evidenceCount: evidence.length,
+      outcome: "failure",
+    });
     return res
       .status(502)
       .json({

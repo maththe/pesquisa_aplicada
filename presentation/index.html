@@ -628,6 +628,14 @@ h2 {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+.scenario-group {
+  margin: 14px 0 8px;
+  font-size: 10px;
+  font-weight: 600;
+  color: #9db29f;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
 .scenario-buttons button {
   text-align: left;
   background: #284337;
@@ -2036,6 +2044,22 @@ a:hover {
                 <span>⊘</span><b>Pagamento recusado</b>
               </button>
             </div>
+            <p class="scenario-group">Cenários ambíguos</p>
+            <div class="scenario-buttons">
+              <button data-scenario="silent">
+                <span>◌</span><b>Health check engana</b
+                ><small>Sondagem ok, compra falha</small></button
+              ><button data-scenario="flaky">
+                <span>≈</span><b>Falha intermitente</b
+                ><small>Cerca de metade falha</small></button
+              ><button data-scenario="wide">
+                <span>▦</span><b>Falha ampla</b
+                ><small>Catálogo também cai</small></button
+              ><button data-scenario="injection">
+                <span>⚠</span><b>Injeção de instrução</b
+                ><small>Resposta tenta manipular</small>
+              </button>
+            </div>
             <div class="lab-actions">
               <button id="recover" class="recover-btn">
                 ↻ Restaurar e verificar pagamento</button
@@ -2046,8 +2070,8 @@ a:hover {
           </div>
           <div class="status-panel">
             <div class="status-row">
-              <span><i class="status-dot ok"></i> Catálogo e carrinho</span
-              ><b>Disponíveis</b>
+              <span><i id="catalog-dot" class="status-dot ok"></i> Catálogo e carrinho</span
+              ><b id="catalog-status">Disponíveis</b>
             </div>
             <div class="status-row">
               <span
@@ -2242,7 +2266,17 @@ a:hover {
     </footer>
     <div id="toast" class="toast" role="status" hidden></div>
     <script type="module">
-      const PRODUCTS = [
+      const SCENARIOS = [
+  "normal",
+  "outage",
+  "slow",
+  "declined",
+  "silent",
+  "flaky",
+  "wide",
+  "injection",
+];
+const PRODUCTS = [
   {
     id: "headphones",
     name: "Fone Studio",
@@ -2293,7 +2327,7 @@ function readState(storage) {
       !Array.isArray(value.evidence) ||
       !Array.isArray(value.orders) ||
       !Array.isArray(value.notices) ||
-      !["normal", "outage", "slow", "declined"].includes(value.scenario) ||
+      !SCENARIOS.includes(value.scenario) ||
       !["closed", "open", "half-open"].includes(value.breaker)
     )
       return fresh();
@@ -2385,6 +2419,8 @@ class Store {
           operation === "reconcile" ? attempt.scenario : this.state.scenario,
         attemptId: attempt?.id,
         items: attempt?.items,
+        // Retries of the same attempt are distinct calls; reconcile repeats the last one.
+        sequence: attempt?.tries ?? 0,
       });
     } catch (error) {
       this.event(
@@ -2414,7 +2450,7 @@ class Store {
     );
   }
   async scenario(scenario) {
-    if (!["normal", "outage", "slow", "declined"].includes(scenario))
+    if (!SCENARIOS.includes(scenario))
       throw new Error("Cenário inválido.");
     if (this.state.attempt?.unknown)
       throw new Error(
@@ -2597,6 +2633,7 @@ class Store {
       unknown: false,
     };
     this.state.attempt.scenario = this.state.scenario;
+    this.state.attempt.tries = (this.state.attempt.tries ?? -1) + 1;
     this.save();
     let result;
     try {
@@ -2631,7 +2668,7 @@ class Store {
     const result = await this.request("reconcile");
     if (
       result.status === 402 ||
-      (result.status === 503 && this.state.attempt.scenario === "outage")
+      (result.status === 503 && this.state.attempt.scenario !== "slow")
     ) {
       this.state.attempt = null;
       this.save();
@@ -2778,6 +2815,14 @@ function render() {
   const agentPayment = currentRun?.observations
     .filter((item) => item.service === "payment")
     .at(-1);
+  const agentCatalog = currentRun?.observations
+    .filter((item) => item.service === "catalog")
+    .at(-1);
+  const catalogDown = agentCatalog?.status >= 500;
+  $("#catalog-status").textContent = catalogDown
+    ? "Catálogo indisponível"
+    : "Disponíveis";
+  $("#catalog-dot").className = "status-dot " + (catalogDown ? "bad" : "ok");
 
   $("#cart-count").textContent = s.cart.reduce((n, i) => n + i.quantity, 0);
   $("#cart-total").textContent = money(store.total());

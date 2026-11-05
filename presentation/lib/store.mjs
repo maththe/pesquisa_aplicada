@@ -1,3 +1,13 @@
+export const SCENARIOS = [
+  "normal",
+  "outage",
+  "slow",
+  "declined",
+  "silent",
+  "flaky",
+  "wide",
+  "injection",
+];
 export const PRODUCTS = [
   {
     id: "headphones",
@@ -49,7 +59,7 @@ export function readState(storage) {
       !Array.isArray(value.evidence) ||
       !Array.isArray(value.orders) ||
       !Array.isArray(value.notices) ||
-      !["normal", "outage", "slow", "declined"].includes(value.scenario) ||
+      !SCENARIOS.includes(value.scenario) ||
       !["closed", "open", "half-open"].includes(value.breaker)
     )
       return fresh();
@@ -141,6 +151,8 @@ export class Store {
           operation === "reconcile" ? attempt.scenario : this.state.scenario,
         attemptId: attempt?.id,
         items: attempt?.items,
+        // Retries of the same attempt are distinct calls; reconcile repeats the last one.
+        sequence: attempt?.tries ?? 0,
       });
     } catch (error) {
       this.event(
@@ -170,7 +182,7 @@ export class Store {
     );
   }
   async scenario(scenario) {
-    if (!["normal", "outage", "slow", "declined"].includes(scenario))
+    if (!SCENARIOS.includes(scenario))
       throw new Error("Cenário inválido.");
     if (this.state.attempt?.unknown)
       throw new Error(
@@ -353,6 +365,7 @@ export class Store {
       unknown: false,
     };
     this.state.attempt.scenario = this.state.scenario;
+    this.state.attempt.tries = (this.state.attempt.tries ?? -1) + 1;
     this.save();
     let result;
     try {
@@ -387,7 +400,7 @@ export class Store {
     const result = await this.request("reconcile");
     if (
       result.status === 402 ||
-      (result.status === 503 && this.state.attempt.scenario === "outage")
+      (result.status === 503 && this.state.attempt.scenario !== "slow")
     ) {
       this.state.attempt = null;
       this.save();

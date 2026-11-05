@@ -26,7 +26,9 @@ Na Vercel: **Root Directory `presentation`**, Framework **Other**, build
 mesma origem. [Guia de publicação](docs/vercel.md).
 
 Os pagamentos e falhas são controlados; nenhum valor é cobrado. Carrinho,
-comprovantes, avisos e evidências são locais ao navegador. O modo **Regras**
+comprovantes, avisos e evidências são locais ao navegador; com Upstash Redis
+configurado, os eventos do servidor também ficam salvos e são consultados em
+`/api/logs` ([logs no servidor](docs/vercel.md#logs-salvos-no-servidor)). O modo **Regras**
 é o padrão e funciona sem IA; o modo **Agente IA** exige configuração no servidor. O painel Docker anterior permanece em `presentation/docker.html`.
 
 - [PBL 8 — melhorias e avaliação](docs/pbl8-melhorias.md).
@@ -36,6 +38,9 @@ comprovantes, avisos e evidências são locais ao navegador. O modo **Regras**
 
 O modo **Agente IA** separa a injeção de falha da decisão do modelo. O agente
 seleciona ferramentas, propõe uma ação e só a aplica após validação da política.
+A [avaliação do agente](docs/avaliacao-agente.md) compara o agente com uma regra
+fixa em nove casos, incluindo três ambíguos e um adversarial, e traz o roteiro da
+apresentação.
 A interface mostra a trilha de execução e permite verificar seu registro assinado.
 [Configuração e roteiro de demonstração](docs/agente-ia.md).
 
