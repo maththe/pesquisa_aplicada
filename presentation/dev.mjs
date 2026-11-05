@@ -6,6 +6,7 @@ import payments from "./api/payments.mjs";
 import diagnose from "./api/diagnose.mjs";
 import agent from "./api/agent.mjs";
 import experiment from "./api/experiment.mjs";
+import logs from "./api/logs.mjs";
 const root = path.dirname(fileURLToPath(import.meta.url));
 const server = http.createServer(async (req, res) => {
   const pathname = new URL(req.url, "http://localhost").pathname;
@@ -23,6 +24,7 @@ const server = http.createServer(async (req, res) => {
       "/api/diagnose": diagnose,
       "/api/agent": agent,
       "/api/experiment": experiment,
+      "/api/logs": logs,
     };
     if (handlers[pathname]) {
       let body = "";

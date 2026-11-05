@@ -106,6 +106,14 @@ function render() {
   const agentPayment = currentRun?.observations
     .filter((item) => item.service === "payment")
     .at(-1);
+  const agentCatalog = currentRun?.observations
+    .filter((item) => item.service === "catalog")
+    .at(-1);
+  const catalogDown = agentCatalog?.status >= 500;
+  $("#catalog-status").textContent = catalogDown
+    ? "Catálogo indisponível"
+    : "Disponíveis";
+  $("#catalog-dot").className = "status-dot " + (catalogDown ? "bad" : "ok");
 
   $("#cart-count").textContent = s.cart.reduce((n, i) => n + i.quantity, 0);
   $("#cart-total").textContent = money(store.total());

@@ -9,6 +9,7 @@ import {
   verifyAudit,
 } from "../lib/experiment.mjs";
 import { runAgent, providerClient } from "../lib/agent.mjs";
+import { recordEvent } from "../lib/log.mjs";
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
   const env = process.env;
@@ -57,9 +58,20 @@ export default async function handler(req, res) {
       state.checkout = run.applied.after;
       state.revision++;
     }
+    const signature = signAudit(run, secret);
+    // The full signed run is stored so it can be verified later with operation "verify".
+    await recordEvent({
+      type: "agent_run",
+      experimentId: state.id,
+      runId: run.id,
+      status: run.status,
+      action: run.applied?.action ?? null,
+      run,
+      signature,
+    });
     return res.status(run.status === "completed" ? 200 : 502).json({
       run,
-      signature: signAudit(run, secret),
+      signature,
       stateToken: signExperiment(state, secret),
       experiment: publicExperiment(state),
     });

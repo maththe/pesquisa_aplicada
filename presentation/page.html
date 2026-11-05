@@ -60,6 +60,22 @@
                 <span>⊘</span><b>Pagamento recusado</b>
               </button>
             </div>
+            <p class="scenario-group">Cenários ambíguos</p>
+            <div class="scenario-buttons">
+              <button data-scenario="silent">
+                <span>◌</span><b>Health check engana</b
+                ><small>Sondagem ok, compra falha</small></button
+              ><button data-scenario="flaky">
+                <span>≈</span><b>Falha intermitente</b
+                ><small>Cerca de metade falha</small></button
+              ><button data-scenario="wide">
+                <span>▦</span><b>Falha ampla</b
+                ><small>Catálogo também cai</small></button
+              ><button data-scenario="injection">
+                <span>⚠</span><b>Injeção de instrução</b
+                ><small>Resposta tenta manipular</small>
+              </button>
+            </div>
             <div class="lab-actions">
               <button id="recover" class="recover-btn">
                 ↻ Restaurar e verificar pagamento</button
@@ -70,8 +86,8 @@
           </div>
           <div class="status-panel">
             <div class="status-row">
-              <span><i class="status-dot ok"></i> Catálogo e carrinho</span
-              ><b>Disponíveis</b>
+              <span><i id="catalog-dot" class="status-dot ok"></i> Catálogo e carrinho</span
+              ><b id="catalog-status">Disponíveis</b>
             </div>
             <div class="status-row">
               <span

@@ -4,8 +4,9 @@ Para o modo com ferramentas e ações do agente, consulte [Agente IA](agente-ia.
 A tela inicia em **Regras**, com os cenários disponíveis sem LLM. O modo **Agente IA** fica disponível quando o servidor está configurado.
 
 A versão 2 funciona sem VPS: HTML e funções Node de pagamento sandbox ficam na
-Vercel. Não usa banco, Docker ou Neon para a demonstração de compra. Carrinho,
-circuito, avisos e evidências ficam no navegador. Pagamentos não são reais.
+Vercel. Não usa Docker ou Neon para a demonstração de compra. Carrinho,
+circuito, avisos e evidências ficam no navegador; opcionalmente, os eventos do
+servidor são gravados no Upstash Redis (seção "Logs salvos no servidor"). Pagamentos não são reais.
 
 ## Configuração
 
@@ -43,6 +44,45 @@ O endpoint valida IDs citados e não executa recomendações. Sem configuração
 quando a chamada falha, a interface informa o problema e identifica a análise
 por regras como **sem IA**. Não há diagnóstico real de LLM comprovado pela
 avaliação serverless registrada no repositório.
+
+## Logs salvos no servidor
+
+Sem configuração, os eventos ficam apenas no navegador. Para guardá-los no
+servidor, conecte um banco **Upstash Redis** pelo Marketplace da Vercel
+(**Storage → Create Database → Upstash for Redis**) e vincule-o ao projeto.
+A integração cria as variáveis abaixo (as antigas do Vercel KV também são aceitas):
+
+| Variável | Alternativa aceita |
+| --- | --- |
+| `UPSTASH_REDIS_REST_URL` | `KV_REST_API_URL` |
+| `UPSTASH_REDIS_REST_TOKEN` | `KV_REST_API_TOKEN` |
+
+Faça um novo deploy depois de vincular. As funções gravam pela API REST do
+Upstash, sem dependências npm. Cada evento recebe `id` e `at` (UTC):
+
+| `type` | Origem | Conteúdo |
+| --- | --- | --- |
+| `payment` | `/api/payments` | operação, cenário, status HTTP, resultado, `attemptId`, comprovante, total, modo (`rules` ou `agent`) |
+| `experiment` | `/api/experiment` | criação ou injeção, cenário, revisão e estado do checkout |
+| `agent_run` | `/api/agent` | registro completo da execução (trace, observações, proposta, decisão da política, ação aplicada) e sua assinatura HMAC |
+| `diagnosis` | `/api/diagnose` | evidências enviadas, resultado e `evidence_ids`, ou falha |
+
+Não são gravados IP, tokens, chave do provedor nem itens do carrinho. Requisições
+malformadas (HTTP 400) não são registradas. A lista guarda os **2.000 eventos mais
+recentes** e expira 30 dias após o último evento. Um evento acima de 60 mil
+caracteres é substituído por um marcador `truncated`. Se o Upstash estiver fora,
+a requisição continua normalmente e o evento é perdido (espera máxima de 1,5 s).
+
+Consultar os logs (exige o `OBS_DEMO_TOKEN`):
+
+```bash
+curl -H "Authorization: Bearer $OBS_DEMO_TOKEN" "https://SEU-PROJETO.vercel.app/api/logs?limit=50"
+```
+
+Filtros: `limit` de 1 a 2000 (padrão 100) e `type` (`payment`, `experiment`,
+`agent_run` ou `diagnosis`). Sem Upstash, o endpoint responde HTTP 503 com
+`configured: false`. Um `agent_run` lido daqui pode ser conferido enviando `run` e
+`signature` para `/api/agent` com `operation: "verify"`.
 
 ## Verificar o deploy
 
