@@ -1,5 +1,8 @@
 # Diagnóstico de falhas em sistemas distribuídos
 
+> **Para começar:** o [guia do projeto](docs/guia-do-projeto.md) explica o que é,
+> como rodar e como apresentar.
+
 Protótipo acadêmico para apoiar um operador na investigação de falhas no fluxo
 **Gateway → Orders → Users**. A versão funcional coleta métricas e logs, mantém
 estado atual no etcd e histórico no PostgreSQL, constrói um contexto delimitado
