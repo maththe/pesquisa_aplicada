@@ -1,7 +1,9 @@
 # Diagnóstico de falhas em sistemas distribuídos
 
 > **Para começar:** o [guia do projeto](docs/guia-do-projeto.md) explica o que é,
-> como rodar e como apresentar.
+> como rodar e como apresentar. A fundamentação metodológica completa de **Design Science
+> Research (DSR)** — com *Kernel Theories*, os 3 ciclos construtivos e os Princípios de Design
+> CIMO (DP1–DP3) — está em [docs/dsr-consolidado.md](docs/dsr-consolidado.md).
 
 Protótipo acadêmico para apoiar um operador na investigação de falhas no fluxo
 **Gateway → Orders → Users**. A versão funcional coleta métricas e logs, mantém
@@ -37,25 +39,31 @@ configurado, os eventos do servidor também ficam salvos e são consultados em
 - [PBL 8 — melhorias e avaliação](docs/pbl8-melhorias.md).
 - [PJBL 3 — construção, demonstração e evidências](docs/pjbl3-artefato.md).
 
-## Agente IA
+## Agente IA e Avaliação Experimental (DSR)
 
 O modo **Agente IA** separa a injeção de falha da decisão do modelo. O agente
-seleciona ferramentas, propõe uma ação e só a aplica após validação da política.
-A [avaliação do agente](docs/avaliacao-agente.md) compara o agente com uma regra
-fixa em nove casos, incluindo três ambíguos e um adversarial, e traz o roteiro da
-apresentação.
-A interface mostra a trilha de execução e permite verificar seu registro assinado.
+seleciona ferramentas (`probe_service`, `inspect_telemetry` e `test_payment`),
+propõe uma ação e só a aplica após validação da política determinística (`validateProposal`).
+A [avaliação experimental do agente](docs/avaliacao-agente.md) compara quatro braços
+(`agent`, `agent_minimal` por ablação de prompt, `rules` e `naive_probe`) em nove casos
+(incluindo falhas cinzentas e ataque adversarial de *prompt injection*), totalizando
+360 execuções reais com `gpt-4.1-mini` ([relatório completo](docs/evidencias/avaliacao-agente-20261111T173058Z/relatorio.md)),
+e traz o roteiro da apresentação.
+A interface mostra a trilha de execução, os Princípios de Design CIMO (DP1–DP3),
+permite alternar o perfil de prompt para ablação e verificar o registro assinado.
 [Configuração e roteiro de demonstração](docs/agente-ia.md).
 
 Sem provedor configurado, o agente fica indisponível. O modo **Regras** e os oito
 testes funcionais continuam utilizáveis; seus resultados não são apresentados
-como execução real de IA. O modelo encontrado nas evidências históricas é
+como execução real de IA. O modelo avaliado nas evidências oficiais é
 `gpt-4.1-mini`; URL e credenciais não estão versionadas.
 
 ## Entregas acadêmicas
 
-- [O que foi feito e como foi feito](docs/o-que-foi-feito.md).
-- [Entrega consolidada e resultados observados](docs/entrega.md).
+- [Consolidação Metodológica DSR — Ciclos, Kernel Theories e Princípios CIMO](docs/dsr-consolidado.md).
+- [Avaliação experimental multi-braço (360 execuções) e ablação](docs/avaliacao-agente.md).
+- [O que foi feito e como foi feito (Ciclo 1)](docs/o-que-foi-feito.md).
+- [Entrega consolidada e resultados observados (Ciclo 1)](docs/entrega.md).
 
 - [Cenário, caso de uso e critérios de demonstração](docs/caso-de-uso.md).
 - [Roteiro de apresentação e execução](docs/demonstracao.md).

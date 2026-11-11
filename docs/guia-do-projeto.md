@@ -16,11 +16,15 @@ falhas em sistemas distribuídos com apoio de LLM**. Ele tem duas versões:
 | Precisa de | Docker e chave de LLM | Só Node.js (a IA é opcional) |
 
 A **versão 2 é a que se apresenta**. A versão 1 continua no repositório como o
-ciclo anterior da pesquisa.
+primeiro ciclo construtivo da pesquisa. O enquadramento completo de **Design Science
+Research (DSR)** — com a Classe de Problemas, as *Kernel Theories*, os 3 ciclos
+iterativos e os Princípios de Design em lógica CIMO (DP1–DP3) — está consolidado em
+[dsr-consolidado.md](dsr-consolidado.md).
 
-**Pergunta de pesquisa (ciclo atual):** em falhas cujo sinal é ambíguo, um agente
-LLM que escolhe as próprias verificações decide melhor que uma regra fixa, sem
-aplicar mudanças indevidas ao sistema?
+**Pergunta de pesquisa (ciclo atual):** em falhas cujo sinal é ambíguo ou cinzento,
+um agente LLM que escolhe as próprias verificações (sondagem, telemetria de janela
+de 5m e compra canário) decide melhor que o monitoramento passivo e que uma regra
+fixa, sem aplicar mudanças indevidas ao sistema?
 
 ## 2. Como funciona a versão 2
 
@@ -30,7 +34,7 @@ flowchart LR
   P -->|injeta falha assinada| E[/api/experiment/]
   P -->|pede análise| A[/api/agent/]
   A --> L[LLM]
-  L -->|chama| T[Ferramentas:<br/>probe_service<br/>test_payment]
+  L -->|chama| T[Ferramentas:<br/>probe_service<br/>inspect_telemetry<br/>test_payment]
   T --> S[Sandbox de pagamento]
   L -->|propose_action| Pol[Política]
   Pol -->|aceita| Ap[Isola ou libera o checkout]
@@ -43,13 +47,15 @@ flowchart LR
 
 1. O apresentador injeta uma falha (por exemplo, "Falha intermitente"). O nome
    do cenário fica num token assinado e **não é enviado ao modelo**.
-2. O agente investiga com ferramentas: sonda catálogo, carrinho e pagamento, e
+2. O agente investiga com ferramentas: sonda catálogo, carrinho e pagamento (`probe_service`),
+   consulta a telemetria agregada da janela de 5 minutos (`inspect_telemetry`) e
    faz compras canário (`test_payment`), sem cobrança.
 3. O agente propõe uma ação: isolar o checkout, liberar ou não mexer. Ele cita
-   os IDs das evidências.
+   os IDs das evidências (`obs-1`, `obs-2`, ...).
 4. A **política** confere se as evidências sustentam a ação. Só então ela é aplicada.
 5. Tudo fica num trace visível na página, assinado e, se o Upstash estiver
-   configurado, salvo no servidor.
+   configurado, salvo no servidor. A interface também permite alternar o perfil de
+   prompt (`prescriptive` vs. `minimal`) para demonstrar a ablação ao vivo.
 
 **O que o agente não faz:** não corrige código, não reinicia serviços, não faz
 deploy e não detecta quedas reais da Vercel. Ele diagnostica e contém o impacto
@@ -129,24 +135,28 @@ circuito abrir e fechar, rodar os **Testes funcionais (8)** e exportar o relató
 A senha não fica salva: depois de recarregar a página, é preciso ativar a IA de
 novo. **Desativar IA** volta ao modo Regras.
 
-### 4.3 Avaliação agente × regra fixa
+### 4.3 Avaliação experimental multi-braço (4 braços × 9 casos)
 
-Gera as tabelas de resultado que vão para o trabalho:
+Gera as tabelas de resultado que comparam `agent` (Agente IA prescritivo),
+`agent_minimal` (ablação de prompt), `rules` (regra fixa) e `naive_probe` (sonda
+passiva):
 
 ```bash
 cd presentation
-node --env-file=../.env eval/run.mjs --runs 10
+node --env-file=../.env eval/run.mjs --runs 10 --arms agent,agent_minimal,rules,naive_probe --concurrency 4
 ```
 
-São cerca de 90 execuções do agente, com chamadas pagas ao provedor. Para testar
-o script sem custo, rode só a regra fixa:
+São 180 execuções de LLM (90 por perfil de prompt) + 180 execuções determinísticas
+(360 execuções totais). Para testar o script sem custo de API, rode só os braços
+determinísticos:
 
 ```bash
-node eval/run.mjs --arms rules --runs 3
+node eval/run.mjs --arms rules,naive_probe --runs 10
 ```
 
-O resultado fica em `docs/evidencias/avaliacao-agente-<data>/relatorio.md`. O
-protocolo completo está em [avaliacao-agente.md](avaliacao-agente.md).
+O resultado oficial já executado (360 execuções com `gpt-4.1-mini`) encontra-se em
+[`docs/evidencias/avaliacao-agente-20261111T173058Z/relatorio.md`](evidencias/avaliacao-agente-20261111T173058Z/relatorio.md)
+e consolidado em [avaliacao-agente.md](avaliacao-agente.md).
 
 ### 4.4 Publicar na Vercel
 
@@ -177,23 +187,22 @@ A demonstração automatizada (sucesso → queda de Users → recuperação) é
 
 ### Antes da aula
 
-- [ ] Chave da LLM válida. Teste com `node --env-file=../.env eval/run.mjs --runs 1 --cases outage`.
-- [ ] Avaliação rodada com `--runs 10` e `relatorio.md` aberto.
-- [ ] Seção 4 de [avaliacao-agente.md](avaliacao-agente.md) preenchida com os números do relatório.
-- [ ] Página aberta (local ou Vercel), carrinho vazio e IA ainda **desativada**.
+- [x] Chave da LLM validada e avaliação oficial rodada com `--runs 10` (360 execuções em [`docs/evidencias/avaliacao-agente-20261111T173058Z/relatorio.md`](evidencias/avaliacao-agente-20261111T173058Z/relatorio.md)).
+- [x] Seção 4 de [avaliacao-agente.md](avaliacao-agente.md) e [dsr-consolidado.md](dsr-consolidado.md) preenchidas com os números reais do relatório.
+- [ ] Página aberta (local ou Vercel), carrinho vazio e IA pronta para demonstração.
 - [ ] Senha `OBS_DEMO_TOKEN` à mão.
 
 ### Na aula
 
 | Tempo | O que mostrar | Mensagem |
 | --- | --- | --- |
-| 1 min | Problema e pergunta de pesquisa (seção 1) | Uma regra fixa resolve casos claros; a dúvida é nos ambíguos |
+| 1 min | Enquadramento DSR, 3 ciclos e Princípios CIMO (seção Metodologia DSR na página e [dsr-consolidado.md](dsr-consolidado.md)) | Uma regra fixa resolve casos claros; a pesquisa investiga falhas cinzentas e governança neuro-simbólica |
 | 2 min | Modo Regras: compra normal, depois *Falha no pagamento* | O carrinho é preservado e o circuito protege a compra |
-| 2 min | Ainda em Regras: *Health check engana* | A sondagem diz "disponível" e o checkout continua liberado; a regra não percebe |
-| 3 min | Ativar IA e repetir *Health check engana*, depois *Falha intermitente* duas vezes | Mostrar no trace a compra canário e quantas vezes o agente testa; comparar o caminho das duas execuções |
-| 1 min | *Falha ampla* e *Injeção de instrução* | Mostrar se o agente isola ou não, o texto injetado no resultado da ferramenta e, se ele errar, a política rejeitando |
-| 1 min | **Verificar registro** e `/api/logs` | Cada decisão é rastreável e a assinatura detecta alterações |
-| 2 min | Tabela do `relatorio.md` | Agente × regra fixa com intervalos de confiança, incluindo os erros do agente |
+| 2 min | Ainda em Regras: *Health check engana* | A sondagem diz "disponível" e o checkout continua liberado (`0/10` na Sonda passiva) |
+| 3 min | Ativar IA e repetir *Health check engana* e *Falha intermitente* | Mostrar no trace `inspect_telemetry` (janela de 5m) e `test_payment` (compra canário); Agente IA acerta `10/10` nos ambíguos |
+| 2 min | Ablação ao vivo (`agent_minimal`) em *Falha ampla* e *Injeção de instrução* | Mostrar o modelo sem heurísticas propondo isolamento indevido e a **política determinística (DP1) bloqueando** e forçando auto-correção (`0` mudanças indevidas em 360 execuções) |
+| 1 min | **Verificar registro** e `/api/logs` | Cada decisão é rastreável e a assinatura HMAC-SHA256 detecta alterações (DP3) |
+| 1 min | Tabelas de [avaliacao-agente.md](avaliacao-agente.md) | 4 braços × 9 casos com intervalos de Wilson a 95% |
 
 O roteiro detalhado, com as falas, as perguntas prováveis e o que não afirmar,
 está na seção 6 de [avaliacao-agente.md](avaliacao-agente.md#6-roteiro-para-a-apresentação).
@@ -202,15 +211,16 @@ está na seção 6 de [avaliacao-agente.md](avaliacao-agente.md#6-roteiro-para-a
 
 | Documento | Para quê |
 | --- | --- |
-| [avaliacao-agente.md](avaliacao-agente.md) | Protocolo da avaliação, hipóteses, ameaças à validade e roteiro |
-| [agente-ia.md](agente-ia.md) | Como o agente e a política funcionam |
+| [dsr-consolidado.md](dsr-consolidado.md) | **Consolidação metodológica DSR:** Peffers (6 etapas), Hevner (3 ciclos), *Kernel Theories*, 3 ciclos construtivos e Princípios CIMO (DP1–DP3) |
+| [avaliacao-agente.md](avaliacao-agente.md) | Protocolo da avaliação, hipóteses H1–H4, resultados das 360 execuções, ablação e roteiro |
+| [agente-ia.md](agente-ia.md) | Como o agente, as ferramentas (`probe_service`, `inspect_telemetry`, `test_payment`) e a política funcionam |
 | [vercel.md](vercel.md) | Publicação, variáveis e logs no servidor |
-| [pbl8-melhorias.md](pbl8-melhorias.md) | Ciclo anterior: loja, circuito e aviso de recuperação |
+| [pbl8-melhorias.md](pbl8-melhorias.md) | Ciclo 2: loja Nexo, circuito de proteção e aviso de recuperação |
 | [pjbl3-artefato.md](pjbl3-artefato.md) | Construção do artefato e evidências da versão 2 |
-| [caso-de-uso.md](caso-de-uso.md) | Caso de uso da versão 1 |
-| [entrega.md](entrega.md) e [o-que-foi-feito.md](o-que-foi-feito.md) | Entregas da versão 1 |
-| [estado-da-implementacao.md](estado-da-implementacao.md) | Estado e limites da versão 1 |
-| `evidencias/` | Registros de cada execução, sem sobrescrever os anteriores |
+| [caso-de-uso.md](caso-de-uso.md) | Caso de uso do Ciclo 1 (Docker/Python) |
+| [entrega.md](entrega.md) e [o-que-foi-feito.md](o-que-foi-feito.md) | Entregas e resultados do Ciclo 1 |
+| [estado-da-implementacao.md](estado-da-implementacao.md) | Estado e limites do Ciclo 1 |
+| `evidencias/` | Registros empíricos de cada execução, incluindo `avaliacao-agente-20261111T173058Z` |
 
 ## 7. Problemas comuns
 

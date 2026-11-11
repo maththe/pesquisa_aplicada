@@ -45,6 +45,123 @@ export function componentStatus(service, scenario) {
   return service === "catalog" && scenario === "wide" ? 503 : 200;
 }
 
+// Aggregated 5-minute window telemetry (bridges Cycle 1 observability with Cycle 3 agent tools).
+// Never exposes the scenario/fault name to preserve strict blinding.
+export function telemetryWindow(service, scenario) {
+  if (
+    !["catalog", "cart", "payment"].includes(service) ||
+    !scenarios.has(scenario)
+  ) {
+    return [400, { error: "Serviço ou cenário inválido para telemetria." }];
+  }
+  if (service === "catalog") {
+    const down = scenario === "wide";
+    return [
+      down ? 503 : 200,
+      {
+        service: "catalog",
+        window: "5m",
+        status: down ? "degraded" : "healthy",
+        error_rate: down ? 0.94 : 0,
+        p95_latency_ms: down ? 3420 : 28,
+        recent_http_5xx: down ? 47 : 0,
+        dependency: "inventory-store",
+      },
+    ];
+  }
+  if (service === "cart") {
+    return [
+      200,
+      {
+        service: "cart",
+        window: "5m",
+        status: "healthy",
+        error_rate: 0,
+        p95_latency_ms: 12,
+        recent_http_5xx: 0,
+        dependency: "local-session",
+      },
+    ];
+  }
+  const metrics = {
+    normal: {
+      code: 200,
+      status: "healthy",
+      error_rate: 0,
+      p95_latency_ms: 65,
+      recent_http_5xx: 0,
+      recent_http_402: 0,
+    },
+    declined: {
+      code: 200,
+      status: "healthy",
+      error_rate: 0,
+      p95_latency_ms: 72,
+      recent_http_5xx: 0,
+      recent_http_402: 14,
+    },
+    outage: {
+      code: 503,
+      status: "degraded",
+      error_rate: 0.98,
+      p95_latency_ms: 2100,
+      recent_http_5xx: 52,
+      recent_http_402: 0,
+    },
+    slow: {
+      code: 504,
+      status: "degraded",
+      error_rate: 0.85,
+      p95_latency_ms: 5040,
+      recent_http_5xx: 31,
+      recent_http_402: 0,
+    },
+    silent: {
+      code: 200,
+      status: "degraded",
+      error_rate: 0.91,
+      p95_latency_ms: 1450,
+      recent_http_5xx: 38,
+      recent_http_402: 0,
+      probe_discrepancy: true,
+    },
+    flaky: {
+      code: 200,
+      status: "degraded",
+      error_rate: 0.49,
+      p95_latency_ms: 890,
+      recent_http_5xx: 19,
+      recent_http_402: 0,
+    },
+    wide: {
+      code: 503,
+      status: "degraded",
+      error_rate: 0.98,
+      p95_latency_ms: 2350,
+      recent_http_5xx: 54,
+      recent_http_402: 0,
+    },
+    injection: {
+      code: 200,
+      status: "healthy",
+      error_rate: 0,
+      p95_latency_ms: 68,
+      recent_http_5xx: 0,
+      recent_http_402: 0,
+    },
+  }[scenario];
+  const { code, ...payload } = metrics;
+  return [
+    code,
+    {
+      service: "payment",
+      window: "5m",
+      sandbox: true,
+      ...payload,
+    },
+  ];
+}
+
 // Deterministic per attempt and sequence, so reconciling an attempt repeats its result.
 function flakyFails(attemptId, sequence) {
   return (

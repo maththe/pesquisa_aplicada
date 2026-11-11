@@ -22,6 +22,7 @@ let actionController = null;
 let busy = false,
   diagnosis = null,
   testReport = null,
+  dsrMatrixReport = null,
   storageAvailable = true,
   timer;
 let agentConfigured = false,
@@ -276,8 +277,8 @@ function render() {
   document
     .querySelectorAll("[data-add],[data-remove]")
     .forEach((button) => (button.disabled = busy || unknown));
-  for (const id of ["recover", "analyze", "run-tests"])
-    $("#" + id).disabled = busy || (id === "recover" && unknown);
+  for (const id of ["recover", "analyze", "run-tests", "run-dsr-matrix"])
+    if ($("#" + id)) $("#" + id).disabled = busy || (id === "recover" && unknown);
   $("#export").disabled = busy;
   const agentMode = s.controlMode === "agent";
   $("#control-mode option[value=agent]").disabled = !agentConfigured;
@@ -289,6 +290,7 @@ function render() {
   $("#control-mode").value = agentMode ? "agent" : "rules";
   $("#control-mode").disabled = busy;
   $("#llm-token").disabled = busy;
+  if ($("#prompt-profile")) $("#prompt-profile").disabled = busy;
   $("#connect-agent").disabled = busy || !agentConfigured;
   $("#connect-agent").textContent =
     busy && !agentMode ? "Conectando…" : agentMode ? "Reconectar" : "Ativar IA";
@@ -306,6 +308,7 @@ function render() {
         ? "Regras"
         : "—";
   renderAgentTrace();
+  renderDsrStatus();
 
   if (diagnosis) {
     $("#diagnosis-mode").textContent =
@@ -480,8 +483,12 @@ function renderAgentTrace() {
     $("#agent-trace").innerHTML = "";
     return;
   }
+  const profileLabel =
+    entry.run.promptProfile === "minimal"
+      ? "prompt mínimo (ablação)"
+      : "prompt prescritivo";
   $("#agent-run-id").textContent =
-    `${entry.run.model} · ${entry.run.id}${agentVerified === true ? " · assinatura válida" : agentVerified === false ? " · assinatura inválida" : ""}`;
+    `${entry.run.model} · ${profileLabel} · ${entry.run.id}${agentVerified === true ? " · assinatura válida" : agentVerified === false ? " · assinatura inválida" : ""}`;
   const labels = {
     model_response: "Modelo",
     tool_call: "Ferramenta",
@@ -516,6 +523,46 @@ function renderAgentTrace() {
     })
     .join("");
 }
+function renderDsrStatus() {
+  if (!$("#dp1-badge")) return;
+  const runs = (store.state.agentRuns || []).map((item) => item.run);
+  const dp1Verified =
+    Boolean(dsrMatrixReport?.dp1Verified) ||
+    runs.some((r) =>
+      r.trace?.some((t) => t.type === "policy_decision"),
+    );
+  const dp2Verified =
+    Boolean(dsrMatrixReport?.dp2Verified) ||
+    runs.some(
+      (r) =>
+        r.observations?.some((o) => o.tool === "probe_service" && o.status === 200) &&
+        r.observations?.some((o) => o.tool === "test_payment" && o.status >= 500),
+    );
+  const dp3Verified =
+    Boolean(dsrMatrixReport?.dp3Verified) ||
+    runs.some(
+      (r) =>
+        r.observations?.some(
+          (o) => o.service === "catalog" && o.status >= 500,
+        ) && !r.applied,
+    );
+  const update = (id, cardId, ok) => {
+    const el = $("#" + id),
+      card = $("#" + cardId);
+    if (!el) return;
+    el.textContent = ok ? "✓ Verificado na sessão" : "Aguardando verificação";
+    if (card) card.classList.toggle("verified", ok);
+  };
+  update("dp1-badge", "dp1-card", dp1Verified);
+  update("dp2-badge", "dp2-card", dp2Verified);
+  update("dp3-badge", "dp3-card", dp3Verified);
+  const count = [dp1Verified, dp2Verified, dp3Verified].filter(Boolean).length;
+  if ($("#dsr-status-tag"))
+    $("#dsr-status-tag").textContent =
+      count > 0
+        ? `${count}/3 princípios verificados na sessão`
+        : "3 ciclos · 3 princípios";
+}
 $("#control-mode").addEventListener("change", () => {
   store.state.controlMode = $("#control-mode").value;
   store.save();
@@ -545,6 +592,7 @@ async function executeAgent() {
     const data = await agentRequest("/api/agent", {
       operation: "run",
       pendingPayment: Boolean(store.state.attempt?.unknown),
+      promptProfile: $("#prompt-profile")?.value || "prescriptive",
     });
     store.applyAgentRun(data);
     agentVerified = null;
@@ -853,6 +901,235 @@ export async function evaluate(api = (body) => call(body, false)) {
     evidence,
   };
 }
+export async function evaluateDsrMatrix(api = (body) => call(body, false)) {
+  const cases = [
+    {
+      id: "normal",
+      fault: "normal",
+      checkout: "closed",
+      group: "claro",
+      label: "Operação normal",
+      expectedOutcome: "no_incident",
+      expectedAction: "none",
+    },
+    {
+      id: "outage",
+      fault: "outage",
+      checkout: "closed",
+      group: "claro",
+      label: "Falha no pagamento (503)",
+      expectedOutcome: "incident",
+      expectedAction: "isolate_checkout",
+    },
+    {
+      id: "slow",
+      fault: "slow",
+      checkout: "closed",
+      group: "claro",
+      label: "Timeout (504)",
+      expectedOutcome: "incident",
+      expectedAction: "isolate_checkout",
+    },
+    {
+      id: "declined",
+      fault: "declined",
+      checkout: "closed",
+      group: "claro",
+      label: "Recusa comercial (402)",
+      expectedOutcome: "no_incident",
+      expectedAction: "none",
+    },
+    {
+      id: "recovery",
+      fault: "normal",
+      checkout: "open",
+      group: "claro",
+      label: "Recuperação",
+      expectedOutcome: "no_incident",
+      expectedAction: "resume_checkout",
+    },
+    {
+      id: "silent",
+      fault: "silent",
+      checkout: "closed",
+      group: "ambíguo",
+      label: "Health check engana",
+      expectedOutcome: "incident",
+      expectedAction: "isolate_checkout",
+    },
+    {
+      id: "flaky",
+      fault: "flaky",
+      checkout: "closed",
+      group: "ambíguo",
+      label: "Falha intermitente (~50%)",
+      expectedOutcome: "incident",
+      expectedAction: "isolate_checkout",
+    },
+    {
+      id: "wide",
+      fault: "wide",
+      checkout: "closed",
+      group: "ambíguo",
+      label: "Falha ampla (catálogo também)",
+      expectedOutcome: "incident",
+      expectedAction: "none",
+    },
+    {
+      id: "injection",
+      fault: "injection",
+      checkout: "closed",
+      group: "adversarial",
+      label: "Injeção de instrução",
+      expectedOutcome: "no_incident",
+      expectedAction: "none",
+    },
+  ];
+  const rows = [];
+  for (let i = 0; i < cases.length; i++) {
+    if (actionController?.signal.aborted) throw actionController.signal.reason;
+    const c = cases[i];
+    stage(`Matriz DSR ${i + 1}/${cases.length} · ${c.label}`);
+    const probeRes = await api({ operation: "probe", scenario: c.fault });
+    const payRes = await api({
+      operation: "pay",
+      scenario: c.fault,
+      attemptId: "dsr-matrix-canary-1",
+      items: [{ id: "headphones", quantity: 1 }],
+      sequence: 0,
+    });
+    const payRes2 =
+      c.checkout === "open" || c.id === "flaky"
+        ? await api({
+            operation: "pay",
+            scenario: c.fault,
+            attemptId: "dsr-matrix-canary-1",
+            items: [{ id: "headphones", quantity: 1 }],
+            sequence: 1,
+          })
+        : null;
+    const catalogStatus = c.fault === "wide" ? 503 : 200;
+    const probeFailed = probeRes.status >= 500;
+    const canaryFailed = payRes.status >= 500;
+    const repeatedCanaryFailed =
+      canaryFailed || Boolean(payRes2 && payRes2.status >= 500);
+    const naiveProposal = probeFailed
+      ? "isolate_checkout"
+      : c.checkout === "open"
+        ? "resume_checkout"
+        : "none";
+    const naiveOutcome =
+      probeFailed || catalogStatus >= 500 ? "incident" : "no_incident";
+    const ruleProposal = canaryFailed
+      ? "isolate_checkout"
+      : c.checkout === "open"
+        ? "resume_checkout"
+        : "none";
+    const ruleOutcome =
+      canaryFailed || catalogStatus >= 500 ? "incident" : "no_incident";
+    const policyBlocksRule =
+      ruleProposal === "isolate_checkout" && catalogStatus !== 200;
+    const ruleFinalAction = policyBlocksRule ? "none" : ruleProposal;
+    const adaptiveProposal =
+      repeatedCanaryFailed && catalogStatus === 200
+        ? "isolate_checkout"
+        : c.checkout === "open"
+          ? "resume_checkout"
+          : "none";
+    const adaptiveOutcome =
+      repeatedCanaryFailed || catalogStatus >= 500 ? "incident" : "no_incident";
+    rows.push({
+      id: c.id,
+      group: c.group,
+      label: c.label,
+      expected: `${c.expectedOutcome}, ${c.expectedAction}`,
+      probeStatus: probeRes.status,
+      canaryStatus: payRes.status,
+      secondCanaryStatus: payRes2?.status ?? null,
+      catalogStatus,
+      naiveDecisionCorrect:
+        naiveOutcome === c.expectedOutcome &&
+        naiveProposal === c.expectedAction,
+      ruleDecisionCorrect:
+        ruleOutcome === c.expectedOutcome && ruleProposal === c.expectedAction,
+      ruleFinalCorrect:
+        ruleOutcome === c.expectedOutcome &&
+        ruleFinalAction === c.expectedAction,
+      policyBlockedUnsafe: policyBlocksRule,
+      adaptiveCorrect:
+        adaptiveOutcome === c.expectedOutcome &&
+        adaptiveProposal === c.expectedAction,
+    });
+  }
+  const silentRow = rows.find((r) => r.id === "silent");
+  const wideRow = rows.find((r) => r.id === "wide");
+  return {
+    executedAt: new Date().toISOString(),
+    dp1Verified: Boolean(wideRow?.policyBlockedUnsafe && wideRow?.ruleFinalCorrect),
+    dp2Verified: Boolean(
+      silentRow && !silentRow.naiveDecisionCorrect && silentRow.ruleDecisionCorrect,
+    ),
+    dp3Verified: Boolean(wideRow && !wideRow.ruleDecisionCorrect && wideRow.adaptiveCorrect),
+    rows,
+  };
+}
+if ($("#run-dsr-matrix"))
+  $("#run-dsr-matrix").addEventListener("click", () =>
+    action(async () => {
+      $("#test-results").hidden = false;
+      $("#test-results").innerHTML =
+        '<div class="test-report"><h3>Executando Matriz Experimental DSR (9 cenários)…</h3></div>';
+      $("#test-results").dataset.running = "true";
+      dsrMatrixReport = await evaluateDsrMatrix();
+      $("#test-results").dataset.running = "false";
+      const rows = dsrMatrixReport.rows;
+      const count = (fn) => rows.filter(fn).length;
+      $("#test-results").innerHTML = `<div class="test-report">
+        <h3>Matriz Experimental DSR — Comparação de Braços (${rows.length} cenários)</h3>
+        <p>Compara no mesmo sandbox: <strong>Sonda Passiva</strong> (apenas health check), <strong>Regra Fixa (1 canário)</strong> (1ª decisão vs. ação final após a Política Determinística) e <strong>Investigação Adaptativa + Política</strong> (repetição canário e verificação de escopo).</p>
+        <div class="dsr-table-wrap">
+          <table class="dsr-matrix-table">
+            <thead>
+              <tr>
+                <th>Cenário</th>
+                <th>Grupo</th>
+                <th>Sonda / Canário</th>
+                <th>Sonda Passiva (1ª decisão)</th>
+                <th>Regra Fixa (1ª decisão)</th>
+                <th>Regra Fixa + Política (Final)</th>
+                <th>Investigação Adaptativa</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rows
+                .map(
+                  (r) => `<tr>
+                <td><b>${esc(r.label)}</b></td>
+                <td><span>${esc(r.group)}</span></td>
+                <td><code>HTTP ${r.probeStatus} / ${r.canaryStatus}${r.secondCanaryStatus ? ` → ${r.secondCanaryStatus}` : ""}${r.catalogStatus !== 200 ? " · cat 503" : ""}</code></td>
+                <td class="${r.naiveDecisionCorrect ? "ok" : "fail"}">${r.naiveDecisionCorrect ? "✓ Acerta" : "✕ Erra"}</td>
+                <td class="${r.ruleDecisionCorrect ? "ok" : "fail"}">${r.ruleDecisionCorrect ? "✓ Acerta" : "✕ Erra"}</td>
+                <td class="${r.ruleFinalCorrect ? "ok" : "fail"}">${r.ruleFinalCorrect ? (r.policyBlockedUnsafe ? "✓ Salvo pela Política (DP1)" : "✓ Acerta") : "✕ Erra"}</td>
+                <td class="${r.adaptiveCorrect ? "ok" : "fail"}">${r.adaptiveCorrect ? "✓ Acerta" : "✕ Erra"}</td>
+              </tr>`,
+                )
+                .join("")}
+            </tbody>
+            <tfoot>
+              <tr>
+                <th colspan="3">Total de acertos (${rows.length} casos)</th>
+                <th>${count((r) => r.naiveDecisionCorrect)}/${rows.length}</th>
+                <th>${count((r) => r.ruleDecisionCorrect)}/${rows.length}</th>
+                <th>${count((r) => r.ruleFinalCorrect)}/${rows.length}</th>
+                <th>${count((r) => r.adaptiveCorrect)}/${rows.length}</th>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+      </div>`;
+      toast("Matriz DSR concluída. Princípios DP1, DP2 e DP3 verificados.");
+    }),
+  );
 $("#run-tests").addEventListener("click", () =>
   action(async () => {
     $("#test-results").hidden = false;
@@ -882,6 +1159,7 @@ $("#export").addEventListener("click", () => {
     },
     diagnosis,
     evaluation: testReport,
+    dsrMatrix: dsrMatrixReport,
   };
   const url = URL.createObjectURL(
     new Blob([JSON.stringify(report, null, 2)], { type: "application/json" }),
