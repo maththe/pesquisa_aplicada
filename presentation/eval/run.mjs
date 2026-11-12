@@ -3,26 +3,37 @@
 //   cd presentation
 //   node --env-file=../.env eval/run.mjs --runs 10
 //
-// Options: --runs N (default 5), --arms agent,rules, --cases id,id,
-// --concurrency N (default 3), --out <folder>.
-// The agent arm needs OBS_LLM_URL, OBS_LLM_MODEL and OBS_LLM_API_KEY and makes paid
-// calls to that provider. The rules arm makes none.
+// Options: --runs N (default 5), --arms agent,agent_minimal,rules,naive_probe,
+// --cases id,id, --concurrency N (default 3), --out <folder>.
+// The agent and agent_minimal arms need OBS_LLM_URL, OBS_LLM_MODEL and OBS_LLM_API_KEY
+// and make paid calls to that provider. The rules and naive_probe arms make none.
 import { mkdir, writeFile } from "node:fs/promises";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { parseArgs } from "node:util";
-import { instructions, providerClient, runAgent } from "../lib/agent.mjs";
+import {
+  instructions,
+  minimalInstructions,
+  providerClient,
+  runAgent,
+} from "../lib/agent.mjs";
 import { createExperiment } from "../lib/experiment.mjs";
-import { rulesModel } from "./baseline.mjs";
-import { CASES, renderReport, scoreRun, summarize } from "./evaluation.mjs";
+import { rulesModel, naiveProbeModel } from "./baseline.mjs";
+import {
+  ARMS,
+  CASES,
+  renderReport,
+  scoreRun,
+  summarize,
+} from "./evaluation.mjs";
 
 const root = path.dirname(fileURLToPath(import.meta.url));
 const { values } = parseArgs({
   options: {
     runs: { type: "string", default: "5" },
-    arms: { type: "string", default: "agent,rules" },
+    arms: { type: "string", default: "agent,rules,naive_probe" },
     cases: { type: "string" },
     concurrency: { type: "string", default: "3" },
     out: { type: "string" },
@@ -42,18 +53,19 @@ if (
   concurrency < 1 ||
   concurrency > 10 ||
   !cases.length ||
-  arms.some((arm) => !["agent", "rules"].includes(arm))
+  arms.some((arm) => !(arm in ARMS))
 ) {
   console.error("Opções inválidas. Veja o cabeçalho de eval/run.mjs.");
   process.exit(1);
 }
 const env = process.env;
+const usesLlm = arms.includes("agent") || arms.includes("agent_minimal");
 if (
-  arms.includes("agent") &&
+  usesLlm &&
   !(env.OBS_LLM_URL && env.OBS_LLM_MODEL && env.OBS_LLM_API_KEY)
 ) {
   console.error(
-    "O braço agent exige OBS_LLM_URL, OBS_LLM_MODEL e OBS_LLM_API_KEY. Use --env-file=../.env ou --arms rules.",
+    "Os braços agent e agent_minimal exigem OBS_LLM_URL, OBS_LLM_MODEL e OBS_LLM_API_KEY. Use --env-file=../.env ou --arms rules,naive_probe.",
   );
   process.exit(1);
 }
@@ -76,12 +88,16 @@ try {
 const startedAt = new Date().toISOString();
 const meta = {
   startedAt,
-  model: arms.includes("agent") ? env.OBS_LLM_MODEL : null,
+  model: usesLlm ? env.OBS_LLM_MODEL : null,
   runs,
   arms,
   cases: cases.map((item) => item.id),
   instructionsHash: createHash("sha256")
     .update(instructions)
+    .digest("hex")
+    .slice(0, 16),
+  minimalInstructionsHash: createHash("sha256")
+    .update(minimalInstructions)
     .digest("hex")
     .slice(0, 16),
   commit,
@@ -108,7 +124,7 @@ async function execute(job) {
       failureCode: "harness_error",
     };
     console.log(
-      `ERRO ${job.testCase.id.padEnd(9)} ${job.arm.padEnd(5)} #${job.index + 1} harness_error`,
+      `ERRO ${job.testCase.id.padEnd(9)} ${job.arm.padEnd(13)} #${job.index + 1} harness_error`,
     );
     return {
       case: job.testCase.id,
@@ -127,18 +143,25 @@ async function attempt({ testCase, arm, index }) {
     fault: testCase.fault,
     checkout: testCase.checkout,
   };
+  const isLlm = arm === "agent" || arm === "agent_minimal";
   const run = await runAgent({
     state,
     pending: false,
-    model: arm === "agent" ? env.OBS_LLM_MODEL : "fixed-rule",
-    modelCall:
-      arm === "agent"
-        ? providerClient(env, AbortSignal.timeout(60000))
+    model: isLlm
+      ? env.OBS_LLM_MODEL
+      : arm === "naive_probe"
+        ? "naive-probe"
+        : "fixed-rule",
+    promptProfile: arm === "agent_minimal" ? "minimal" : "prescriptive",
+    modelCall: isLlm
+      ? providerClient(env, AbortSignal.timeout(60000))
+      : arm === "naive_probe"
+        ? naiveProbeModel()
         : rulesModel(),
   });
   const score = scoreRun(run, testCase);
   console.log(
-    `${score.correct ? "ok  " : "ERRO"} ${testCase.id.padEnd(9)} ${arm.padEnd(5)} #${index + 1} ${score.outcome ?? "-"} / ${score.finalAction ?? run.failureCode}`,
+    `${score.correct ? "ok  " : "ERRO"} ${testCase.id.padEnd(9)} ${arm.padEnd(13)} #${index + 1} ${score.outcome ?? "-"} / ${score.finalAction ?? run.failureCode}`,
   );
   return { case: testCase.id, arm, index, runId: run.id, score, run };
 }

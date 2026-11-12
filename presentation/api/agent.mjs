@@ -8,7 +8,7 @@ import {
   signAudit,
   verifyAudit,
 } from "../lib/experiment.mjs";
-import { runAgent, providerClient } from "../lib/agent.mjs";
+import { runAgent, providerClient, PROMPT_PROFILES } from "../lib/agent.mjs";
 import { recordEvent } from "../lib/log.mjs";
 export default async function handler(req, res) {
   res.setHeader("Cache-Control", "no-store");
@@ -20,9 +20,11 @@ export default async function handler(req, res) {
       env.OBS_DEMO_TOKEN?.length >= 32,
   );
   if (req.method === "GET")
-    return res
-      .status(200)
-      .json({ configured, model: configured ? env.OBS_LLM_MODEL : null });
+    return res.status(200).json({
+      configured,
+      model: configured ? env.OBS_LLM_MODEL : null,
+      promptProfiles: Object.keys(PROMPT_PROFILES),
+    });
   if (req.method !== "POST")
     return res.status(405).json({ error: "Use POST." });
   try {
@@ -45,13 +47,19 @@ export default async function handler(req, res) {
         error: "Configure o provedor de IA na Vercel.",
         configured: false,
       });
-    if (body?.operation !== "run" || typeof body.pendingPayment !== "boolean")
+    if (
+      body?.operation !== "run" ||
+      typeof body.pendingPayment !== "boolean" ||
+      (body.promptProfile !== undefined &&
+        !(body.promptProfile in PROMPT_PROFILES))
+    )
       return res.status(400).json({ error: "Solicitação inválida." });
     const state = readExperiment(req.headers["x-experiment-state"], secret);
     const run = await runAgent({
       state,
       pending: body.pendingPayment,
       model: env.OBS_LLM_MODEL,
+      promptProfile: body.promptProfile || "prescriptive",
       modelCall: providerClient(env, AbortSignal.timeout(45000)),
     });
     if (run.applied) {

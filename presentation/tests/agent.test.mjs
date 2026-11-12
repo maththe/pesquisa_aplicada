@@ -510,3 +510,72 @@ test("presenter token cannot forge server experiment or audit signatures", () =>
     signingKey({ OBS_DEMO_TOKEN: secret, OBS_EXPERIMENT_SECRET: secret }),
   );
 });
+
+test("HTTP agent route supports prompt ablation profile and rejects unknown profiles", async () => {
+  const backup = { ...process.env },
+    original = globalThis.fetch;
+  Object.assign(process.env, {
+    OBS_DEMO_TOKEN: secret,
+    OBS_EXPERIMENT_SECRET: serverSecret,
+    OBS_LLM_URL: "https://fixture.invalid/v1",
+    OBS_LLM_MODEL: "TEST_FIXTURE_NOT_REAL_IA",
+    OBS_LLM_API_KEY: "test-only-key",
+  });
+  const fake = fakeModel("none");
+  globalThis.fetch = async (_url, options) => {
+    const request = JSON.parse(options.body);
+    const completion = await fake(request.messages);
+    return {
+      ok: true,
+      headers: new Headers(),
+      text: async () =>
+        JSON.stringify({ choices: [{ message: completion.message }] }),
+    };
+  };
+  try {
+    const info = res();
+    await agentHandler({ method: "GET", headers: {} }, info);
+    assert.deepEqual(info.data.promptProfiles, ["prescriptive", "minimal"]);
+
+    const state = createExperiment();
+    const bad = res();
+    await agentHandler(
+      {
+        method: "POST",
+        headers: {
+          ...auth,
+          "x-experiment-state": signExperiment(state, serverSecret),
+        },
+        body: {
+          operation: "run",
+          pendingPayment: false,
+          promptProfile: "arbitrary",
+        },
+      },
+      bad,
+    );
+    assert.equal(bad.code, 400);
+
+    const ok = res();
+    await agentHandler(
+      {
+        method: "POST",
+        headers: {
+          ...auth,
+          "x-experiment-state": signExperiment(state, serverSecret),
+        },
+        body: {
+          operation: "run",
+          pendingPayment: false,
+          promptProfile: "minimal",
+        },
+      },
+      ok,
+    );
+    assert.equal(ok.code, 200);
+    assert.equal(ok.data.run.promptProfile, "minimal");
+  } finally {
+    globalThis.fetch = original;
+    process.env = backup;
+  }
+});

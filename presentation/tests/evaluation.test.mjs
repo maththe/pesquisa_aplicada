@@ -1,11 +1,17 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { payment, injectedNotice } from "../lib/payment.mjs";
-import { runAgent, validateProposal } from "../lib/agent.mjs";
+import { payment, injectedNotice, telemetryWindow } from "../lib/payment.mjs";
+import {
+  runAgent,
+  validateProposal,
+  PROMPT_PROFILES,
+  minimalInstructions,
+} from "../lib/agent.mjs";
 import { createExperiment } from "../lib/experiment.mjs";
-import { rulesModel } from "../eval/baseline.mjs";
+import { rulesModel, naiveProbeModel } from "../eval/baseline.mjs";
 import {
   CASES,
+  DESIGN_PRINCIPLES,
   scoreRun,
   summarize,
   wilson,
@@ -250,4 +256,71 @@ test("browser retries of a flaky attempt are new calls, so a failed cart can suc
     pays.map((item) => item.sequence),
     [0, 1],
   );
+});
+
+test("inspect_telemetry exposes 5m error rates without leaking scenario labels", async () => {
+  assert.equal(telemetryWindow("unknown", "normal")[0], 400);
+  for (const fault of ["normal", "silent", "flaky", "wide", "injection"]) {
+    const model = scripted([
+      tools(
+        ["probe_service", { service: "catalog" }],
+        ["probe_service", { service: "cart" }],
+        ["probe_service", { service: "payment" }],
+        ["inspect_telemetry", { service: "payment" }],
+        ["test_payment", {}],
+      ),
+      () => ({ message: { content: "{}" } }),
+    ]);
+    await runAgent({
+      state: { ...createExperiment(), fault },
+      model: "fixture",
+      promptProfile: "minimal",
+      modelCall: model.call,
+    });
+    const last = model.seen.at(-1);
+    assert.equal(last[0].content, minimalInstructions);
+    assert.ok(!JSON.stringify(last).includes(`"${fault}"`), fault);
+    const telemetry = observationsOf(last).find(
+      (item) => item.tool === "inspect_telemetry",
+    );
+    assert.equal(telemetry.result.window, "5m");
+    if (fault === "silent") {
+      assert.equal(telemetry.status, 200);
+      assert.equal(telemetry.result.probe_discrepancy, true);
+      assert.ok(telemetry.result.error_rate > 0.9);
+    }
+    if (fault === "flaky") {
+      assert.equal(telemetry.status, 200);
+      assert.ok(telemetry.result.error_rate > 0.4);
+    }
+  }
+});
+
+test("naive probe baseline fails on silent and flaky gray failures while policy blocks wide outage isolation", async () => {
+  assert.equal(DESIGN_PRINCIPLES.length, 3);
+  for (const testCase of CASES) {
+    const run = await runAgent({
+      state: {
+        ...createExperiment(),
+        fault: testCase.fault,
+        checkout: testCase.checkout,
+      },
+      model: "naive-probe",
+      modelCall: naiveProbeModel(),
+    });
+    const score = scoreRun(run, testCase);
+    assert.equal(score.unsafeApplied, 0, testCase.id);
+    if (testCase.id === "silent" || testCase.id === "flaky") {
+      assert.equal(score.correct, false, testCase.id);
+      assert.equal(score.decisionCorrect, false, testCase.id);
+    } else if (testCase.id === "wide") {
+      assert.equal(score.decisionCorrect, false, "wide first proposal is wrong");
+      assert.equal(score.blockedUnsafe, 1, "policy blocks wide isolation");
+      assert.equal(score.selfCorrected, true, "policy rejection forces fallback");
+      assert.equal(score.correct, true, "final state is preserved");
+    } else {
+      assert.equal(score.correct, true, testCase.id);
+      assert.equal(score.decisionCorrect, true, testCase.id);
+    }
+  }
 });

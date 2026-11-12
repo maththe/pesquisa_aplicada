@@ -1875,18 +1875,20 @@ a:hover {
   margin-top: 24px;
 }
 .agent-panel > summary,
-.evidence-section > summary {
+.evidence-section > summary,
+.dsr-section > summary {
   cursor: pointer;
   font-size: 19px;
   font-weight: 600;
   padding: 6px 0;
 }
-.agent-panel > summary .mode-tag {
+.agent-panel > summary .mode-tag,
+.dsr-section > summary .mode-tag {
   float: right;
   font-size: 12px;
 }
 .agent-controls {
-  grid-template-columns: minmax(180px, 1fr) auto auto auto;
+  grid-template-columns: minmax(170px, 1fr) minmax(200px, 1fr) auto auto auto;
   margin-top: 20px;
 }
 .agent-controls label {
@@ -1908,6 +1910,113 @@ a:hover {
 }
 .evidence-section > summary {
   margin-bottom: 24px;
+}
+.dsr-section {
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: white;
+  padding: 24px;
+  margin-top: 28px;
+}
+.dsr-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 18px;
+}
+.dsr-card {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 18px;
+  background: #f9fbf7;
+}
+.dsr-card.active-cycle {
+  border-top: 3px solid var(--green);
+  background: #f2f7ec;
+}
+.dsr-tag {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--green);
+}
+.dsr-card h3 {
+  font-size: 15px;
+  margin: 8px 0;
+}
+.dsr-card p {
+  font-size: 12px;
+  color: var(--ink);
+  margin: 0 0 10px;
+}
+.dsr-card small {
+  display: block;
+  font-size: 11px;
+  color: var(--muted);
+}
+.dsr-principles {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 16px;
+}
+.dsr-principle {
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  padding: 16px;
+  background: white;
+}
+.dsr-principle.verified {
+  border-color: #89a96d;
+  background: #f4f9ee;
+}
+.dsr-principle header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.dsr-principle b {
+  font-size: 13px;
+}
+.dsr-principle p {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.55;
+}
+.dsr-table-wrap {
+  overflow-x: auto;
+  margin-top: 14px;
+}
+.dsr-matrix-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  background: #f5f7ef;
+  color: #203c30;
+  border-radius: 10px;
+  overflow: hidden;
+}
+.dsr-matrix-table th,
+.dsr-matrix-table td {
+  padding: 10px 12px;
+  text-align: left;
+  border-bottom: 1px solid #d5dfce;
+}
+.dsr-matrix-table thead th,
+.dsr-matrix-table tfoot th {
+  background: #e6eee0;
+  font-weight: 700;
+}
+.dsr-matrix-table td.ok {
+  color: #2f633d;
+  font-weight: 600;
+}
+.dsr-matrix-table td.fail {
+  color: #953c29;
+  font-weight: 600;
 }
 .execution-status {
   position: fixed;
@@ -1959,6 +2068,12 @@ a:hover {
   border-radius: 12px;
   font-size: 16px;
 }
+@media (max-width: 900px) {
+  .dsr-grid,
+  .dsr-principles {
+    grid-template-columns: 1fr;
+  }
+}
 @media (max-width: 720px) {
   .agent-controls {
     grid-template-columns: 1fr;
@@ -1967,7 +2082,8 @@ a:hover {
     font-size: 12px;
     padding: 12px;
   }
-  .agent-panel > summary .mode-tag {
+  .agent-panel > summary .mode-tag,
+  .dsr-section > summary .mode-tag {
     float: none;
     margin-left: 12px;
   }

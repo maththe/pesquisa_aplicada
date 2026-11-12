@@ -24,8 +24,9 @@
         ></a
       >
       <nav aria-label="Navegação">
-        <a href="#lab">Testes</a><a href="#isolation">Isolamento</a
-        ><a href="#evidence">Evidências</a><a href="#application">Loja</a>
+        <a href="#lab">Testes</a><a href="#dsr">Ciclos DSR</a
+        ><a href="#isolation">Isolamento</a><a href="#evidence">Evidências</a
+        ><a href="#application">Loja</a>
       </nav>
       <span class="demo-tag"><span></span> Ambiente de testes</span>
     </header>
@@ -80,7 +81,9 @@
               <button id="recover" class="recover-btn">
                 ↻ Restaurar e verificar pagamento</button
               ><button id="run-tests" class="test-btn">
-                ▷ Testes funcionais (8)
+                ▷ Testes funcionais (8)</button
+              ><button id="run-dsr-matrix" class="recover-btn">
+                ▷ Matriz DSR: Sonda × Regra (9)
               </button>
             </div>
           </div>
@@ -130,6 +133,12 @@
               autocomplete="off"
               placeholder="OBS_DEMO_TOKEN"
           /></label>
+          <label
+            >Perfil do prompt (Ablação)<select id="prompt-profile">
+              <option value="prescriptive">Prescritivo (regras de domínio)</option>
+              <option value="minimal">Mínimo (ablação sem dicas)</option>
+            </select></label
+          >
           <button id="connect-agent" class="primary">Ativar IA</button>
           <button id="run-agent" class="secondary" disabled>
             Analisar novamente
@@ -179,6 +188,78 @@
           </article>
         </div>
       </section>
+      <details class="dsr-section" id="dsr">
+        <summary>
+          Metodologia DSR — Ciclos, Princípios CIMO e Hipóteses
+          <span id="dsr-status-tag" class="mode-tag">3 ciclos · 3 princípios</span>
+        </summary>
+        <div class="dsr-grid">
+          <article class="dsr-card">
+            <span class="dsr-tag">CICLO 1 · DIAGNÓSTICO PASSIVO</span>
+            <h3>Correlação de Logs e Métricas (Docker/Python)</h3>
+            <p>
+              Investiga propagação de falhas no fluxo
+              <code>Gateway → Orders → Users</code> com PostgreSQL, etcd e
+              LangChain.
+            </p>
+            <small>Limitação observada: apenas post-mortem; não protege a intenção de compra durante o incidente.</small>
+          </article>
+          <article class="dsr-card">
+            <span class="dsr-tag">CICLO 2 · CONTENÇÃO POR REGRAS</span>
+            <h3>Preservação de Intenção e Circuit Breaker (Nexo v2)</h3>
+            <p>
+              Mantém carrinho no navegador, suspende checkout em HTTP 503,
+              exige reconciliação em HTTP 504 e emite aviso único na recuperação.
+            </p>
+            <small>Limitação observada: regras estáticas falham em gray failures (health check falso, falha intermitente e queda ampla).</small>
+          </article>
+          <article class="dsr-card active-cycle">
+            <span class="dsr-tag">CICLO 3 · AGENTE GOVERNADO POR POLÍTICA</span>
+            <h3>Investigação Ativa Cega + Política Determinística</h3>
+            <p>
+              O agente combina <code>probe_service</code>,
+              <code>inspect_telemetry</code> e <code>test_payment</code>, mas só
+              altera o estado se <code>validateProposal</code> comprovar as evidências.
+            </p>
+            <small>Avaliação formal: 4 braços (Sonda Passiva, Regra Fixa, Agente Mínimo e Agente Prescritivo) × 9 cenários.</small>
+          </article>
+        </div>
+        <div class="dsr-principles">
+          <article class="dsr-principle" id="dp1-card">
+            <header>
+              <b>DP1 · Governança Proposta-Política (H3)</b>
+              <span id="dp1-badge" class="mode-tag">Aguardando verificação</span>
+            </header>
+            <p>
+              <strong>CIMO:</strong> Em falhas parciais ou entradas adversariais (C),
+              separar a proposta da LLM da aplicação via validador determinístico de
+              evidências (I/M) elimina mutações indevidas no sistema e induz auto-correção (O).
+            </p>
+          </article>
+          <article class="dsr-principle" id="dp2-card">
+            <header>
+              <b>DP2 · Verificação Canário Ativa vs. Passiva (H1)</b>
+              <span id="dp2-badge" class="mode-tag">Aguardando verificação</span>
+            </header>
+            <p>
+              <strong>CIMO:</strong> Sob <em>gray failures</em> onde <code>/health</code>
+              responde HTTP 200 mas compras falham (C), combinar sondagem, telemetria de
+              5m e transação canário (I/M) detecta incidentes silenciosos e intermitentes (O).
+            </p>
+          </article>
+          <article class="dsr-principle" id="dp3-card">
+            <header>
+              <b>DP3 · Consciência de Escopo / Blast Radius (H1/H3)</b>
+              <span id="dp3-badge" class="mode-tag">Aguardando verificação</span>
+            </header>
+            <p>
+              <strong>CIMO:</strong> Em quedas amplas que atingem também o catálogo (C),
+              exigir disponibilidade dos serviços adjacentes antes de isolar o checkout (I/M)
+              impede contenções locais inócuas e preserva o diagnóstico sistêmico (O).
+            </p>
+          </article>
+        </div>
+      </details>
       <details class="evidence-section" id="evidence">
         <summary>Evidências da execução</summary>
         <section
