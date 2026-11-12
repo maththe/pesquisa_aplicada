@@ -1,5 +1,9 @@
 # Estado da implementação
 
+> Este documento descreve o núcleo Docker original. A evolução serverless e sua
+> avaliação estão em [PBL 8](pbl8-melhorias.md) e [PJBL 3](pjbl3-artefato.md).
+> A cobertura histórica descrita abaixo não equivale à suíte Python atual de 13 testes.
+
 A versão funcional reúne a aplicação distribuída, coleta, armazenamento e
 interface de diagnóstico. A validação com uma LLM real depende do modelo,
 endpoint e credencial do provedor escolhido.

@@ -15,7 +15,7 @@ sys.path.insert(0, str(ROOT))
 
 from experiments.scenarios import SCENARIOS, Lab, observe  # noqa: E402
 
-HTML = Path(__file__).with_name("index.html")
+HTML = Path(__file__).with_name("diagnostico.html")
 ACTION_LOCK = threading.Lock()
 LAB = Lab()
 

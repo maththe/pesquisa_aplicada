@@ -12,3 +12,6 @@ dist/
 .env
 logs/
 .cache/
+
+# Static Vercel output
+presentation/public/

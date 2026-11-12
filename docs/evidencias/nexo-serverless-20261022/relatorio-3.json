@@ -1,0 +1,571 @@
+{
+  "artifact": "Nexo · Pesquisa Aplicada",
+  "version": "2.0.0",
+  "exportedAt": "2026-10-22T15:18:36.104Z",
+  "scope": "Sandbox serverless, carrinho e evidências locais neste navegador. Nenhuma cobrança real, envio externo ou reparo por IA.",
+  "state": {
+    "version": 1,
+    "cart": [
+      {
+        "id": "headphones",
+        "quantity": 1
+      }
+    ],
+    "scenario": "declined",
+    "breaker": "closed",
+    "incident": null,
+    "subscription": {
+      "incident": "e3351335-5c04-46dc-997e-a30b2b9e41c0",
+      "sent": true,
+      "at": "2026-10-22T15:18:32.313Z"
+    },
+    "notices": [
+      {
+        "id": "86d3717b-2c7f-46b7-955c-fcbeb6a889fe",
+        "incident": "e3351335-5c04-46dc-997e-a30b2b9e41c0",
+        "at": "2026-10-22T15:18:32.713Z",
+        "text": "O pagamento voltou a funcionar. Seu carrinho está salvo; você já pode retomar a compra."
+      }
+    ],
+    "evidence": [
+      {
+        "id": "c5a1c64d-d781-4f0f-8db1-aaa80c076aeb",
+        "timestamp": "2026-10-22T15:18:31.958Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "headphones; itens salvos neste navegador"
+      },
+      {
+        "id": "ed79397c-3544-499b-bd05-0b09c01566c0",
+        "timestamp": "2026-10-22T15:18:32.135Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "outage"
+      },
+      {
+        "id": "04922057-96e6-4f20-97e8-73699de501f7",
+        "timestamp": "2026-10-22T15:18:32.148Z",
+        "event": "payment_probe",
+        "status": 503,
+        "details": "unavailable; 12 ms"
+      },
+      {
+        "id": "4c6cafb8-1996-4ba1-b30b-261e0dc84c51",
+        "timestamp": "2026-10-22T15:18:32.149Z",
+        "event": "circuit_opened",
+        "status": null,
+        "details": "Proteção por regra técnica; novas finalizações suspensas. A IA não executou esta ação."
+      },
+      {
+        "id": "a855b416-9d9d-4949-98fb-55291ff3f3dc",
+        "timestamp": "2026-10-22T15:18:32.224Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "speaker; itens salvos neste navegador"
+      },
+      {
+        "id": "5dce1b6c-9a78-4245-bc73-6bdd22671255",
+        "timestamp": "2026-10-22T15:18:32.313Z",
+        "event": "recovery_notice_requested",
+        "status": null,
+        "details": "Consentimento para aviso dentro desta aplicação."
+      },
+      {
+        "id": "428979ef-d91e-406b-9166-951743773e65",
+        "timestamp": "2026-10-22T15:18:32.692Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "normal"
+      },
+      {
+        "id": "b42210ca-f431-4664-a68e-77a71225db2a",
+        "timestamp": "2026-10-22T15:18:32.704Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 8 ms"
+      },
+      {
+        "id": "c7d65252-ba92-4e8f-a004-5ee4beef1e6a",
+        "timestamp": "2026-10-22T15:18:32.710Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 4 ms"
+      },
+      {
+        "id": "328cca91-b70a-44d8-af6e-035d27e1e634",
+        "timestamp": "2026-10-22T15:18:32.711Z",
+        "event": "circuit_closed",
+        "status": 200,
+        "details": "Duas sondagens funcionais confirmaram a recuperação no sandbox."
+      },
+      {
+        "id": "d2af93d1-3d2a-493f-bf2a-83cfff956c8e",
+        "timestamp": "2026-10-22T15:18:32.713Z",
+        "event": "recovery_notice_created",
+        "status": null,
+        "details": "Aviso interno único, solicitado pelo comprador. Nenhum e-mail enviado."
+      },
+      {
+        "id": "75ba105e-16d9-4252-9e00-b2acc281ad10",
+        "timestamp": "2026-10-22T15:18:32.773Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "normal"
+      },
+      {
+        "id": "07a4b036-73fc-4cd4-8d0a-1250a75d3771",
+        "timestamp": "2026-10-22T15:18:32.784Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 10 ms"
+      },
+      {
+        "id": "ac76284b-f95d-4690-939d-2f04b12d5739",
+        "timestamp": "2026-10-22T15:18:32.852Z",
+        "event": "payment_pay",
+        "status": 200,
+        "details": "approved; 11 ms"
+      },
+      {
+        "id": "c008fdc3-d2fa-4c20-bba7-412a9710dc12",
+        "timestamp": "2026-10-22T15:18:32.854Z",
+        "event": "order_confirmed",
+        "status": 200,
+        "details": "DEMO-49b52d3b71123de56a64; pagamento simulado, sem cobrança real"
+      },
+      {
+        "id": "349e54d0-11bc-449e-b4e7-9f70f8ae9b12",
+        "timestamp": "2026-10-22T15:18:32.922Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "keyboard; itens salvos neste navegador"
+      },
+      {
+        "id": "bee587b7-29a4-49cf-ab5b-9b0c094289f0",
+        "timestamp": "2026-10-22T15:18:32.976Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "slow"
+      },
+      {
+        "id": "7624a312-9afe-4462-8492-a4a2b82a8356",
+        "timestamp": "2026-10-22T15:18:32.987Z",
+        "event": "payment_probe",
+        "status": 503,
+        "details": "unavailable; 8 ms"
+      },
+      {
+        "id": "ebee2d43-d78e-4f19-9364-ef10d81698c0",
+        "timestamp": "2026-10-22T15:18:33.051Z",
+        "event": "payment_pay",
+        "status": 504,
+        "details": "unknown; 9 ms"
+      },
+      {
+        "id": "4b60627d-bc99-4ecc-95fe-63033aa8495d",
+        "timestamp": "2026-10-22T15:18:33.055Z",
+        "event": "circuit_opened",
+        "status": null,
+        "details": "Proteção por regra técnica; novas finalizações suspensas. A IA não executou esta ação."
+      },
+      {
+        "id": "5e612cac-b21e-401d-bd48-f2f9dd656e0c",
+        "timestamp": "2026-10-22T15:18:33.202Z",
+        "event": "payment_reconcile",
+        "status": 200,
+        "details": "approved; 10 ms"
+      },
+      {
+        "id": "5ac970bb-b220-4484-924c-7df6e8abbdee",
+        "timestamp": "2026-10-22T15:18:33.209Z",
+        "event": "order_confirmed",
+        "status": 200,
+        "details": "DEMO-ee3eb53219916ebdf2aa; pagamento simulado, sem cobrança real"
+      },
+      {
+        "id": "d84c06a9-89b2-40ba-ad9d-8f1d405f611e",
+        "timestamp": "2026-10-22T15:18:33.257Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "normal"
+      },
+      {
+        "id": "40e65b3a-be9f-4f46-898a-7f2c0be8e832",
+        "timestamp": "2026-10-22T15:18:33.271Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 9 ms"
+      },
+      {
+        "id": "daa3f1dc-de22-4e6c-83f2-600a7b50aefa",
+        "timestamp": "2026-10-22T15:18:33.289Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 12 ms"
+      },
+      {
+        "id": "b8c00c1c-c8d1-4673-8383-3966846d993b",
+        "timestamp": "2026-10-22T15:18:33.294Z",
+        "event": "circuit_closed",
+        "status": 200,
+        "details": "Duas sondagens funcionais confirmaram a recuperação no sandbox."
+      },
+      {
+        "id": "a597ffa7-2e92-4d41-b999-dcb02386580b",
+        "timestamp": "2026-10-22T15:18:33.361Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "headphones; itens salvos neste navegador"
+      },
+      {
+        "id": "87fe459d-1bda-4feb-b701-476bc70b8859",
+        "timestamp": "2026-10-22T15:18:34.293Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "declined"
+      },
+      {
+        "id": "528b4581-a5a7-49fc-aa65-ed3ffcb31a1a",
+        "timestamp": "2026-10-22T15:18:34.308Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 12 ms"
+      },
+      {
+        "id": "dc4724fc-6cf6-4288-8f1c-492b7bb846bf",
+        "timestamp": "2026-10-22T15:18:34.748Z",
+        "event": "payment_pay",
+        "status": 402,
+        "details": "declined; 13 ms"
+      }
+    ],
+    "orders": [
+      {
+        "receiptId": "DEMO-49b52d3b71123de56a64",
+        "total": 31980,
+        "at": "2026-10-22T15:18:32.854Z",
+        "items": [
+          {
+            "id": "headphones",
+            "quantity": 1,
+            "unitPrice": 18990
+          },
+          {
+            "id": "speaker",
+            "quantity": 1,
+            "unitPrice": 12990
+          }
+        ]
+      },
+      {
+        "receiptId": "DEMO-ee3eb53219916ebdf2aa",
+        "total": 24990,
+        "at": "2026-10-22T15:18:33.209Z",
+        "items": [
+          {
+            "id": "keyboard",
+            "quantity": 1,
+            "unitPrice": 24990
+          }
+        ]
+      }
+    ],
+    "attempt": null
+  },
+  "diagnosis": {
+    "mode": "rules",
+    "outcome": "incident",
+    "summary": "Foram observadas falhas técnicas no serviço de pagamento. O circuito protege a finalização e o carrinho permanece disponível. Um timeout exige consulta da tentativa; não comprova que o pagamento falhou. A origem interna da falha não pode ser inferida só pelo HTTP.",
+    "evidence_ids": [
+      "04922057-96e6-4f20-97e8-73699de501f7",
+      "7624a312-9afe-4462-8492-a4a2b82a8356",
+      "ebee2d43-d78e-4f19-9364-ef10d81698c0"
+    ]
+  },
+  "evaluation": {
+    "executedAt": "2026-10-22T15:18:36.057Z",
+    "scope": "Avaliação funcional do sandbox; não mede acurácia de IA, pagamentos reais ou durabilidade de transações.",
+    "results": [
+      {
+        "name": "Compra normal retorna HTTP 200 e comprovante",
+        "passed": true,
+        "durationMs": 14
+      },
+      {
+        "name": "Falha técnica retorna HTTP 503 sem perder o carrinho",
+        "passed": true,
+        "durationMs": 4
+      },
+      {
+        "name": "Circuito aberto evita uma nova chamada de pagamento",
+        "passed": true,
+        "durationMs": 3
+      },
+      {
+        "name": "Carrinho sobrevive à restauração do estado salvo",
+        "passed": true,
+        "durationMs": 0
+      },
+      {
+        "name": "Duas sondagens de recuperação e um único aviso",
+        "passed": true,
+        "durationMs": 10
+      },
+      {
+        "name": "Recusa HTTP 402 mantém o circuito fechado",
+        "passed": true,
+        "durationMs": 4
+      },
+      {
+        "name": "Timeout bloqueia nova tentativa até reconciliação",
+        "passed": true,
+        "durationMs": 7
+      },
+      {
+        "name": "Mesma chave produz o mesmo comprovante de teste",
+        "passed": true,
+        "durationMs": 6
+      }
+    ],
+    "evidence": [
+      {
+        "id": "414e0097-f4d4-46d3-839e-b67693cc658d",
+        "timestamp": "2026-10-22T15:18:36.009Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "headphones; itens salvos neste navegador"
+      },
+      {
+        "id": "99daca8a-8d06-4490-bbe8-aad9913c705a",
+        "timestamp": "2026-10-22T15:18:36.022Z",
+        "event": "payment_pay",
+        "status": 200,
+        "details": "approved; 13 ms"
+      },
+      {
+        "id": "1cbe4764-511f-444c-8ad0-c0094c078d96",
+        "timestamp": "2026-10-22T15:18:36.022Z",
+        "event": "order_confirmed",
+        "status": 200,
+        "details": "DEMO-2ca9b06540b15f51dfe3; pagamento simulado, sem cobrança real"
+      },
+      {
+        "id": "207d9697-395e-4d17-9fcd-b741c7aa68f8",
+        "timestamp": "2026-10-22T15:18:36.022Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "keyboard; itens salvos neste navegador"
+      },
+      {
+        "id": "ff539397-f1ac-4d94-b97d-9b0a0454e573",
+        "timestamp": "2026-10-22T15:18:36.027Z",
+        "event": "payment_pay",
+        "status": 503,
+        "details": "unavailable; 4 ms"
+      },
+      {
+        "id": "bad1e41b-9310-4774-b0c5-2891fc8f1b3c",
+        "timestamp": "2026-10-22T15:18:36.027Z",
+        "event": "circuit_opened",
+        "status": null,
+        "details": "Proteção por regra técnica; novas finalizações suspensas. A IA não executou esta ação."
+      },
+      {
+        "id": "e886f8ac-a0bd-422c-9eb5-ebce093c43b8",
+        "timestamp": "2026-10-22T15:18:36.027Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "speaker; itens salvos neste navegador"
+      },
+      {
+        "id": "d65bfac7-a12d-47b0-8693-bbc53f482931",
+        "timestamp": "2026-10-22T15:18:36.027Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "outage"
+      },
+      {
+        "id": "002a7885-7f20-443f-b408-5320702d7f45",
+        "timestamp": "2026-10-22T15:18:36.029Z",
+        "event": "payment_probe",
+        "status": 503,
+        "details": "unavailable; 2 ms"
+      },
+      {
+        "id": "63de86ea-42cb-485c-aaa6-3af013142f11",
+        "timestamp": "2026-10-22T15:18:36.029Z",
+        "event": "circuit_opened",
+        "status": null,
+        "details": "Proteção por regra técnica; novas finalizações suspensas. A IA não executou esta ação."
+      },
+      {
+        "id": "3729cc7b-f037-4560-a314-0f489ed18684",
+        "timestamp": "2026-10-22T15:18:36.029Z",
+        "event": "checkout_blocked",
+        "status": null,
+        "details": "Circuito aberto; chamada de pagamento evitada e carrinho preservado."
+      },
+      {
+        "id": "fc8c87c2-7381-4c6c-800e-64a15bff1769",
+        "timestamp": "2026-10-22T15:18:36.029Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "speaker; itens salvos neste navegador"
+      },
+      {
+        "id": "3f45fc18-cfb8-4be6-98a7-04eabc8406bb",
+        "timestamp": "2026-10-22T15:18:36.029Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "outage"
+      },
+      {
+        "id": "8aebacbb-9bf2-48bb-903f-ec56e3acb90a",
+        "timestamp": "2026-10-22T15:18:36.032Z",
+        "event": "payment_probe",
+        "status": 503,
+        "details": "unavailable; 3 ms"
+      },
+      {
+        "id": "69fa70e5-c0df-4cf8-9d1b-8e459376c52f",
+        "timestamp": "2026-10-22T15:18:36.032Z",
+        "event": "circuit_opened",
+        "status": null,
+        "details": "Proteção por regra técnica; novas finalizações suspensas. A IA não executou esta ação."
+      },
+      {
+        "id": "bc230932-5eaa-40eb-bdaa-42a666e8d6fa",
+        "timestamp": "2026-10-22T15:18:36.032Z",
+        "event": "recovery_notice_requested",
+        "status": null,
+        "details": "Consentimento para aviso dentro desta aplicação."
+      },
+      {
+        "id": "d7ee6c01-3269-4e80-8f37-0c6092e76f85",
+        "timestamp": "2026-10-22T15:18:36.032Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "normal"
+      },
+      {
+        "id": "0c6fcc6e-e32d-4221-ab0a-dabed63ccef8",
+        "timestamp": "2026-10-22T15:18:36.035Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 2 ms"
+      },
+      {
+        "id": "d8efe8f8-95d8-487e-8a55-61cd43ba7ddc",
+        "timestamp": "2026-10-22T15:18:36.037Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 2 ms"
+      },
+      {
+        "id": "c76e3853-cefe-4237-ba4b-4c4340b117bb",
+        "timestamp": "2026-10-22T15:18:36.037Z",
+        "event": "circuit_closed",
+        "status": 200,
+        "details": "Duas sondagens funcionais confirmaram a recuperação no sandbox."
+      },
+      {
+        "id": "bf79fde2-2cea-47eb-8d43-b8d59c97c3d2",
+        "timestamp": "2026-10-22T15:18:36.037Z",
+        "event": "recovery_notice_created",
+        "status": null,
+        "details": "Aviso interno único, solicitado pelo comprador. Nenhum e-mail enviado."
+      },
+      {
+        "id": "2706ed1b-a5aa-48a9-a1ee-8cad1feffa1d",
+        "timestamp": "2026-10-22T15:18:36.037Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "normal"
+      },
+      {
+        "id": "47b9ee12-20f8-49e1-9b30-3aa6ae791a65",
+        "timestamp": "2026-10-22T15:18:36.039Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 2 ms"
+      },
+      {
+        "id": "952fd1b1-aa40-4e39-a756-74c9528237df",
+        "timestamp": "2026-10-22T15:18:36.039Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "headphones; itens salvos neste navegador"
+      },
+      {
+        "id": "f886ff05-2c70-4f78-a6c9-abaf8165c890",
+        "timestamp": "2026-10-22T15:18:36.039Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "declined"
+      },
+      {
+        "id": "4da28837-f07e-4b99-bd0b-0a4a0a31c9ed",
+        "timestamp": "2026-10-22T15:18:36.041Z",
+        "event": "payment_probe",
+        "status": 200,
+        "details": "available; 2 ms"
+      },
+      {
+        "id": "f07ce976-9ab6-406f-a646-8361f53d4fe5",
+        "timestamp": "2026-10-22T15:18:36.043Z",
+        "event": "payment_pay",
+        "status": 402,
+        "details": "declined; 2 ms"
+      },
+      {
+        "id": "2b7b7f2d-72a9-45e1-b88c-a6ec123ba326",
+        "timestamp": "2026-10-22T15:18:36.043Z",
+        "event": "cart_item_added",
+        "status": null,
+        "details": "keyboard; itens salvos neste navegador"
+      },
+      {
+        "id": "f0445969-b0c6-462d-aa86-625730dc04ef",
+        "timestamp": "2026-10-22T15:18:36.043Z",
+        "event": "experiment_scenario_changed",
+        "status": null,
+        "details": "slow"
+      },
+      {
+        "id": "519eef25-0c01-420e-b2df-6097b7170108",
+        "timestamp": "2026-10-22T15:18:36.045Z",
+        "event": "payment_probe",
+        "status": 503,
+        "details": "unavailable; 2 ms"
+      },
+      {
+        "id": "c79f18b7-b931-4864-a118-fea094b2ae77",
+        "timestamp": "2026-10-22T15:18:36.047Z",
+        "event": "payment_pay",
+        "status": 504,
+        "details": "unknown; 2 ms"
+      },
+      {
+        "id": "91148bc3-0d29-4a65-92e1-a788f804250e",
+        "timestamp": "2026-10-22T15:18:36.047Z",
+        "event": "circuit_opened",
+        "status": null,
+        "details": "Proteção por regra técnica; novas finalizações suspensas. A IA não executou esta ação."
+      },
+      {
+        "id": "68bffdd2-d693-43cb-b43e-6b9dfebe6331",
+        "timestamp": "2026-10-22T15:18:36.050Z",
+        "event": "payment_reconcile",
+        "status": 200,
+        "details": "approved; 3 ms"
+      },
+      {
+        "id": "c2d7609a-58fc-4e50-ac61-1a59d2047e09",
+        "timestamp": "2026-10-22T15:18:36.050Z",
+        "event": "order_confirmed",
+        "status": 200,
+        "details": "DEMO-e7b01757404807c1a709; pagamento simulado, sem cobrança real"
+      }
+    ]
+  }
+}

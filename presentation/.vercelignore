@@ -1,0 +1,6 @@
+app.py
+diagnostico.html
+__pycache__/
+tests/
+public/
+eval/

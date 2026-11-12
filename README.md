@@ -1,11 +1,17 @@
 # Diagnóstico de falhas em sistemas distribuídos
 
+> **Para começar:** o [guia do projeto](docs/guia-do-projeto.md) explica o que é,
+> como rodar e como apresentar. A fundamentação metodológica completa de **Design Science
+> Research (DSR)** — com *Kernel Theories*, os 3 ciclos construtivos e os Princípios de Design
+> CIMO (DP1–DP3) — está em [docs/dsr-consolidado.md](docs/dsr-consolidado.md).
+
 Protótipo acadêmico para apoiar um operador na investigação de falhas no fluxo
 **Gateway → Orders → Users**. A versão funcional coleta métricas e logs, mantém
 estado atual no etcd e histórico no PostgreSQL, constrói um contexto delimitado
 e registra diagnósticos com evidências rastreáveis.
 
-O diagnóstico pode ser pedido pelo operador (CLI ou interface web) ou disparado
+No núcleo Docker, o diagnóstico pode ser pedido pelo operador (CLI ou painel web
+`python presentation/app.py`) ou disparado
 automaticamente quando os sinais publicados no etcd violam limites definidos.
 Oito cenários com falhas injetadas e gabarito permitem comparar o diagnóstico
 com health checks e com uma sonda sintética.
@@ -14,10 +20,61 @@ O diagnóstico usa LangChain com uma API no formato Chat Completions e exige
 modelo, URL e chave. Coleta e consultas ao histórico funcionam
 independentemente dessas credenciais.
 
+O núcleo de diagnóstico usa uma CLI e LangChain com API compatível com Chat
+Completions. A versão 2 acrescenta a **Nexo**, loja experimental executável na
+Vercel, com carrinho persistente local, pagamento sandbox, circuito de proteção,
+aviso interno de recuperação e avaliação pela interface.
+
+## Demonstração visual — versão 2
+
+Sem VPS ou credenciais para o fluxo de compra de teste:
+
+```bash
+cd presentation
+node build.mjs
+node --test tests/*.test.mjs
+node dev.mjs
+```
+
+Na Vercel: **Root Directory `presentation`**, Framework **Other**, build
+`node build.mjs`, saída `public`, instalação vazia. A página e a API ficam na
+mesma origem. [Guia de publicação](docs/vercel.md).
+
+Os pagamentos e falhas são controlados; nenhum valor é cobrado. Carrinho,
+comprovantes, avisos e evidências são locais ao navegador; com Upstash Redis
+configurado, os eventos do servidor também ficam salvos e são consultados em
+`/api/logs` ([logs no servidor](docs/vercel.md#logs-salvos-no-servidor)). O modo **Regras**
+é o padrão e funciona sem IA; o modo **Agente IA** exige configuração no servidor. O painel do núcleo Docker (oito cenários, gatilho automático e placar com gabarito)
+é servido localmente por `python presentation/app.py`.
+
+- [PBL 8 — melhorias e avaliação](docs/pbl8-melhorias.md).
+- [PJBL 3 — construção, demonstração e evidências](docs/pjbl3-artefato.md).
+
+## Agente IA e Avaliação Experimental (DSR)
+
+O modo **Agente IA** separa a injeção de falha da decisão do modelo. O agente
+seleciona ferramentas (`probe_service`, `inspect_telemetry` e `test_payment`),
+propõe uma ação e só a aplica após validação da política determinística (`validateProposal`).
+A [avaliação experimental do agente](docs/avaliacao-agente.md) compara quatro braços
+(`agent`, `agent_minimal` por ablação de prompt, `rules` e `naive_probe`) em nove casos
+(incluindo falhas cinzentas e ataque adversarial de *prompt injection*), totalizando
+360 execuções reais com `gpt-4.1-mini` ([relatório completo](docs/evidencias/avaliacao-agente-20261111T173058Z/relatorio.md)),
+e traz o roteiro da apresentação.
+A interface mostra a trilha de execução, os Princípios de Design CIMO (DP1–DP3),
+permite alternar o perfil de prompt para ablação e verificar o registro assinado.
+[Configuração e roteiro de demonstração](docs/agente-ia.md).
+
+Sem provedor configurado, o agente fica indisponível. O modo **Regras** e os oito
+testes funcionais continuam utilizáveis; seus resultados não são apresentados
+como execução real de IA. O modelo avaliado nas evidências oficiais é
+`gpt-4.1-mini`; URL e credenciais não estão versionadas.
+
 ## Entregas acadêmicas
 
-- [O que foi feito e como foi feito](docs/o-que-foi-feito.md).
-- [Entrega consolidada e resultados observados](docs/entrega.md).
+- [Consolidação Metodológica DSR — Ciclos, Kernel Theories e Princípios CIMO](docs/dsr-consolidado.md).
+- [Avaliação experimental multi-braço (360 execuções) e ablação](docs/avaliacao-agente.md).
+- [O que foi feito e como foi feito (Ciclo 1)](docs/o-que-foi-feito.md).
+- [Entrega consolidada e resultados observados (Ciclo 1)](docs/entrega.md).
 
 - [Cenário, caso de uso e critérios de demonstração](docs/caso-de-uso.md).
 - [Roteiro de apresentação e execução](docs/demonstracao.md).

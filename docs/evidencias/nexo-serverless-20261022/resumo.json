@@ -1,0 +1,12 @@
+{
+  "mode": "local-http-serverless-handlers",
+  "browser": "Chromium",
+  "executions": 3,
+  "functional_checks_per_execution": 8,
+  "passed": 24,
+  "failed": 0,
+  "llm_tested": false,
+  "real_charge": false,
+  "javascript_errors": [],
+  "scope": "Local execution, not proof of Vercel deployment or general AI accuracy."
+}

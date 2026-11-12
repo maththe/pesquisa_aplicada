@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Diagnóstico distribuído — Loja virtual</title>
+  <meta name="description" content="Demonstração do incidente de consulta de pedidos.">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23131a2a'/%3E%3Cpath d='M14 19h9l4 24h24l5-17H25' fill='none' stroke='%235ee6a8' stroke-width='5' stroke-linecap='round' stroke-linejoin='round'/%3E%3Ccircle cx='31' cy='50' r='3' fill='%235ee6a8'/%3E%3Ccircle cx='48' cy='50' r='3' fill='%235ee6a8'/%3E%3C/svg%3E">
+  <style>
+    :root{color-scheme:dark;--bg:#0a0e18;--panel:#121827;--line:#283149;--text:#f4f7ff;--muted:#9aa7bd;--green:#5ee6a8;--red:#ff6b78;--blue:#7cb8ff;--amber:#ffc46b}
+    *{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at 15% 0,#18213a 0,transparent 34%),var(--bg);color:var(--text);font:16px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,sans-serif}
+    main{width:min(1120px,calc(100% - 32px));margin:auto;padding:32px 0 48px}.top{display:flex;align-items:flex-start;justify-content:space-between;gap:24px;margin-bottom:24px}
+    h1{font-size:clamp(1.8rem,4vw,3rem);line-height:1.05;margin:0 0 10px;letter-spacing:-.04em}.lead{max-width:720px;margin:0;color:var(--muted);font-size:1.05rem}.live{display:flex;align-items:center;gap:9px;white-space:nowrap;color:var(--muted)}.dot{width:10px;height:10px;border-radius:50%;background:var(--green);box-shadow:0 0 16px var(--green)}
+    .actions{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin:24px 0}button{border:1px solid var(--line);border-radius:14px;padding:17px 18px;background:#171e30;color:var(--text);font:700 1rem/1.2 inherit;cursor:pointer;transition:.18s transform,.18s border-color,.18s background}button:hover{transform:translateY(-2px);border-color:var(--blue)}button:disabled{opacity:.45;cursor:wait;transform:none}.normal{border-color:#28684f}.failure{border-color:#7b3540}.recover{border-color:#315c8c}.overload{border-color:#8a6330;color:#ffd08a}
+    .result{border:1px solid var(--line);background:linear-gradient(145deg,#141b2c,#0f1421);border-radius:20px;padding:24px;min-height:220px}.result-head{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.eyebrow{font-size:.78rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}h2{margin:4px 0 6px;font-size:1.6rem}.summary{margin:0;color:var(--muted);max-width:740px}.badge{padding:7px 11px;border-radius:999px;background:#233047;color:var(--blue);font-weight:800;font-size:.82rem}.badge.ok{background:#173c31;color:var(--green)}.badge.bad{background:#4b2027;color:#ff9aa3}
+    .checks{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:22px}.card{border:1px solid var(--line);border-radius:14px;padding:16px;background:#0c111d}.label{color:var(--muted);font-size:.85rem}.value{font-size:1.45rem;font-weight:850;margin-top:3px}.value.good{color:var(--green)}.value.bad{color:var(--red)}.value.warn{color:var(--amber)}.meta{font-size:.78rem;color:var(--muted);margin-top:3px}
+    .flow{display:flex;align-items:center;gap:10px;margin-top:20px;overflow:auto;padding-bottom:2px}.node{padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#0c111d;min-width:120px;text-align:center;font-weight:750}.node.good{border-color:#28684f}.node.bad{border-color:#7b3540;color:#ff9aa3}.arrow{color:var(--muted);font-size:1.3rem}.details{display:flex;justify-content:space-between;gap:16px;margin-top:18px;color:var(--muted);font-size:.84rem;flex-wrap:wrap}code{color:#b8d8ff}.empty{display:grid;place-items:center;min-height:170px;color:var(--muted);text-align:center}.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}
+    .load-banner{margin-top:18px;padding:14px 16px;border:1px solid #8a6330;background:#2e2417;border-radius:12px;color:#ffdca5;font-weight:700}.ai{margin-top:22px;border-top:1px solid var(--line);padding-top:22px}.ai-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.ai h3{font-size:1.3rem;margin:4px 0}.ai-summary{font-size:1rem;margin:12px 0;color:#dce5f6}.real{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:.8rem;font-weight:800}.real:before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}
+    .hypotheses{display:grid;gap:10px;margin:15px 0}.hypothesis{background:#0c111d;border:1px solid var(--line);border-radius:12px;padding:14px}.hypothesis strong{color:var(--blue)}.ids{margin-top:8px;color:var(--muted);font-size:.78rem;word-break:break-all}.evidence-title{margin:20px 0 10px;font-size:1rem}.evidence-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.evidence{border-left:3px solid var(--blue);background:#0c111d;border-radius:8px;padding:11px 12px;font-size:.84rem}.evidence.bad{border-color:var(--red)}.evidence small{display:block;color:var(--muted);margin-top:5px;word-break:break-all}.trace{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:18px;padding-top:15px;border-top:1px dashed var(--line);color:var(--muted);font-size:.82rem}.trace code{word-break:break-all}.note{margin:18px 2px 0;color:var(--muted);font-size:.9rem}.note strong{color:var(--text)}
+    .fault{border-color:#5b4a8a;color:#d4c4ff}.injected{margin-top:18px;padding:14px 16px;border:1px solid #5b4a8a;background:#1d1830;border-radius:12px;color:#e2d8ff;font-weight:700}.injected.control{border-color:#28684f;background:#11261f;color:#bff3da}.node .tag{display:block;font-size:.7rem;font-weight:700;color:#ff9aa3;letter-spacing:.06em;text-transform:uppercase}
+    .scorecard{margin-top:22px;border-top:1px solid var(--line);padding-top:20px}.scorecard h3{margin:4px 0 10px;font-size:1.15rem}.truth{color:var(--muted);font-size:.9rem;margin:0 0 10px}.truth strong{color:var(--text)}.table-wrap{overflow-x:auto;max-width:100%}table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}tr.ai-row td{background:#101a2b;font-weight:700}.hit{color:var(--green);font-weight:800}.miss{color:var(--red);font-weight:800}.na{color:var(--muted)}
+    .mode{display:flex;gap:12px;align-items:flex-start;margin:-8px 0 20px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#0f1525;color:var(--muted);cursor:pointer}.mode input{width:20px;height:20px;margin-top:2px;accent-color:#7cb8ff}.mode strong{color:var(--text)}
+    .trigger{margin-top:22px;border:1px solid #315c8c;background:#101b2e;border-radius:14px;padding:16px 18px}.trigger.quiet{border-color:#28684f;background:#11261f}.trigger h3{margin:4px 0 8px;font-size:1.15rem}.trigger ul{margin:8px 0 0;padding-left:20px}.trigger .limits{color:var(--muted);font-size:.84rem;margin-top:10px}
+    @media(max-width:760px){main{padding-top:22px}.top{display:block}.live{margin-top:14px}.actions,.checks,.evidence-grid{grid-template-columns:1fr}table{font-size:.8rem}th,td{padding:7px 5px}.result-head,.ai-head{display:block}.badge{display:inline-block;margin-top:12px}.flow{gap:6px}.node{min-width:104px}}
+  </style>
+</head>
+<body>
+  <main>
+    <section class="top">
+      <div><div class="eyebrow">Caso de uso · Loja virtual</div><h1>Consulta de pedido</h1><p class="lead">Cada cenário injeta uma falha conhecida, gera tráfego real e compara o diagnóstico da IA com o gabarito e com monitoramentos sem IA.</p></div>
+      <div class="live"><span class="dot"></span> Ambiente local</div>
+    </section>
+
+    <section class="actions" aria-label="Cenários da demonstração">
+      <button class="normal" data-action="normal">1 · Testar tudo certo</button>
+      <button class="failure" data-action="failure">2 · Users fora do ar</button>
+      <button class="recover" data-action="recover">3 · Recuperar serviços</button>
+      <button class="overload" data-action="overload">4 · Sobrecarga no Users</button>
+      <button class="fault" data-action="orders_error">5 · Erro interno no Orders</button>
+      <button class="fault" data-action="latency">6 · Lentidão no Users</button>
+      <button class="fault" data-action="intermittent">7 · Falha intermitente</button>
+      <button class="fault" data-action="injection">8 · Log malicioso</button>
+    </section>
+
+    <label class="mode"><input type="checkbox" id="auto"><span><strong>Disparo automático pelo etcd</strong> · o botão só injeta a falha e gera tráfego contínuo; o gatilho compara o snapshot do etcd com os limites e decide sozinho se chama a IA.</span></label>
+
+    <section class="result" id="result" aria-live="polite">
+      <div class="empty">Escolha um cenário para executar o teste real.</div>
+    </section>
+    <p class="note"><strong>Leitura principal:</strong> health local responde se o processo está ativo; a consulta do pedido valida a operação completa e suas dependências.</p>
+  </main>
+  <script>
+    const result = document.querySelector('#result');
+    const buttons = [...document.querySelectorAll('button[data-action]')];
+    const NAMES = {'gateway':'Gateway','orders-service':'Orders','users-service':'Users'};
+    const esc = value => String(value ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const healthText = check => check.status == null ? 'OFFLINE' : `HTTP ${check.status}`;
+    const healthMeta = check => check.elapsed_ms == null ? 'sem resposta' : `${check.elapsed_ms} ms`;
+    const verdictText = v => v.outcome === 'not_triggered' ? 'não acionada' : v.incident === true ? 'incidente' : v.incident === false ? 'sem incidente' : esc(v.outcome || 'inconclusivo');
+    const METRICS = {error_rate:'taxa de erro', p95_ms:'latência p95', unreachable:'inalcançável'};
+    const metricValue = (metric, value) => value == null ? '' : metric === 'error_rate' ? `${Math.round(value*100)}%` : `${Math.round(value)} ms`;
+    const violationText = v => v.metric === 'unreachable' ? `${NAMES[v.service]}: inalcançável` : `${NAMES[v.service]}: ${METRICS[v.metric]} ${metricValue(v.metric, v.value)} > limite ${metricValue(v.metric, v.limit)}`;
+    function triggerPanel(tr){
+      const l=tr.thresholds; const limits=`Limites no etcd: taxa de erro > ${Math.round(l.error_rate*100)}% (mín. ${l.min_requests} req.) · p95 > ${l.p95_ms} ms · serviço inalcançável`;
+      if(!tr.fired) return `<section class="trigger quiet"><div class="eyebrow">Gatilho automático</div><h3>Nenhum limite violado em ${tr.finished_after_s} s</h3><p class="summary">O gatilho observou os snapshots do etcd e não chamou a IA. Nenhum crédito gasto.</p><div class="limits">${limits}</div></section>`;
+      return `<section class="trigger"><div class="eyebrow">Gatilho automático</div><h3>Limite violado após ${tr.fired_after_s} s → IA acionada sozinha</h3><ul>${tr.violations.map(v=>`<li>${esc(violationText(v))}</li>`).join('')}</ul><div class="limits">${limits} · diagnóstico ${esc({done:'concluído',failed:'falhou',running:'em andamento'}[tr.status]||tr.status)} em ${tr.finished_after_s} s</div></section>`;
+    }
+    function aiPanel(ai){
+      if(!ai) return `<section class="ai"><div class="eyebrow">Diagnóstico do artefato</div><h3>IA não acionada</h3><p class="ai-summary">Sem violação de limite, não houve investigação.</p></section>`;
+      return `<section class="ai">
+          <div class="ai-head"><div><div class="eyebrow">Diagnóstico do artefato</div><h3>Conclusão da IA: ${esc(ai.outcome)}</h3></div><div class="real">IA REAL · ${esc(ai.model)}</div></div>
+          <p class="ai-summary">${esc(ai.summary)}</p>
+          <div class="hypotheses">${ai.hypotheses.map(h=>`<div class="hypothesis"><strong>${esc(h.service||'Cadeia distribuída')}</strong><br>${esc(h.description)}<div class="ids">Evidências citadas: ${h.evidence_ids.map(esc).join(', ')}</div></div>`).join('')}</div>
+          <h4 class="evidence-title">Evidências entregues à IA (${ai.evidence_count} no contexto; destaque das principais)</h4>
+          <div class="evidence-grid">${ai.evidence.map(e=>`<div class="evidence ${(e.error||(e.status>=400)||e.states?.some(s=>!s.reachable))?'bad':''}">${esc(evidenceText(e))}<small>ID ${esc(e.id)}</small></div>`).join('')}</div>
+          <div class="trace"><span>Execução persistida: <code>${esc(ai.run_id)}</code></span><span>${esc(ai.provider)} · ${Math.round(ai.duration_ms)} ms · ${ai.attempts} tentativa(s) · simulado: ${ai.simulated?'sim':'não'}</span></div>
+        </section>`;
+    }
+    const mark = value => value === null || value === undefined ? '<span class="na">—</span>' : value ? '<span class="hit">✓ acertou</span>' : '<span class="miss">✗ errou</span>';
+    const evidenceText = item => {
+      if(item.kind==='snapshot') return item.states.map(s=>`${s.service}: ${s.reachable?'alcançável':'indisponível'}${s.status?` (HTTP ${s.status})`:''}`).join(' · ');
+      const dependency=item.dependency?` → ${item.dependency}`:'';
+      const status=item.status?` · HTTP ${item.status}`:'';
+      const error=item.error?` · ${item.error}`:'';
+      const path=item.path&&!['/orders/1','/users/1'].includes(item.path)?` · caminho: ${item.path}`:'';
+      return `${item.service}${dependency} · ${item.event}${status}${error}${path}`;
+    };
+    function render(data){
+      const h=data.health, t=data.traffic, e=data.expected, ai=data.ai, ev=data.evaluation;
+      const cards=[['Gateway',h.gateway],['Orders',h['orders-service']],['Users',h['users-service']]].map(([label,check])=>`<div class="card"><div class="label">${label} · /health</div><div class="value ${check.status===200?'good':'bad'}">${healthText(check)}</div><div class="meta">${healthMeta(check)}</div></div>`).join('')
+        +`<div class="card"><div class="label">Consultas de pedido</div><div class="value ${t.failed?'bad':'good'}">${t.failed}/${t.total} falharam</div><div class="meta">${t.concurrent?'simultâneas':'sequenciais'}${t.mean_elapsed_ms!=null?` · média ${t.mean_elapsed_ms} ms`:''}</div></div>`;
+      const node = service => `<div class="node ${e.service===service?'bad':'good'}">${NAMES[service]}${e.service===service?'<span class="tag">falha injetada</span>':''}</div>`;
+      const injected = e.incident ? `Falha injetada: <strong>${esc(e.fault)}</strong> em ${esc(NAMES[e.service])}${t.injection?' · requisição maliciosa enviada ao Gateway':''}` : 'Sem falha injetada · grupo de controle';
+      const rows=[['Health checks','health'],['Sonda sintética','probe'],['IA (artefato)','ai']].map(([label,key])=>{const r=ev[key];return `<tr class="${key==='ai'?'ai-row':''}"><td>${label}</td><td>${verdictText(r)}</td><td>${esc(r.service?NAMES[r.service]:'—')}</td><td>${mark(r.detection_correct)}</td><td>${mark(r.localization_correct)}</td></tr>`}).join('');
+      result.innerHTML=`
+        <div class="result-head"><div><div class="eyebrow">Resultado observado</div><h2>${esc(data.title)}</h2><p class="summary">${esc(data.description)}</p></div><span class="badge ${data.ok?(e.incident?'bad':'ok'):'bad'}">${data.ok?(e.incident?'FALHA REPRODUZIDA':'CONTROLE OK'):'VERIFICAR AMBIENTE'}</span></div>
+        <div class="checks">${cards}</div>
+        <div class="injected ${e.incident?'':'control'}">${injected}</div>
+        <div class="flow">${node('gateway')}<div class="arrow">→</div>${node('orders-service')}<div class="arrow">→</div>${node('users-service')}<div class="arrow">→</div><div class="node ${t.failed?'bad':'good'}">${t.failed?'Clientes afetados':'Pedido exibido'}</div></div>
+        <div class="details"><span>Correlação: <code>${esc(data.request_id)}</code> (uma por requisição: <code>.01</code>, <code>.02</code>…)</span><span>${esc(data.timestamp)}</span></div>
+        ${data.mode==='auto'?triggerPanel(data.trigger):''}
+        <section class="scorecard">
+          <div class="eyebrow">Comparação com o gabarito</div><h3>Quem identificou o problema?</h3>
+          <p class="truth">Gabarito: <strong>${e.incident?`incidente em ${esc(NAMES[e.service])}`:'sem incidente'}</strong></p>
+          <div class="table-wrap"><table><thead><tr><th>Método</th><th>Concluiu</th><th>Serviço apontado</th><th>Detecção</th><th>Localização</th></tr></thead><tbody>${rows}</tbody></table></div>
+        </section>
+        ${aiPanel(ai)}`;
+    }
+    async function run(action){
+      buttons.forEach(b=>b.disabled=true);
+      const auto=document.querySelector('#auto').checked;
+      result.innerHTML=`<div class="empty"><div><div class="spinner"></div>${auto?'Falha aplicada. Gerando tráfego contínuo e aguardando o gatilho do etcd decidir…':'Aplicando o cenário, gerando tráfego, coletando evidências e analisando com IA…'}</div></div>`;
+      try{const response=await fetch(auto?`/api/auto/${action}`:`/api/${action}`,{method:'POST'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Falha no teste');render(data)}catch(error){result.innerHTML=`<div class="empty"><div><strong>Não foi possível executar.</strong><br>${esc(error.message)}</div></div>`}finally{buttons.forEach(b=>b.disabled=false)}
+    }
+    buttons.forEach(button=>button.addEventListener('click',()=>run(button.dataset.action)));
+  </script>
+</body>
+</html>
