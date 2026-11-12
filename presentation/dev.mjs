@@ -46,7 +46,6 @@ const server = http.createServer(async (req, res) => {
       "/store.css": "store.css",
       "/store.mjs": "store.mjs",
       "/lib/store.mjs": "lib/store.mjs",
-      "/docker.html": "docker.html",
     };
     if (!files[pathname]) return res.status(404).end("Not found");
     res.setHeader(

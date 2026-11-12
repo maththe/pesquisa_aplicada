@@ -10,6 +10,16 @@ Protótipo acadêmico para apoiar um operador na investigação de falhas no flu
 estado atual no etcd e histórico no PostgreSQL, constrói um contexto delimitado
 e registra diagnósticos com evidências rastreáveis.
 
+No núcleo Docker, o diagnóstico pode ser pedido pelo operador (CLI ou painel web
+`python presentation/app.py`) ou disparado
+automaticamente quando os sinais publicados no etcd violam limites definidos.
+Oito cenários com falhas injetadas e gabarito permitem comparar o diagnóstico
+com health checks e com uma sonda sintética.
+
+O diagnóstico usa LangChain com uma API no formato Chat Completions e exige
+modelo, URL e chave. Coleta e consultas ao histórico funcionam
+independentemente dessas credenciais.
+
 O núcleo de diagnóstico usa uma CLI e LangChain com API compatível com Chat
 Completions. A versão 2 acrescenta a **Nexo**, loja experimental executável na
 Vercel, com carrinho persistente local, pagamento sandbox, circuito de proteção,
@@ -34,7 +44,8 @@ Os pagamentos e falhas são controlados; nenhum valor é cobrado. Carrinho,
 comprovantes, avisos e evidências são locais ao navegador; com Upstash Redis
 configurado, os eventos do servidor também ficam salvos e são consultados em
 `/api/logs` ([logs no servidor](docs/vercel.md#logs-salvos-no-servidor)). O modo **Regras**
-é o padrão e funciona sem IA; o modo **Agente IA** exige configuração no servidor. O painel Docker anterior permanece em `presentation/docker.html`.
+é o padrão e funciona sem IA; o modo **Agente IA** exige configuração no servidor. O painel do núcleo Docker (oito cenários, gatilho automático e placar com gabarito)
+é servido localmente por `python presentation/app.py`.
 
 - [PBL 8 — melhorias e avaliação](docs/pbl8-melhorias.md).
 - [PJBL 3 — construção, demonstração e evidências](docs/pjbl3-artefato.md).
@@ -68,6 +79,8 @@ como execução real de IA. O modelo avaliado nas evidências oficiais é
 - [Cenário, caso de uso e critérios de demonstração](docs/caso-de-uso.md).
 - [Roteiro de apresentação e execução](docs/demonstracao.md).
 - [Estado da implementação e limitações](docs/estado-da-implementacao.md).
+- [Avaliação com gabarito e baselines](docs/avaliacao.md).
+- [Gatilho automático pelo etcd](docs/gatilho-automatico.md).
 - `docs/evidencias/`: registros gerados a cada execução, sem sobrescrever anteriores.
 
 ## Executar
@@ -166,6 +179,37 @@ O roteiro sempre exige diagnóstico real e verifica os resultados das três etap
 Cada execução cria uma pasta própria em `docs/evidencias/`, com relatório Markdown
 e JSONs de cada etapa. O controle experimental fica em arquivo separado.
 
+## Avaliação com gabarito
+
+```powershell
+.\.venv\Scripts\python.exe -m experiments.evaluate --repetitions 1
+```
+
+Executa oito cenários com falhas injetadas (Users parado, sobrecarga, erro interno
+e falha intermitente no Orders, lentidão no Users, log malicioso e dois controles),
+compara a IA com health checks e com uma sonda sintética e grava
+`docs/evidencias/avaliacao-<data>/relatorio.md`. Método e ameaças à validade em
+[docs/avaliacao.md](docs/avaliacao.md).
+
+A interface de apresentação executa os mesmos cenários, um por clique:
+
+```powershell
+.\.venv\Scripts\python.exe -B presentation\app.py
+```
+
+## Gatilho automático
+
+O coletor publica no etcd, junto com o snapshot, sinais de negócio por serviço
+(taxa de erro, p95, falhas de dependência). O serviço `trigger` observa essa chave
+e, quando algum limite guardado em `/observability/thresholds` é violado, pede o
+diagnóstico sozinho. Fica no profile `auto` para não gastar créditos sem pedir:
+
+```powershell
+docker compose --profile auto up -d trigger
+```
+
+Detalhes em [docs/gatilho-automatico.md](docs/gatilho-automatico.md).
+
 ## Comandos de investigação
 
 ```powershell
@@ -192,6 +236,9 @@ app/telemetry.py              Emissão de logs e correlação de requisições
 app/cli.py                    Interface de investigação
 tests/                        Testes unitários e de integração
 experiments/demonstrate.py    Cenário automatizado de falha e recuperação
+experiments/scenarios.py      Cenários com falhas injetadas, gabarito e baselines
+experiments/evaluate.py       Avaliação em lote dos cenários
+presentation/                 Interface web da apresentação
 docs/                         Caso de uso, roteiro e registros
 ```
 
@@ -204,7 +251,10 @@ O histórico é gravado antes de publicar no etcd, preservando dados se este fal
 ## Configuração e limites
 
 `GATEWAY_PORT`, `USERS_PORT`, `ORDERS_PORT`, `ETCD_PORT` e `ETCD_PEER_PORT`
-alteram as portas. `HTTP_TIMEOUT_SECONDS` controla o timeout entre serviços.
+alteram as portas. `HTTP_TIMEOUT_SECONDS` controla o timeout entre serviços;
+o Gateway usa `GATEWAY_HTTP_TIMEOUT_SECONDS` (3 s), maior que o de Orders, para que
+um atraso em Users apareça como timeout em Orders. `USERS_FAULT_*`, `ORDERS_FAULT_*`
+e `USERS_OVERLOAD_*` injetam falhas experimentais e ficam zerados por padrão.
 `OBS_INTERVAL_SECONDS` controla a coleta e `OBS_SNAPSHOT_TTL_SECONDS` deve ser
 maior que o intervalo. Para execução Python fora do Compose, use também
 `OBS_DATABASE_URL`, `OBS_ETCD_URL`, `OBS_GATEWAY_URL`, `OBS_USERS_URL`,

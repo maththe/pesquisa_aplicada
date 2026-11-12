@@ -34,9 +34,10 @@ medida de abandono, receita perdida ou tempo humano de investigação.
 | Difícil inspeção da evolução | Linha do tempo, IDs, avaliação e exportação | Três relatórios locais com resultados observados |
 | Possível confusão entre IA e regras | Identificação explícita do modo | Padrão “Por regras · sem IA”; endpoint opcional de LLM |
 
-O código anterior permanece disponível no controlador Python e em
-`presentation/docker.html`; sua infraestrutura PostgreSQL/etcd não foi
-substituída silenciosamente por armazenamento de produção. São dois modos de
+O núcleo Docker continua disponível no controlador Python
+(`python presentation/app.py`, hoje com o painel `presentation/diagnostico.html`);
+sua infraestrutura PostgreSQL/etcd não foi substituída silenciosamente por
+armazenamento de produção. São dois modos de
 execução com escopos distintos.
 
 ## Arquitetura e decisões

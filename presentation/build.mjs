@@ -1,4 +1,4 @@
-import { mkdir, readFile, writeFile, copyFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 const core = (await readFile("lib/store.mjs", "utf8")).replace(
   /^export /gm,
   "",
@@ -13,4 +13,3 @@ const html = (await readFile("page.html", "utf8"))
 await writeFile("index.html", html);
 await mkdir("public", { recursive: true });
 await writeFile("public/index.html", html);
-await copyFile("docker.html", "public/docker.html");

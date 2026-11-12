@@ -24,8 +24,7 @@ Importar `HenryMendesr/pesquisa_aplicada` e definir:
 `presentation/vercel.json` contém o build. Se houver overrides no painel, remover
 ou atualizar os conflitantes. O `index.html` versionado é autossuficiente e também
 funciona com o comando antigo `mkdir -p public && cp index.html public/index.html`.
-Nesse comando antigo, o link secundário `docker.html` não é copiado: usar o novo
-build para disponibilizar também essa página. As funções `api/*.mjs` precisam
+As funções `api/*.mjs` precisam
 ser detectadas como funções pela Vercel; não publique somente a pasta `public`
 como upload estático.
 
@@ -113,8 +112,10 @@ Use o endereço local mostrado/configurado pelo servidor no seu navegador.
 
 ## Experimento original com Docker
 
-`docker.html` mantém o painel anterior. Esse modo continua exigindo backend com
-Docker, HTTPS, `PRESENTATION_API_TOKEN` e `PRESENTATION_ALLOWED_ORIGINS` com a
-origem exata autorizada. Seu controlador é `python presentation/app.py` na raiz
-do repositório; é separado das funções serverless. A chave da LLM nunca deve
-ser gravada no HTML. A página Nexo não precisa desse backend externo.
+O núcleo Docker tem painel próprio, servido localmente por
+`python presentation/app.py` (`presentation/diagnostico.html`): oito cenários com
+falhas injetadas, gatilho automático pelo etcd e placar com gabarito. Ele não é
+publicado na Vercel, porque depende do Docker Compose local. A chave da LLM fica
+no `.env` e nunca é gravada no HTML. A página Nexo não precisa desse backend.
+O antigo `docker.html`, com controlador remoto por token, foi substituído por
+esse painel local.

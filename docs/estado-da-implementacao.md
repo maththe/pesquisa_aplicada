@@ -23,12 +23,21 @@ endpoint e credencial do provedor escolhido.
 | 11 | CLI de estado, contexto, diagnóstico, evidências e histórico | Implementada |
 | 12 | Integração com PostgreSQL, etcd e LangChain | Disponível no Compose e no roteiro automatizado |
 | 13 | Cenário de falha com controlador experimental separado | Normal, indisponibilidade e recuperação |
+| 14 | Correlação hierárquica (`cenario.01`, `cenario.02`) | Implementada; contexto busca o prefixo |
+| 15 | Injeção de falhas por serviço e oito cenários com gabarito | Implementada (`experiments/scenarios.py`) |
+| 16 | Avaliação em lote com baselines (health checks e sonda sintética) | Implementada; uma rodada registrada |
+| 17 | Sinais de negócio no snapshot, limites no etcd e gatilho automático | Implementada (`trigger`, profile `auto`) |
+| 18 | Interface web de apresentação, modos manual e automático | Implementada (`presentation/`) |
 
 ## Contratos preservados
 
 - Valores desconhecidos permanecem null; datas possuem timezone e são normalizadas em UTC.
-- etcd guarda somente o estado atual em `/observability/snapshot/current`,
-  com lease para expiração. PostgreSQL mantém o histórico.
+- etcd guarda o estado atual em `/observability/snapshot/current` (com lease para
+  expiração), os limites em `/observability/thresholds` e o último disparo do
+  gatilho em `/observability/trigger/last`. PostgreSQL mantém o histórico.
+- O snapshot inclui, por serviço, taxa de erro, latência p95 e falhas de dependência
+  dos últimos 30 s, calculadas a partir dos logs ingeridos.
+- Sondagens `/health` e `/metrics` não são registradas como tráfego de negócio.
 - Logs têm checkpoint por arquivo, deduplicação por log_id e ingestão transacional.
   PostgreSQL serializa a atualização dos checkpoints com bloqueio transacional.
 - Timestamp do evento e ingested_at são preservados separadamente.
@@ -41,16 +50,18 @@ endpoint e credencial do provedor escolhido.
   LLMExecution → DiagnosticResponse.
 - O provedor não recebe objetos de banco, etcd, Docker ou controle de falhas.
 - Não há agentes, execução de recomendações, correção automática da aplicação
-  ou diagnóstico alternativo baseado em regras.
+  ou diagnóstico alternativo baseado em regras. Os limites decidem apenas quando
+  investigar; o motivo do disparo não é enviado à LLM.
 - Resultados suportados: incident, no_incident, insufficient_evidence e failure.
 - Há no máximo uma correção de saída inválida. As tentativas ficam preservadas.
 - Logs de controle e rótulos experimentais permanecem fora do contexto da LLM.
 
 ## Verificação
 
-A suíte local cobre as APIs originais e o pipeline novo, incluindo falha de
-coleta, indisponibilidade do etcd, checkpoints, rotação, duplicatas, janela
-temporal, truncamento, resposta inválida, referência inventada e reparo limitado.
+A suíte local (24 testes) cobre sobrecarga, injeção de falhas, correlação por
+prefixo, baselines e pontuação, sinais de negócio, limites, regras de disparo
+(uma vez por incidente, rearme e intervalo mínimo) e o roteiro de demonstração.
+Ruff, formatação e mypy estrito passam em todos os arquivos.
 
 Os testes usam SQLite temporário e HTTP simulado. O roteiro
 `experiments/demonstrate.py` verifica as integrações reais com PostgreSQL, etcd e
@@ -60,9 +71,11 @@ Novos diagnósticos sempre utilizam LangChain com autenticação.
 
 ## Limites e pendências
 
-- Configurar e executar o provedor real informado pelo estudante.
-- Examinar a adequação semântica das hipóteses geradas.
-- Executar avaliação formal posterior, com cenários repetidos e critérios definidos.
+- Examinar a adequação semântica das hipóteses geradas; o gabarito mede apenas
+  detecção e serviço de origem.
+- Ampliar a avaliação: uma rodada por cenário indica tendência, não taxa de acerto
+  (ver `docs/avaliacao.md`).
+- Limites do gatilho são fixos e definidos manualmente.
 - Sem retenção/rotação automática, autenticação de produção ou alta disponibilidade.
 - A ingestão lê os arquivos atuais conhecidos; uma rotação externa que remova
   linhas ainda não ingeridas pode perder eventos.
