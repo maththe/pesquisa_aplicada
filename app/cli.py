@@ -12,9 +12,10 @@ from app.monitoring.collector import collect_once
 from app.monitoring.context import build_context
 from app.monitoring.current import CurrentState
 from app.monitoring.diagnostics import diagnose
-from app.monitoring.models import DiagnosticRequest, utcnow
+from app.monitoring.models import DiagnosticRequest, Thresholds, utcnow
 from app.monitoring.providers import LangChainProvider
 from app.monitoring.storage import History, migrate
+from app.monitoring.trigger import watch
 
 
 def emit(value: Any) -> None:
@@ -37,13 +38,51 @@ def parser() -> argparse.ArgumentParser:
         command.add_argument("--end", help="Fim ISO 8601 com timezone; padrão: agora")
         command.add_argument("--service", choices=["gateway", "orders-service", "users-service"])
         command.add_argument("--request-id", help="X-Request-ID da requisição de negócio")
+    commands.add_parser("watch", help="Gatilho automático: diagnostica quando um limite é violado")
+    limits = commands.add_parser("thresholds", help="Mostra ou altera os limites no etcd")
+    limits.add_argument("--error-rate", type=float, help="Taxa de erro máxima (0 a 1)")
+    limits.add_argument("--p95-ms", type=float, help="Latência p95 máxima em ms")
+    limits.add_argument("--min-requests", type=int, help="Requisições mínimas para avaliar")
+    commands.add_parser("trigger", help="Último disparo do gatilho automático")
     commands.add_parser("history", help="Últimas 20 execuções")
     commands.add_parser("evidence", help="Evidência original e data de ingestão").add_argument("id")
     commands.add_parser("run", help="Execução completa pelo ID").add_argument("id")
     return root
 
 
+def execute_etcd(args: argparse.Namespace, settings: MonitorSettings) -> int:
+    current = CurrentState(settings)
+    try:
+        if args.command == "trigger":
+            record = current.read_trigger()
+            emit(record if record else {"status": "never_triggered"})
+            return 0
+        thresholds = current.read_thresholds()
+        changes = {
+            "error_rate": args.error_rate,
+            "p95_ms": args.p95_ms,
+            "min_requests": args.min_requests,
+        }
+        changes = {key: value for key, value in changes.items() if value is not None}
+        if changes:
+            thresholds = Thresholds.model_validate({**thresholds.model_dump(), **changes})
+            current.write_thresholds(thresholds)
+        emit(thresholds)
+        return 0
+    finally:
+        current.close()
+
+
 async def execute(args: argparse.Namespace, settings: MonitorSettings) -> int:
+    if args.command in ("thresholds", "trigger"):
+        return await asyncio.to_thread(execute_etcd, args, settings)
+    if args.command == "watch":
+        try:
+            await asyncio.to_thread(watch, settings, emit)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 1
+        return 0
     if args.command == "diagnose":
         try:
             settings.require_llm()

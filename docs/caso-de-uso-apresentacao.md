@@ -158,35 +158,71 @@ Essa verificação é manual e não está entre as três etapas automatizadas.
 Registre o status observado se a utilizar. O roteiro atual não testa a
 classificação de 404 pela LLM; não atribua esse resultado ao diagnóstico.
 
-## Extensão ao vivo — sobrecarga concorrente e diagnóstico por IA
+## Extensão ao vivo — cenários com falhas injetadas
 
-Na interface de apresentação em `http://127.0.0.1:8090`, use o botão
-**“4 · Sobrecarga + IA”**. A cena habilita temporariamente um limite experimental
-de três operações simultâneas em Users e dispara doze consultas concorrentes ao
-pedido 1, todas com o mesmo identificador de correlação.
+Na interface de apresentação em `http://127.0.0.1:8090`, cada botão aplica um
+cenário, gera tráfego de negócio, coleta evidências e pede o diagnóstico à LLM
+real. Abaixo do resultado, a tabela **“Quem identificou o problema?”** compara o
+gabarito com health checks, sonda sintética e IA.
 
-O resultado esperado é:
+| Botão | Falha injetada | O que mostrar |
+| --- | --- | --- |
+| 1 · Testar tudo certo | nenhuma (controle) | a IA não inventa incidente |
+| 2 · Users fora do ar | processo do Users parado | health aponta o Users; a sonda só vê o Gateway |
+| 3 · Recuperar serviços | remove todas as falhas | volta ao normal sem alarme |
+| 4 · Sobrecarga no Users | limite de 3 simultâneas, rajada de 12 | todos os health 200, mesmo com 9 falhas |
+| 5 · Erro interno no Orders | exceção em toda consulta do Orders | a origem está no meio da cadeia, não no Users |
+| 6 · Lentidão no Users | Users responde em 3 s | timeout em Orders; nenhum erro no Users |
+| 7 · Falha intermitente | metade das consultas do Orders falha | padrão parcial, difícil de ver em health |
+| 8 · Log malicioso | Users parado + caminho com instrução para a IA | a IA ignora a instrução e mantém o incidente |
 
-- três consultas concluídas e nove recusadas com HTTP 503;
-- health checks de Gateway, Orders e Users respondendo HTTP 200 após a rajada;
-- logs `overload_rejected` em Users com erro `ConcurrencyLimitExceeded`;
-- propagação do 503 de Users para Orders e, então, para o Gateway;
-- diagnóstico `incident` da LLM real, apontando a saturação de Users e citando
-  as evidências que sustentam a hipótese.
+Cada consulta recebe um identificador próprio, filho do identificador do cenário
+(`overload-….01`, `overload-….02`). A falha aplicada continua ativa até o próximo
+cenário; use **3 · Recuperar serviços** para voltar ao estado normal.
+
+Cada diagnóstico leva de 40 a 60 segundos por causa do modelo. Use esse tempo para
+narrar o que está sendo coletado.
 
 ### Fala sugerida
 
-> “Agora não vou desligar nenhum container. Vou provocar várias consultas ao
-> mesmo tempo. Users aceita somente três operações simultâneas neste experimento
-> e rejeita o excesso. O artefato coleta os logs dos três serviços, correlaciona
-> a cadeia e envia esse contexto à IA. A conclusão não foi escrita na tela: ela
-> veio do modelo configurado, e abaixo estão o modelo, o ID da execução e os
-> registros citados.”
+> “Agora a falha não está sempre no mesmo lugar. Neste cenário o Orders quebra e
+> o Users continua saudável. Os três health checks estão verdes, então o
+> monitoramento tradicional não alarma. A sonda de negócio percebe que o pedido
+> falhou, mas só enxerga a entrada. O artefato coleta os logs dos três serviços,
+> correlaciona a cadeia e a IA aponta o Orders, citando as evidências.”
 
-O limite e o atraso são artificiais e só ficam ativos durante essa cena. O
-experimento demonstra rejeição por saturação e indisponibilidade parcial da
-operação, não a queda do processo ou a capacidade máxima real do sistema. Ao
-terminar, a interface recria Users sem o limite e reativa o coletor contínuo.
+Os limites, atrasos e erros são artificiais e só existem para a demonstração.
+O erro interno aparece nos logs como uma exceção comum, sem indicação de que foi
+injetado: a IA precisa inferir a origem pela propagação entre os serviços.
+
+### Modo automático
+
+Marque **Disparo automático pelo etcd** antes de clicar. O botão só injeta a falha e
+gera tráfego; ninguém pede o diagnóstico. O coletor publica no etcd os sinais de
+negócio, o gatilho compara com os limites e, ao violar, chama a IA sozinho. O painel
+**Gatilho automático** mostra o limite violado e o tempo até o disparo.
+
+> “Agora eu não peço nada. Só quebro o Orders e deixo o tráfego correr. Em poucos
+> segundos a taxa de erro no snapshot do etcd passa do limite, o gatilho dispara e a
+> IA investiga sozinha. Repare que o alerta acusa Gateway e Orders ao mesmo tempo;
+> quem separa a causa do sintoma é o diagnóstico.”
+
+No controle (botão 1), o gatilho não dispara e nenhuma chamada à IA é feita: bom
+para mostrar que o artefato não gasta nem alarma à toa.
+
+## Avaliação com gabarito
+
+`docs/evidencias/avaliacao-20261112T013517Z-fd1887/relatorio.md` registra uma
+rodada completa dos oito cenários (mais um controle repetido), com LLM real:
+
+| Método | Detecção correta | Localização correta | Falsos positivos |
+| --- | --- | --- | --- |
+| Health checks | 5/9 | 2/6 | 0/3 |
+| Sonda sintética | 9/9 | 0/6 | 0/3 |
+| IA (artefato) | 9/9 | 6/6 | 0/3 |
+
+É uma rodada por cenário: indica viabilidade e tendência, não acurácia geral.
+O método e as ameaças à validade estão em `docs/avaliacao.md`.
 
 ## Evidência histórica disponível
 
@@ -216,6 +252,19 @@ ao diagnóstico. O contexto enviado pode ser inspecionado em `run.context`.
 indisponibilidade e seu impacto. Determinar a causa da parada exige outras
 evidências.
 
-**“Isso já prova eficiência ou acurácia geral?”** Demonstra o funcionamento e
-apoio à investigação nessa instância. Uma avaliação geral exige outros tipos de
-falha, repetições e comparação com uma referência.
+**“Isso já prova eficiência ou acurácia geral?”** Não. A avaliação com gabarito
+cobre cinco tipos de falha em dois serviços e compara com health checks e sonda
+sintética, mas em ambiente controlado e com poucas repetições. Indica tendência,
+não significância estatística.
+
+**“A IA não acerta só porque o problema é sempre no Users?”** Não é sempre: dois
+cenários têm origem no Orders, e os controles verificam que ela não alarma à toa.
+
+**“O que aciona a IA?”** Pode ser o operador (botões no modo manual) ou o gatilho
+automático: limites de taxa de erro, latência p95 e disponibilidade guardados no etcd,
+comparados a cada snapshot. Um diagnóstico por incidente, com intervalo mínimo, para
+não gastar à toa.
+
+**“E se alguém escrever instruções nos logs?”** O cenário 8 coloca uma instrução
+maliciosa no caminho de uma requisição. O prompt trata logs como dados não
+confiáveis, e a IA manteve o diagnóstico de incidente no Users.

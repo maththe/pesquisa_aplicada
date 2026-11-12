@@ -17,6 +17,8 @@ histórico funcionam independentemente dessas credenciais.
 - [Cenário, caso de uso e critérios de demonstração](docs/caso-de-uso.md).
 - [Roteiro de apresentação e execução](docs/demonstracao.md).
 - [Estado da implementação e limitações](docs/estado-da-implementacao.md).
+- [Avaliação com gabarito e baselines](docs/avaliacao.md).
+- [Gatilho automático pelo etcd](docs/gatilho-automatico.md).
 - `docs/evidencias/`: registros gerados a cada execução, sem sobrescrever anteriores.
 
 ## Executar
@@ -115,6 +117,37 @@ O roteiro sempre exige diagnóstico real e verifica os resultados das três etap
 Cada execução cria uma pasta própria em `docs/evidencias/`, com relatório Markdown
 e JSONs de cada etapa. O controle experimental fica em arquivo separado.
 
+## Avaliação com gabarito
+
+```powershell
+.\.venv\Scripts\python.exe -m experiments.evaluate --repetitions 1
+```
+
+Executa oito cenários com falhas injetadas (Users parado, sobrecarga, erro interno
+e falha intermitente no Orders, lentidão no Users, log malicioso e dois controles),
+compara a IA com health checks e com uma sonda sintética e grava
+`docs/evidencias/avaliacao-<data>/relatorio.md`. Método e ameaças à validade em
+[docs/avaliacao.md](docs/avaliacao.md).
+
+A interface de apresentação executa os mesmos cenários, um por clique:
+
+```powershell
+.\.venv\Scripts\python.exe -B presentation\app.py
+```
+
+## Gatilho automático
+
+O coletor publica no etcd, junto com o snapshot, sinais de negócio por serviço
+(taxa de erro, p95, falhas de dependência). O serviço `trigger` observa essa chave
+e, quando algum limite guardado em `/observability/thresholds` é violado, pede o
+diagnóstico sozinho. Fica no profile `auto` para não gastar créditos sem pedir:
+
+```powershell
+docker compose --profile auto up -d trigger
+```
+
+Detalhes em [docs/gatilho-automatico.md](docs/gatilho-automatico.md).
+
 ## Comandos de investigação
 
 ```powershell
@@ -141,6 +174,9 @@ app/telemetry.py              Emissão de logs e correlação de requisições
 app/cli.py                    Interface de investigação
 tests/                        Testes unitários e de integração
 experiments/demonstrate.py    Cenário automatizado de falha e recuperação
+experiments/scenarios.py      Cenários com falhas injetadas, gabarito e baselines
+experiments/evaluate.py       Avaliação em lote dos cenários
+presentation/                 Interface web da apresentação
 docs/                         Caso de uso, roteiro e registros
 ```
 
@@ -153,7 +189,10 @@ O histórico é gravado antes de publicar no etcd, preservando dados se este fal
 ## Configuração e limites
 
 `GATEWAY_PORT`, `USERS_PORT`, `ORDERS_PORT`, `ETCD_PORT` e `ETCD_PEER_PORT`
-alteram as portas. `HTTP_TIMEOUT_SECONDS` controla o timeout entre serviços.
+alteram as portas. `HTTP_TIMEOUT_SECONDS` controla o timeout entre serviços;
+o Gateway usa `GATEWAY_HTTP_TIMEOUT_SECONDS` (3 s), maior que o de Orders, para que
+um atraso em Users apareça como timeout em Orders. `USERS_FAULT_*`, `ORDERS_FAULT_*`
+e `USERS_OVERLOAD_*` injetam falhas experimentais e ficam zerados por padrão.
 `OBS_INTERVAL_SECONDS` controla a coleta e `OBS_SNAPSHOT_TTL_SECONDS` deve ser
 maior que o intervalo. Para execução Python fora do Compose, use também
 `OBS_DATABASE_URL`, `OBS_ETCD_URL`, `OBS_GATEWAY_URL`, `OBS_USERS_URL`,

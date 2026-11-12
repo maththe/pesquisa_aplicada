@@ -9,7 +9,11 @@ from starlette.responses import JSONResponse
 from app.config import Settings
 from app.microservices import gateway, orders, users
 from app.microservices.client import DependencyFailure, ServiceRuntime
-from app.microservices.middleware import OverloadGuardMiddleware, RequestLoggingMiddleware
+from app.microservices.middleware import (
+    FaultInjectionMiddleware,
+    OverloadGuardMiddleware,
+    RequestLoggingMiddleware,
+)
 from app.models import HealthResponse
 from app.monitoring.metrics import sample_metrics
 from app.monitoring.models import Metrics
@@ -48,6 +52,12 @@ def build_app(
             events=events,
             concurrency_limit=settings.overload_concurrency_limit,
             delay_ms=settings.overload_delay_ms,
+        )
+    if settings.fault_error_rate or settings.fault_latency_ms:
+        app.add_middleware(
+            FaultInjectionMiddleware,
+            error_rate=settings.fault_error_rate,
+            latency_ms=settings.fault_latency_ms,
         )
     app.add_middleware(RequestLoggingMiddleware, events=events)
 

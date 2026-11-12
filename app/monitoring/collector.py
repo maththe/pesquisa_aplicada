@@ -10,6 +10,7 @@ from app.models import HealthResponse
 from app.monitoring.current import CurrentState
 from app.monitoring.ingestion import ingest_logs
 from app.monitoring.models import Metrics, Probe, Snapshot
+from app.monitoring.signals import business_signals
 from app.monitoring.storage import History
 
 
@@ -66,10 +67,12 @@ async def collect_once(
         probes = await asyncio.gather(
             *(probe_service(client, service, url) for service, url in settings.targets().items())
         )
-    snapshot = Snapshot(services=list(probes))
+    # Ingerir logs antes de montar o snapshot: os sinais de negócio vêm deles.
+    ingestion = await asyncio.to_thread(ingest_logs, history, settings.log_dir)
+    signals = await asyncio.to_thread(business_signals, history, settings.signal_window_seconds)
+    snapshot = Snapshot(services=list(probes), signals=signals)
     # Primeiro persistir histórico. etcd pode falhar sem perder as evidências.
     await asyncio.to_thread(history.save_snapshot, snapshot)
-    ingestion = await asyncio.to_thread(ingest_logs, history, settings.log_dir)
     current_error = None
     try:
         await asyncio.to_thread(current.publish, snapshot)

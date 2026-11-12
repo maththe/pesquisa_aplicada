@@ -19,6 +19,9 @@ class Settings(BaseSettings):
     log_dir: Path | None = None
     overload_concurrency_limit: int = Field(default=0, ge=0, le=10000)
     overload_delay_ms: int = Field(default=0, ge=0, le=30000)
+    # Injeção de falhas para os cenários experimentais; zero desativa.
+    fault_error_rate: float = Field(default=0, ge=0, le=1)
+    fault_latency_ms: int = Field(default=0, ge=0, le=30000)
 
 
 class MonitorSettings(BaseSettings):
@@ -37,6 +40,9 @@ class MonitorSettings(BaseSettings):
     snapshot_ttl_seconds: int = Field(default=30, ge=5)
     context_max_items: int = Field(default=80, ge=1, le=500)
     context_max_chars: int = Field(default=50000, ge=3000, le=500000)
+    signal_window_seconds: int = Field(default=30, ge=5, le=3600)
+    trigger_cooldown_seconds: int = Field(default=300, ge=0, le=86400)
+    trigger_lookback_seconds: int = Field(default=60, ge=10, le=3600)
     llm_url: AnyHttpUrl | None = None
     llm_model: str = ""
     llm_api_key: SecretStr = SecretStr("")

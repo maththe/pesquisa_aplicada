@@ -17,22 +17,32 @@
     .flow{display:flex;align-items:center;gap:10px;margin-top:20px;overflow:auto;padding-bottom:2px}.node{padding:11px 14px;border-radius:11px;border:1px solid var(--line);background:#0c111d;min-width:120px;text-align:center;font-weight:750}.node.good{border-color:#28684f}.node.bad{border-color:#7b3540;color:#ff9aa3}.arrow{color:var(--muted);font-size:1.3rem}.details{display:flex;justify-content:space-between;gap:16px;margin-top:18px;color:var(--muted);font-size:.84rem;flex-wrap:wrap}code{color:#b8d8ff}.empty{display:grid;place-items:center;min-height:170px;color:var(--muted);text-align:center}.spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--blue);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 12px}@keyframes spin{to{transform:rotate(360deg)}}
     .load-banner{margin-top:18px;padding:14px 16px;border:1px solid #8a6330;background:#2e2417;border-radius:12px;color:#ffdca5;font-weight:700}.ai{margin-top:22px;border-top:1px solid var(--line);padding-top:22px}.ai-head{display:flex;align-items:center;justify-content:space-between;gap:16px}.ai h3{font-size:1.3rem;margin:4px 0}.ai-summary{font-size:1rem;margin:12px 0;color:#dce5f6}.real{display:inline-flex;align-items:center;gap:7px;color:var(--green);font-size:.8rem;font-weight:800}.real:before{content:'';width:7px;height:7px;border-radius:50%;background:var(--green)}
     .hypotheses{display:grid;gap:10px;margin:15px 0}.hypothesis{background:#0c111d;border:1px solid var(--line);border-radius:12px;padding:14px}.hypothesis strong{color:var(--blue)}.ids{margin-top:8px;color:var(--muted);font-size:.78rem;word-break:break-all}.evidence-title{margin:20px 0 10px;font-size:1rem}.evidence-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:9px}.evidence{border-left:3px solid var(--blue);background:#0c111d;border-radius:8px;padding:11px 12px;font-size:.84rem}.evidence.bad{border-color:var(--red)}.evidence small{display:block;color:var(--muted);margin-top:5px;word-break:break-all}.trace{display:flex;flex-wrap:wrap;gap:12px 22px;margin-top:18px;padding-top:15px;border-top:1px dashed var(--line);color:var(--muted);font-size:.82rem}.trace code{word-break:break-all}.note{margin:18px 2px 0;color:var(--muted);font-size:.9rem}.note strong{color:var(--text)}
-    @media(max-width:760px){main{padding-top:22px}.top{display:block}.live{margin-top:14px}.actions,.checks,.evidence-grid{grid-template-columns:1fr}.result-head,.ai-head{display:block}.badge{display:inline-block;margin-top:12px}.flow{gap:6px}.node{min-width:104px}}
+    .fault{border-color:#5b4a8a;color:#d4c4ff}.injected{margin-top:18px;padding:14px 16px;border:1px solid #5b4a8a;background:#1d1830;border-radius:12px;color:#e2d8ff;font-weight:700}.injected.control{border-color:#28684f;background:#11261f;color:#bff3da}.node .tag{display:block;font-size:.7rem;font-weight:700;color:#ff9aa3;letter-spacing:.06em;text-transform:uppercase}
+    .scorecard{margin-top:22px;border-top:1px solid var(--line);padding-top:20px}.scorecard h3{margin:4px 0 10px;font-size:1.15rem}.truth{color:var(--muted);font-size:.9rem;margin:0 0 10px}.truth strong{color:var(--text)}table{width:100%;border-collapse:collapse;font-size:.9rem}th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line)}th{color:var(--muted);font-weight:600;font-size:.78rem;text-transform:uppercase;letter-spacing:.08em}tr.ai-row td{background:#101a2b;font-weight:700}.hit{color:var(--green);font-weight:800}.miss{color:var(--red);font-weight:800}.na{color:var(--muted)}
+    .mode{display:flex;gap:12px;align-items:flex-start;margin:-8px 0 20px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#0f1525;color:var(--muted);cursor:pointer}.mode input{width:20px;height:20px;margin-top:2px;accent-color:#7cb8ff}.mode strong{color:var(--text)}
+    .trigger{margin-top:22px;border:1px solid #315c8c;background:#101b2e;border-radius:14px;padding:16px 18px}.trigger.quiet{border-color:#28684f;background:#11261f}.trigger h3{margin:4px 0 8px;font-size:1.15rem}.trigger ul{margin:8px 0 0;padding-left:20px}.trigger .limits{color:var(--muted);font-size:.84rem;margin-top:10px}
+    @media(max-width:760px){main{padding-top:22px}.top{display:block}.live{margin-top:14px}.actions,.checks,.evidence-grid{grid-template-columns:1fr}table{font-size:.8rem}th,td{padding:7px 5px}.result-head,.ai-head{display:block}.badge{display:inline-block;margin-top:12px}.flow{gap:6px}.node{min-width:104px}}
   </style>
 </head>
 <body>
   <main>
     <section class="top">
-      <div><div class="eyebrow">Caso de uso · Loja virtual</div><h1>Consulta de pedido</h1><p class="lead">Mostre como uma dependência indisponível interrompe a operação mesmo quando o Gateway continua saudável.</p></div>
+      <div><div class="eyebrow">Caso de uso · Loja virtual</div><h1>Consulta de pedido</h1><p class="lead">Cada cenário injeta uma falha conhecida, gera tráfego real e compara o diagnóstico da IA com o gabarito e com monitoramentos sem IA.</p></div>
       <div class="live"><span class="dot"></span> Ambiente local</div>
     </section>
 
     <section class="actions" aria-label="Cenários da demonstração">
       <button class="normal" data-action="normal">1 · Testar tudo certo</button>
-      <button class="failure" data-action="failure">2 · Provocar falha</button>
-      <button class="recover" data-action="recover">3 · Recuperar serviço</button>
-      <button class="overload" data-action="overload">4 · Sobrecarga + IA</button>
+      <button class="failure" data-action="failure">2 · Users fora do ar</button>
+      <button class="recover" data-action="recover">3 · Recuperar serviços</button>
+      <button class="overload" data-action="overload">4 · Sobrecarga no Users</button>
+      <button class="fault" data-action="orders_error">5 · Erro interno no Orders</button>
+      <button class="fault" data-action="latency">6 · Lentidão no Users</button>
+      <button class="fault" data-action="intermittent">7 · Falha intermitente</button>
+      <button class="fault" data-action="injection">8 · Log malicioso</button>
     </section>
+
+    <label class="mode"><input type="checkbox" id="auto"><span><strong>Disparo automático pelo etcd</strong> · o botão só injeta a falha e gera tráfego contínuo; o gatilho compara o snapshot do etcd com os limites e decide sozinho se chama a IA.</span></label>
 
     <section class="result" id="result" aria-live="polite">
       <div class="empty">Escolha um cenário para executar o teste real.</div>
@@ -42,46 +52,65 @@
   <script>
     const result = document.querySelector('#result');
     const buttons = [...document.querySelectorAll('button[data-action]')];
-    const labels = {normal:'Testando o fluxo e solicitando o diagnóstico à IA…',failure:'Interrompendo Users, coletando evidências e analisando com IA…',recover:'Restaurando Users e validando a recuperação com IA…',overload:'Disparando requisições concorrentes, coletando logs e analisando com IA…'};
+    const NAMES = {'gateway':'Gateway','orders-service':'Orders','users-service':'Users'};
     const esc = value => String(value ?? '—').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-    const statusText = check => check.status == null ? 'OFFLINE' : `HTTP ${check.status}`;
-    const statusClass = (name, check, scenario) => {
-      if (name === 'users' && scenario === 'failure' && check.status == null) return 'bad';
-      if (name === 'order' && check.status !== 200) return 'bad';
-      return check.status === 200 ? 'good' : 'warn';
-    };
+    const healthText = check => check.status == null ? 'OFFLINE' : `HTTP ${check.status}`;
+    const healthMeta = check => check.elapsed_ms == null ? 'sem resposta' : `${check.elapsed_ms} ms`;
+    const verdictText = v => v.outcome === 'not_triggered' ? 'não acionada' : v.incident === true ? 'incidente' : v.incident === false ? 'sem incidente' : esc(v.outcome || 'inconclusivo');
+    const METRICS = {error_rate:'taxa de erro', p95_ms:'latência p95', unreachable:'inalcançável'};
+    const metricValue = (metric, value) => value == null ? '' : metric === 'error_rate' ? `${Math.round(value*100)}%` : `${Math.round(value)} ms`;
+    const violationText = v => v.metric === 'unreachable' ? `${NAMES[v.service]}: inalcançável` : `${NAMES[v.service]}: ${METRICS[v.metric]} ${metricValue(v.metric, v.value)} > limite ${metricValue(v.metric, v.limit)}`;
+    function triggerPanel(tr){
+      const l=tr.thresholds; const limits=`Limites no etcd: taxa de erro > ${Math.round(l.error_rate*100)}% (mín. ${l.min_requests} req.) · p95 > ${l.p95_ms} ms · serviço inalcançável`;
+      if(!tr.fired) return `<section class="trigger quiet"><div class="eyebrow">Gatilho automático</div><h3>Nenhum limite violado em ${tr.finished_after_s} s</h3><p class="summary">O gatilho observou os snapshots do etcd e não chamou a IA. Nenhum crédito gasto.</p><div class="limits">${limits}</div></section>`;
+      return `<section class="trigger"><div class="eyebrow">Gatilho automático</div><h3>Limite violado após ${tr.fired_after_s} s → IA acionada sozinha</h3><ul>${tr.violations.map(v=>`<li>${esc(violationText(v))}</li>`).join('')}</ul><div class="limits">${limits} · diagnóstico ${esc(tr.status)} em ${tr.finished_after_s} s</div></section>`;
+    }
+    function aiPanel(ai){
+      if(!ai) return `<section class="ai"><div class="eyebrow">Diagnóstico do artefato</div><h3>IA não acionada</h3><p class="ai-summary">Sem violação de limite, não houve investigação.</p></section>`;
+      return `<section class="ai">
+          <div class="ai-head"><div><div class="eyebrow">Diagnóstico do artefato</div><h3>Conclusão da IA: ${esc(ai.outcome)}</h3></div><div class="real">IA REAL · ${esc(ai.model)}</div></div>
+          <p class="ai-summary">${esc(ai.summary)}</p>
+          <div class="hypotheses">${ai.hypotheses.map(h=>`<div class="hypothesis"><strong>${esc(h.service||'Cadeia distribuída')}</strong><br>${esc(h.description)}<div class="ids">Evidências citadas: ${h.evidence_ids.map(esc).join(', ')}</div></div>`).join('')}</div>
+          <h4 class="evidence-title">Evidências entregues à IA (${ai.evidence_count} no contexto; destaque das principais)</h4>
+          <div class="evidence-grid">${ai.evidence.map(e=>`<div class="evidence ${(e.error||(e.status>=400)||e.states?.some(s=>!s.reachable))?'bad':''}">${esc(evidenceText(e))}<small>ID ${esc(e.id)}</small></div>`).join('')}</div>
+          <div class="trace"><span>Execução persistida: <code>${esc(ai.run_id)}</code></span><span>${esc(ai.provider)} · ${Math.round(ai.duration_ms)} ms · ${ai.attempts} tentativa(s) · simulado: ${ai.simulated?'sim':'não'}</span></div>
+        </section>`;
+    }
+    const mark = value => value === null || value === undefined ? '<span class="na">—</span>' : value ? '<span class="hit">✓ acertou</span>' : '<span class="miss">✗ errou</span>';
     const evidenceText = item => {
       if(item.kind==='snapshot') return item.states.map(s=>`${s.service}: ${s.reachable?'alcançável':'indisponível'}${s.status?` (HTTP ${s.status})`:''}`).join(' · ');
       const dependency=item.dependency?` → ${item.dependency}`:'';
       const status=item.status?` · HTTP ${item.status}`:'';
       const error=item.error?` · ${item.error}`:'';
-      const message=item.message?` · ${item.message}`:'';
-      return `${item.service}${dependency} · ${item.event}${status}${error}${message}`;
+      const path=item.path&&!['/orders/1','/users/1'].includes(item.path)?` · caminho: ${item.path}`:'';
+      return `${item.service}${dependency} · ${item.event}${status}${error}${path}`;
     };
     function render(data){
-      const c=data.checks; const ai=data.ai; const isLoad=data.scenario==='overload'; const isBad=data.scenario==='failure'||isLoad;
-      const cards=[['gateway','Gateway',statusText(c.gateway),c.gateway.elapsed_ms==null?'sem resposta':`${c.gateway.elapsed_ms} ms`],['orders','Orders',statusText(c.orders),c.orders.elapsed_ms==null?'sem resposta':`${c.orders.elapsed_ms} ms`],['users','Users',isLoad?'SATURADO':statusText(c.users),isLoad?'health local ainda responde':(c.users.elapsed_ms==null?'sem resposta':`${c.users.elapsed_ms} ms`)],['order',isLoad?'Falhas na rajada':'Pedido 1',isLoad?`${data.load.failed_requests}/${data.load.total_requests}`:statusText(c.order),isLoad?`${data.load.concurrency} simultâneas · limite ${data.load.configured_limit}`:(c.order.elapsed_ms==null?'sem resposta':`${c.order.elapsed_ms} ms`)]];
+      const h=data.health, t=data.traffic, e=data.expected, ai=data.ai, ev=data.evaluation;
+      const cards=[['Gateway',h.gateway],['Orders',h['orders-service']],['Users',h['users-service']]].map(([label,check])=>`<div class="card"><div class="label">${label} · /health</div><div class="value ${check.status===200?'good':'bad'}">${healthText(check)}</div><div class="meta">${healthMeta(check)}</div></div>`).join('')
+        +`<div class="card"><div class="label">Consultas de pedido</div><div class="value ${t.failed?'bad':'good'}">${t.failed}/${t.total} falharam</div><div class="meta">${t.concurrent?'simultâneas':'sequenciais'}${t.mean_elapsed_ms!=null?` · média ${t.mean_elapsed_ms} ms`:''}</div></div>`;
+      const node = service => `<div class="node ${e.service===service?'bad':'good'}">${NAMES[service]}${e.service===service?'<span class="tag">falha injetada</span>':''}</div>`;
+      const injected = e.incident ? `Falha injetada: <strong>${esc(e.fault)}</strong> em ${esc(NAMES[e.service])}${t.injection?' · requisição maliciosa enviada ao Gateway':''}` : 'Sem falha injetada · grupo de controle';
+      const rows=[['Health checks','health'],['Sonda sintética','probe'],['IA (artefato)','ai']].map(([label,key])=>{const r=ev[key];return `<tr class="${key==='ai'?'ai-row':''}"><td>${label}</td><td>${verdictText(r)}</td><td>${esc(r.service?NAMES[r.service]:'—')}</td><td>${mark(r.detection_correct)}</td><td>${mark(r.localization_correct)}</td></tr>`}).join('');
       result.innerHTML=`
-        <div class="result-head"><div><div class="eyebrow">Resultado observado</div><h2>${esc(data.title)}</h2><p class="summary">${esc(data.summary)}</p></div><span class="badge ${data.ok?(isBad?'bad':'ok'):'bad'}">${data.ok?'CENÁRIO CONFIRMADO':'VERIFICAR AMBIENTE'}</span></div>
-        <div class="checks">
-          ${cards.map(([key,label,value,meta])=>`<div class="card"><div class="label">${label}</div><div class="value ${isLoad&&(key==='users'||key==='order')?'bad':statusClass(key,c[key],data.scenario)}">${value}</div><div class="meta">${meta}</div></div>`).join('')}
-        </div>
-        ${isLoad?`<div class="load-banner">${data.load.total_requests} funções simultâneas → limite ${data.load.configured_limit} → ${data.load.failed_requests} falhas observadas</div>`:''}
-        <div class="flow"><div class="node good">Gateway</div><div class="arrow">→</div><div class="node good">Orders</div><div class="arrow">→</div><div class="node ${(isLoad||c.users.status!==200)?'bad':'good'}">${isLoad?'Users saturado':'Users'}</div><div class="arrow">→</div><div class="node ${(isLoad||c.order.status!==200)?'bad':'good'}">${isLoad?'Clientes afetados':(c.order.status===200?'Pedido exibido':'Cliente afetado')}</div></div>
-        <div class="details"><span>Request ID: <code>${esc(data.request_id)}</code></span><span>${esc(data.timestamp)}</span></div>
-        <section class="ai">
-          <div class="ai-head"><div><div class="eyebrow">Diagnóstico do artefato</div><h3>Conclusão da IA: ${esc(ai.outcome)}</h3></div><div class="real">IA REAL · ${esc(ai.model)}</div></div>
-          <p class="ai-summary">${esc(ai.summary)}</p>
-          <div class="hypotheses">${ai.hypotheses.map(h=>`<div class="hypothesis"><strong>${esc(h.service||'Cadeia distribuída')}</strong><br>${esc(h.description)}<div class="ids">Evidências citadas: ${h.evidence_ids.map(esc).join(', ')}</div></div>`).join('')}</div>
-          <h4 class="evidence-title">Evidências entregues à IA</h4>
-          <div class="evidence-grid">${ai.evidence.map(e=>`<div class="evidence ${(e.error||e.states?.some(s=>!s.reachable))?'bad':''}">${esc(evidenceText(e))}<small>ID ${esc(e.id)}</small></div>`).join('')}</div>
-          <div class="trace"><span>Execução persistida: <code>${esc(ai.run_id)}</code></span><span>${esc(ai.provider)} · ${Math.round(ai.duration_ms)} ms · simulado: ${ai.simulated?'sim':'não'}</span></div>
-        </section>`;
+        <div class="result-head"><div><div class="eyebrow">Resultado observado</div><h2>${esc(data.title)}</h2><p class="summary">${esc(data.description)}</p></div><span class="badge ${data.ok?(e.incident?'bad':'ok'):'bad'}">${data.ok?(e.incident?'FALHA REPRODUZIDA':'CONTROLE OK'):'VERIFICAR AMBIENTE'}</span></div>
+        <div class="checks">${cards}</div>
+        <div class="injected ${e.incident?'':'control'}">${injected}</div>
+        <div class="flow">${node('gateway')}<div class="arrow">→</div>${node('orders-service')}<div class="arrow">→</div>${node('users-service')}<div class="arrow">→</div><div class="node ${t.failed?'bad':'good'}">${t.failed?'Clientes afetados':'Pedido exibido'}</div></div>
+        <div class="details"><span>Correlação: <code>${esc(data.request_id)}</code> (uma por requisição: <code>.01</code>, <code>.02</code>…)</span><span>${esc(data.timestamp)}</span></div>
+        ${data.mode==='auto'?triggerPanel(data.trigger):''}
+        <section class="scorecard">
+          <div class="eyebrow">Comparação com o gabarito</div><h3>Quem identificou o problema?</h3>
+          <p class="truth">Gabarito: <strong>${e.incident?`incidente em ${esc(NAMES[e.service])}`:'sem incidente'}</strong></p>
+          <table><thead><tr><th>Método</th><th>Concluiu</th><th>Serviço apontado</th><th>Detecção</th><th>Localização</th></tr></thead><tbody>${rows}</tbody></table>
+        </section>
+        ${aiPanel(ai)}`;
     }
     async function run(action){
       buttons.forEach(b=>b.disabled=true);
-      result.innerHTML=`<div class="empty"><div><div class="spinner"></div>${labels[action]}</div></div>`;
-      try{const response=await fetch(`/api/${action}`,{method:'POST'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Falha no teste');render(data)}catch(error){result.innerHTML=`<div class="empty"><div><strong>Não foi possível executar.</strong><br>${esc(error.message)}</div></div>`}finally{buttons.forEach(b=>b.disabled=false)}
+      const auto=document.querySelector('#auto').checked;
+      result.innerHTML=`<div class="empty"><div><div class="spinner"></div>${auto?'Falha aplicada. Gerando tráfego contínuo e aguardando o gatilho do etcd decidir…':'Aplicando o cenário, gerando tráfego, coletando evidências e analisando com IA…'}</div></div>`;
+      try{const response=await fetch(auto?`/api/auto/${action}`:`/api/${action}`,{method:'POST'});const data=await response.json();if(!response.ok)throw new Error(data.error||'Falha no teste');render(data)}catch(error){result.innerHTML=`<div class="empty"><div><strong>Não foi possível executar.</strong><br>${esc(error.message)}</div></div>`}finally{buttons.forEach(b=>b.disabled=false)}
     }
     buttons.forEach(button=>button.addEventListener('click',()=>run(button.dataset.action)));
   </script>

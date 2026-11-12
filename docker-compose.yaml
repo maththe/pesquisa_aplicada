@@ -30,6 +30,7 @@ x-monitor: &monitor
     OBS_LOG_DIR: /var/log/observability
     OBS_INTERVAL_SECONDS: ${OBS_INTERVAL_SECONDS:-5}
     OBS_SNAPSHOT_TTL_SECONDS: ${OBS_SNAPSHOT_TTL_SECONDS:-30}
+    OBS_SIGNAL_WINDOW_SECONDS: ${OBS_SIGNAL_WINDOW_SECONDS:-30}
 
 services:
   gateway:
@@ -37,6 +38,9 @@ services:
     environment:
       <<: *app-environment
       SERVICE_NAME: gateway
+      # Timeouts escalonados: a entrada espera mais que Orders espera por Users,
+      # para que um atraso em Users apareça como timeout em Orders, não no Gateway.
+      HTTP_TIMEOUT_SECONDS: ${GATEWAY_HTTP_TIMEOUT_SECONDS:-3}
       USERS_SERVICE_URL: http://users-service:8000
       ORDERS_SERVICE_URL: http://orders-service:8000
     ports:
@@ -54,6 +58,8 @@ services:
       SERVICE_NAME: users-service
       OVERLOAD_CONCURRENCY_LIMIT: ${USERS_OVERLOAD_CONCURRENCY_LIMIT:-0}
       OVERLOAD_DELAY_MS: ${USERS_OVERLOAD_DELAY_MS:-0}
+      FAULT_ERROR_RATE: ${USERS_FAULT_ERROR_RATE:-0}
+      FAULT_LATENCY_MS: ${USERS_FAULT_LATENCY_MS:-0}
     ports:
       - "127.0.0.1:${USERS_PORT:-8001}:8000"
 
@@ -63,6 +69,8 @@ services:
       <<: *app-environment
       SERVICE_NAME: orders-service
       USERS_SERVICE_URL: http://users-service:8000
+      FAULT_ERROR_RATE: ${ORDERS_FAULT_ERROR_RATE:-0}
+      FAULT_LATENCY_MS: ${ORDERS_FAULT_LATENCY_MS:-0}
     ports:
       - "127.0.0.1:${ORDERS_PORT:-8002}:8000"
     depends_on:
@@ -134,6 +142,29 @@ services:
       timeout: 5s
       retries: 5
       start_period: 15s
+
+  # Gatilho automático: observa o snapshot no etcd e chama a LLM quando um limite é
+  # violado. Fica fora do `up` padrão para não gastar créditos sem pedir:
+  # docker compose --profile auto up -d trigger
+  trigger:
+    <<: *monitor
+    profiles: ["auto"]
+    restart: "no"
+    command: ["python", "-m", "app.cli", "watch"]
+    environment:
+      <<: *monitor-environment
+      OBS_SIGNAL_WINDOW_SECONDS: ${OBS_SIGNAL_WINDOW_SECONDS:-30}
+      OBS_TRIGGER_COOLDOWN_SECONDS: ${OBS_TRIGGER_COOLDOWN_SECONDS:-300}
+      OBS_TRIGGER_LOOKBACK_SECONDS: ${OBS_TRIGGER_LOOKBACK_SECONDS:-60}
+      OBS_LLM_URL: ${OBS_LLM_URL:-}
+      OBS_LLM_MODEL: ${OBS_LLM_MODEL:-}
+      OBS_LLM_API_KEY: ${OBS_LLM_API_KEY:-}
+      OBS_LLM_TIMEOUT_SECONDS: ${OBS_LLM_TIMEOUT_SECONDS:-45}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+      etcd:
+        condition: service_healthy
 
   diagnostics:
     <<: *monitor

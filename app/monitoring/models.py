@@ -44,10 +44,39 @@ class Probe(StrictModel):
     metrics_error: str | None = None
 
 
+class ServiceSignals(StrictModel):
+    """Sinais de negócio de um serviço numa janela recente, calculados a partir dos logs."""
+
+    service: ServiceName
+    window_seconds: int
+    requests: int = Field(ge=0)
+    errors: int = Field(ge=0)
+    error_rate: float | None = Field(default=None, ge=0, le=1)
+    p95_ms: float | None = Field(default=None, ge=0)
+    dependency_failures: int = Field(default=0, ge=0)
+
+
 class Snapshot(StrictModel):
     snapshot_id: str = Field(default_factory=new_id)
     timestamp: AwareDatetime = Field(default_factory=utcnow)
     services: list[Probe]
+    signals: list[ServiceSignals] = Field(default_factory=list)
+
+
+class Thresholds(StrictModel):
+    """Limites aceitáveis, guardados no etcd e avaliados a cada snapshot."""
+
+    error_rate: float = Field(default=0.2, ge=0, le=1)
+    min_requests: int = Field(default=3, ge=1)
+    p95_ms: float = Field(default=1500, gt=0)
+    unreachable: bool = True
+
+
+class Violation(StrictModel):
+    service: ServiceName
+    metric: Literal["error_rate", "p95_ms", "unreachable"]
+    value: float | None = None
+    limit: float | None = None
 
 
 class DiagnosticRequest(StrictModel):

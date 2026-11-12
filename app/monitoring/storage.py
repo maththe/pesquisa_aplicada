@@ -88,6 +88,16 @@ def put_unique(connection: Connection, values: dict[str, Any]) -> bool:
     return connection.execute(statement).scalar_one_or_none() is not None
 
 
+def correlation_clause(column: Column[Any], correlation_id: str) -> ColumnElement[bool]:
+    """Casa o ID exato e seus filhos hierárquicos (`cenario.01`, `cenario.02`...).
+
+    Uma rajada usa um ID por requisição, ligados pelo prefixo do cenário, para que
+    requisições paralelas não pareçam retentativas de uma mesma requisição.
+    """
+    escaped = correlation_id.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+    return or_(column == correlation_id, column.like(f"{escaped}.%", escape="\\"))
+
+
 def log_values(record: StructuredLog) -> dict[str, Any]:
     return {
         "id": str(record.log_id),
@@ -135,7 +145,10 @@ class History:
         ]
         if request.correlation_id:
             clauses.append(
-                or_(evidence.c.kind == "snapshot", evidence.c.request_id == request.correlation_id)
+                or_(
+                    evidence.c.kind == "snapshot",
+                    correlation_clause(evidence.c.request_id, request.correlation_id),
+                )
             )
         with self.engine.connect() as connection:
             count = int(
@@ -154,6 +167,15 @@ class History:
                 ).mappings()
                 rows.extend(dict(row) for row in results)
         return rows, count
+
+    def recent_logs(self, since: datetime) -> list[dict[str, Any]]:
+        with self.engine.connect() as connection:
+            rows = connection.execute(
+                select(evidence.c.data).where(
+                    evidence.c.kind == "log", evidence.c.timestamp >= timestamp(since)
+                )
+            ).scalars()
+            return [dict(row) for row in rows]
 
     def get_evidence(self, evidence_id: str) -> dict[str, Any] | None:
         with self.engine.connect() as connection:

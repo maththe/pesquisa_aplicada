@@ -1,4 +1,5 @@
 import asyncio
+import math
 import re
 from time import perf_counter
 from uuid import uuid4
@@ -11,6 +12,7 @@ from app.config import LogLevel
 from app.telemetry import EventLogger, request_id_context
 
 REQUEST_ID_PATTERN = re.compile(r"[A-Za-z0-9][A-Za-z0-9._:-]{0,127}")
+PROBE_PATHS = ("/health", "/metrics")
 
 
 class RequestLoggingMiddleware:
@@ -19,7 +21,9 @@ class RequestLoggingMiddleware:
         self.events = events
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if scope["type"] != "http":
+        # Sondagens do coletor não são tráfego de negócio: registrá-las encheria a
+        # janela de evidências e distorceria taxa de erro e latência.
+        if scope["type"] != "http" or scope["path"] in PROBE_PATHS:
             await self.app(scope, receive, send)
             return
 
@@ -90,11 +94,7 @@ class OverloadGuardMiddleware:
         self.lock = asyncio.Lock()
 
     async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
-        if (
-            scope["type"] != "http"
-            or self.concurrency_limit == 0
-            or scope["path"] in ("/health", "/metrics")
-        ):
+        if scope["type"] != "http" or self.concurrency_limit == 0 or scope["path"] in PROBE_PATHS:
             await self.app(scope, receive, send)
             return
 
@@ -127,3 +127,33 @@ class OverloadGuardMiddleware:
         finally:
             async with self.lock:
                 self.in_flight -= 1
+
+
+class FaultInjectionMiddleware:
+    """Falhas experimentais: latência fixa e erro interno numa fração das requisições.
+
+    Não registra eventos próprios: o erro aparece nos logs como uma exceção comum,
+    para que o diagnóstico precise inferir a origem pela cadeia de chamadas.
+    """
+
+    def __init__(self, app: ASGIApp, error_rate: float, latency_ms: int) -> None:
+        self.app = app
+        self.error_rate = error_rate
+        self.latency_seconds = latency_ms / 1000
+        self.handled = 0
+
+    def should_fail(self) -> bool:
+        # Sequência determinística: com taxa 0,5 falha uma a cada duas requisições.
+        index = self.handled
+        self.handled += 1
+        return math.floor((index + 1) * self.error_rate) > math.floor(index * self.error_rate)
+
+    async def __call__(self, scope: Scope, receive: Receive, send: Send) -> None:
+        if scope["type"] != "http" or scope["path"] in PROBE_PATHS:
+            await self.app(scope, receive, send)
+            return
+        if self.latency_seconds:
+            await asyncio.sleep(self.latency_seconds)
+        if self.should_fail():
+            raise RuntimeError("Falha interna ao processar a requisição")
+        await self.app(scope, receive, send)
