@@ -64,6 +64,20 @@ Fluxos alternativos:
 - Linhas JSONL incompletas aguardam conclusão; linhas inválidas completas geram
   rejeição registrada, e não evidência de diagnóstico.
 
+## UC-02 — Investigação disparada pelo sistema
+
+| Item | Especificação |
+| --- | --- |
+| Ator principal | Gatilho automático (serviço `trigger`) |
+| Objetivo | Iniciar a investigação assim que a operação sai do aceitável |
+| Gatilho | Snapshot no etcd viola um limite: taxa de erro, latência p95 ou serviço inalcançável |
+| Entrada | Janela recente (60 s), sem request ID |
+| Saída | Mesma do UC-01, mais o registro do limite violado em `/observability/trigger/last` |
+| Pós-condição | Um diagnóstico por incidente; o gatilho se rearma após um snapshot sem violação |
+
+O motivo do disparo não é enviado à LLM: ela recebe as mesmas evidências de uma
+investigação manual. Detalhes em [gatilho-automatico.md](gatilho-automatico.md).
+
 ## Resultados esperados para a demonstração
 
 | Etapa | Comportamento técnico esperado | Interpretação esperada de uma LLM real |
@@ -97,7 +111,9 @@ Esta entrega corresponde à construção e à demonstração de viabilidade do
 artefato em uma instância simulada do problema. Os registros mostram execução
 das funções previstas e permitem inspecionar os resultados.
 
-Não são apresentadas alegações de acurácia, redução de tempo de diagnóstico ou
-superioridade frente a métodos existentes. Uma avaliação formal deverá definir
-múltiplos cenários, repetições, critérios de correção, comparação com uma referência
-e medidas como precisão das hipóteses, cobertura das evidências, latência e custo.
+A etapa de avaliação usa oito cenários com gabarito e compara o artefato com
+health checks e com uma sonda sintética ([avaliacao.md](avaliacao.md)). Com uma
+rodada por cenário, os resultados indicam tendência; não são apresentadas
+alegações de taxa de acerto, redução de tempo de diagnóstico ou superioridade
+frente a ferramentas de APM. Mais repetições, falhas definidas por terceiros e
+medidas de qualidade das hipóteses, latência e custo ampliariam a avaliação.

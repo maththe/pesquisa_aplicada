@@ -1,5 +1,26 @@
 # Entrega — versão funcional e demonstração
 
+## Atualização de 11/11/2026
+
+Depois da execução de 24/09 descrita abaixo, o artefato ganhou:
+
+- oito cenários com falhas injetadas e gabarito, incluindo falhas fora do Users
+  e uma instrução maliciosa em log;
+- avaliação em lote comparando a IA com health checks e com uma sonda sintética;
+- gatilho automático: sinais de negócio e limites no etcd decidem quando chamar a IA;
+- interface web de apresentação com modos manual e automático.
+
+Resultado da rodada registrada (9 execuções, gpt-5):
+
+| Método | Detecção correta | Localização correta (incidentes) | Falsos positivos (controles) |
+| --- | --- | --- | --- |
+| Health checks | 5/9 | 2/6 | 0/3 |
+| Sonda sintética | 9/9 | 0/6 | 0/3 |
+| IA (artefato) | 9/9 | 6/6 | 0/3 |
+
+Detalhes em [avaliacao.md](avaliacao.md) e [gatilho-automatico.md](gatilho-automatico.md).
+O restante deste documento preserva o registro da entrega de 24/09.
+
 ## Artefato
 
 Protótipo executável de apoio ao diagnóstico de falhas em sistemas distribuídos,
@@ -84,5 +105,5 @@ O roteiro atualizado registra também amostras de consultas, latências no clien
 e health do Gateway. Essas medições adicionais ainda precisam ser obtidas numa
 nova execução; não fazem parte do registro histórico citado acima.
 
-Esta entrega demonstra viabilidade técnica no cenário simulado. A avaliação
-formal de acurácia, utilidade e desempenho será uma etapa posterior.
+Esta entrega demonstrava viabilidade técnica no cenário simulado. A avaliação
+com gabarito e baselines foi feita depois; ver a atualização no início.

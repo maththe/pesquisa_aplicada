@@ -8,6 +8,24 @@ Para uma apresentação centrada no problema e na decisão do operador, use o
 história, impacto da falha, perguntas de investigação, critérios de sucesso e
 falas para a banca.
 
+## Interface de apresentação (recomendada)
+
+```powershell
+docker compose up --build -d --wait
+.\.venv\Scripts\python.exe -B presentation\app.py
+```
+
+Abra `http://127.0.0.1:8090`. Cada botão executa um dos oito cenários e mostra o
+diagnóstico ao lado do gabarito e dos baselines. Com **Disparo automático pelo
+etcd** marcado, o botão só injeta a falha e gera tráfego; o gatilho decide se chama
+a IA. Roteiro e falas em [caso-de-uso-apresentacao.md](caso-de-uso-apresentacao.md).
+
+Cada diagnóstico leva de 40 a 60 s e faz uma chamada ao modelo. Os controles no
+modo automático não chamam o modelo.
+
+O roteiro de terminal abaixo continua disponível e gera os registros completos
+de três etapas.
+
 ## Preparação
 
 1. Execute `docker compose up --build -d --wait`.
@@ -105,7 +123,8 @@ evidências fornecido.
 ## Recuperação manual, se a execução for encerrada à força
 
 ```powershell
-docker compose start users-service
+docker compose stop trigger
+docker compose up -d --no-deps users-service orders-service
 docker compose start collector
 docker compose ps
 Invoke-RestMethod http://localhost:8000/orders/1

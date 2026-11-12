@@ -5,9 +5,14 @@ Protótipo acadêmico para apoiar um operador na investigação de falhas no flu
 estado atual no etcd e histórico no PostgreSQL, constrói um contexto delimitado
 e registra diagnósticos com evidências rastreáveis.
 
-A interface desta versão é uma CLI. O diagnóstico usa LangChain com uma API no
-formato Chat Completions e exige modelo, URL e chave. Coleta e consultas ao
-histórico funcionam independentemente dessas credenciais.
+O diagnóstico pode ser pedido pelo operador (CLI ou interface web) ou disparado
+automaticamente quando os sinais publicados no etcd violam limites definidos.
+Oito cenários com falhas injetadas e gabarito permitem comparar o diagnóstico
+com health checks e com uma sonda sintética.
+
+O diagnóstico usa LangChain com uma API no formato Chat Completions e exige
+modelo, URL e chave. Coleta e consultas ao histórico funcionam
+independentemente dessas credenciais.
 
 ## Entregas acadêmicas
 
