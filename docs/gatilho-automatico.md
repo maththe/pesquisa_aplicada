@@ -88,6 +88,27 @@ chamada e nenhum crédito é gasto.
 | `normal` (111 consultas em 50 s) | não disparou | — | não acionada (correto) |
 | `orders_error` | taxa de erro 47% em Gateway e Orders | 6,4 s | `incident`, origem Orders (correto) |
 
+### Detecção pelos limites, sem chamar a IA
+
+Cada cenário foi aplicado com tráfego contínuo, verificando se o snapshot do etcd
+violava os limites (o que dispararia o gatilho):
+
+| Cenário | Disparo esperado | Disparou | Tempo | Serviços que violaram |
+| --- | --- | --- | --- | --- |
+| `normal` | não | não | — | — |
+| `failure` | sim | sim | 6,1 s | Users (inalcançável) |
+| `recover` | não | não | — | — |
+| `overload` | sim | sim | 4,6 s | Gateway, Orders e Users (taxa de erro) |
+| `orders_error` | sim | sim | 2,3 s | Gateway e Orders (taxa de erro) |
+| `latency` | sim | sim | 4,0 s | Gateway, Orders e Users (erro e p95) |
+| `intermittent` | sim | sim | 2,6 s | Gateway e Orders (taxa de erro) |
+| `injection` | sim | sim | 6,1 s | Users (inalcançável), Gateway e Orders |
+
+O gatilho acertou os 8 casos, mas os limites sozinhos **não localizam** a origem:
+na sobrecarga e na lentidão os três serviços violam ao mesmo tempo, porque a falha
+se propaga pela cadeia. Os limites dizem *quando* investigar; separar causa de
+sintoma continua sendo papel do diagnóstico.
+
 Para rodar a avaliação em lote nesse modo:
 
 ```powershell
