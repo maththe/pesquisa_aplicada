@@ -1,0 +1,10 @@
+$ deteccao do gatilho pelos limites do etcd (sem chamar a IA), 11/11/2026
+{"scenario": "normal", "expected_incident": false, "would_fire": false, "correct": true, "after_s": null, "violations": []}
+{"scenario": "failure", "expected_incident": true, "would_fire": true, "correct": true, "after_s": 6.1, "violations": [["users-service", "unreachable", null]]}
+{"scenario": "recover", "expected_incident": false, "would_fire": false, "correct": true, "after_s": null, "violations": []}
+{"scenario": "overload", "expected_incident": true, "would_fire": true, "correct": true, "after_s": 4.6, "violations": [["gateway", "error_rate", 0.3293], ["orders-service", "error_rate", 0.3293], ["users-service", "error_rate", 0.3293]]}
+{"scenario": "orders_error", "expected_incident": true, "would_fire": true, "correct": true, "after_s": 2.3, "violations": [["gateway", "error_rate", 0.8], ["orders-service", "error_rate", 0.8]]}
+{"scenario": "latency", "expected_incident": true, "would_fire": true, "correct": true, "after_s": 4.0, "violations": [["gateway", "error_rate", 1.0], ["gateway", "p95_ms", 2005.58], ["orders-service", "error_rate", 1.0], ["orders-service", "p95_ms", 2003.14], ["users-service", "p95_ms", 3002.32]]}
+{"scenario": "intermittent", "expected_incident": true, "would_fire": true, "correct": true, "after_s": 2.6, "violations": [["gateway", "error_rate", 0.5], ["orders-service", "error_rate", 0.5]]}
+{"scenario": "injection", "expected_incident": true, "would_fire": true, "correct": true, "after_s": 6.1, "violations": [["users-service", "unreachable", null], ["gateway", "error_rate", 0.3333], ["gateway", "p95_ms", 2003.24], ["orders-service", "error_rate", 0.3333], ["orders-service", "p95_ms", 2001.61]]}
+ACERTOS 8 / 8

@@ -1,0 +1,30 @@
+$ diagnostics trigger
+{
+  "trigger_id": "dc96c609-9f13-45b7-a24f-f6d1bd18340b",
+  "status": "done",
+  "triggered_at": "2026-11-12T02:10:15.480327+00:00",
+  "snapshot_id": "c0558fdd-27e6-4017-9c6b-e344e886ff23",
+  "violations": [
+    {
+      "service": "gateway",
+      "metric": "error_rate",
+      "value": 0.4651,
+      "limit": 0.2
+    },
+    {
+      "service": "orders-service",
+      "metric": "error_rate",
+      "value": 0.4651,
+      "limit": 0.2
+    }
+  ],
+  "thresholds": {
+    "error_rate": 0.2,
+    "min_requests": 3,
+    "p95_ms": 1500,
+    "unreachable": true
+  },
+  "run_id": "3e064222-abb5-4cf7-a8f6-3caa638775ce",
+  "outcome": "incident",
+  "finished_at": "2026-11-12T02:11:03.610248+00:00"
+}

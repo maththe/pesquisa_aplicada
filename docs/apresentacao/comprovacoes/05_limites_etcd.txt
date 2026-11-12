@@ -1,0 +1,7 @@
+$ diagnostics thresholds
+{
+  "error_rate": 0.2,
+  "min_requests": 3,
+  "p95_ms": 1500.0,
+  "unreachable": true
+}

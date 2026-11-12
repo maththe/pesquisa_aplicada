@@ -1,0 +1,26 @@
+$ pytest -v
+tests/test_demonstration.py::DemonstrationTests::test_failure_restores_users_and_collector PASSED
+tests/test_demonstration.py::DemonstrationTests::test_interrupt_during_presentation_restores_services PASSED
+tests/test_demonstration.py::DemonstrationTests::test_invalid_sample_counts_are_rejected PASSED
+tests/test_demonstration.py::DemonstrationTests::test_operation_keeps_health_separate_from_failed_queries PASSED
+tests/test_demonstration.py::DemonstrationTests::test_report_accepts_historical_diagnostic_schema PASSED
+tests/test_demonstration.py::DemonstrationTests::test_successful_queries_have_zero_failures PASSED
+tests/test_overload.py::test_overload_guard_records_and_rejects_excess_concurrency PASSED
+tests/test_scenarios.py::test_health_baseline_misses_failure_behind_healthy_processes PASSED
+tests/test_scenarios.py::test_health_baseline_points_to_single_unhealthy_service PASSED
+tests/test_scenarios.py::test_score_requires_right_service_for_localization PASSED
+tests/test_scenarios.py::test_ai_verdict_uses_first_hypothesis_with_service PASSED
+tests/test_scenarios.py::test_insufficient_evidence_is_not_counted_as_detection PASSED
+tests/test_scenarios.py::test_every_incident_scenario_has_a_root_service PASSED
+tests/test_scenarios.py::test_correlation_prefix_selects_children_only PASSED
+tests/test_scenarios.py::test_fault_rate_fails_deterministic_fraction PASSED
+tests/test_scenarios.py::test_injected_error_looks_like_ordinary_exception PASSED
+tests/test_trigger.py::test_signals_count_errors_latency_and_dependency_failures PASSED
+tests/test_trigger.py::test_percentile_95 PASSED
+tests/test_trigger.py::test_violations_respect_limits_and_minimum_volume PASSED
+tests/test_trigger.py::test_trigger_fires_once_per_incident_and_rearms_after_recovery PASSED
+tests/test_trigger.py::test_trigger_cooldown_blocks_new_incident PASSED
+tests/test_trigger.py::test_trigger_ignores_snapshots_older_than_its_start_and_repeats PASSED
+tests/test_trigger.py::test_probe_requests_are_not_logged_as_business_traffic PASSED
+tests/test_trigger.py::test_not_triggered_counts_as_no_incident PASSED
+============== 24 passed, 1 warning, 3 subtests passed in 0.92s ===============

@@ -212,14 +212,19 @@ para mostrar que o artefato não gasta nem alarma à toa.
 
 ## Avaliação com gabarito
 
-`docs/evidencias/avaliacao-20261112T013517Z-fd1887/relatorio.md` registra uma
-rodada completa dos oito cenários (mais um controle repetido), com LLM real:
+`docs/evidencias/avaliacao-20261112T025520Z-8f5599/relatorio.md` registra a rodada final dos oito
+cenários, no código desta versão, com LLM real (gpt-5):
 
 | Método | Detecção correta | Localização correta | Falsos positivos |
 | --- | --- | --- | --- |
-| Health checks | 5/9 | 2/6 | 0/3 |
-| Sonda sintética | 9/9 | 0/6 | 0/3 |
-| IA (artefato) | 9/9 | 6/6 | 0/3 |
+| Health checks | 4/8 | 2/6 | 0/2 |
+| Sonda sintética | 8/8 | 0/6 | 0/2 |
+| IA (artefato) | 8/8 | 6/6 | 0/2 |
+
+Uma rodada anterior, feita antes do ajuste nos sinais do snapshot (9 execuções,
+[relatório](evidencias/avaliacao-20261112T013517Z-fd1887/relatorio.md)), teve o mesmo padrão. Somando as duas rodadas, a IA
+acertou 17/17 detecções e 12/12 localizações, sem nenhum alarme falso.
+
 
 É uma rodada por cenário: indica viabilidade e tendência, não acurácia geral.
 O método e as ameaças à validade estão em `docs/avaliacao.md`.

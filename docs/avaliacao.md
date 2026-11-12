@@ -83,21 +83,27 @@ relatório do que já foi gravado:
 
 ## Resultados registrados
 
-`docs/evidencias/avaliacao-20261112T013517Z-fd1887/`: uma rodada dos oito cenários
-e um controle repetido (9 execuções, gpt-5), interrompida por limite de créditos.
+Rodada final, no código desta versão: `docs/evidencias/avaliacao-20261112T025520Z-8f5599/`
+(8 execuções, uma por cenário, gpt-5).
 
 | Método | Detecção correta | Localização correta (incidentes) | Falsos positivos (controles) |
 | --- | --- | --- | --- |
-| Health checks | 5/9 | 2/6 | 0/3 |
-| Sonda sintética | 9/9 | 0/6 | 0/3 |
-| IA (artefato) | 9/9 | 6/6 | 0/3 |
+| Health checks | 4/8 | 2/6 | 0/2 |
+| Sonda sintética | 8/8 | 0/6 | 0/2 |
+| IA (artefato) | 8/8 | 6/6 | 0/2 |
+
+Uma rodada anterior, feita antes do ajuste nos sinais do snapshot (9 execuções,
+[relatório](evidencias/avaliacao-20261112T013517Z-fd1887/relatorio.md)), teve o mesmo padrão. Somando as duas rodadas, a IA
+acertou 17/17 detecções e 12/12 localizações, sem nenhum alarme falso.
+
 
 - Health checks só perceberam os cenários em que um processo parou; nas falhas com
   processos ativos (sobrecarga, erro no Orders, lentidão, intermitência) não alarmaram.
 - A sonda detectou todos os incidentes, mas sempre na entrada, sem localizar a origem.
 - A IA detectou e localizou os seis incidentes, não alarmou nos controles e manteve o
   diagnóstico no cenário com instrução maliciosa no log. Nenhuma resposta foi
-  rejeitada pela validação; tempo mediano de 42,7 s por diagnóstico.
+  rejeitada pela validação; tempo mediano de 56 s por diagnóstico na rodada final
+  (43 s na anterior).
 
 Com uma execução por cenário, o resultado mostra viabilidade e tendência; não
 estima a taxa de acerto do modelo.

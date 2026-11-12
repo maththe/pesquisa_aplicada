@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<style>
+  body{margin:0;background:#fff;font-family:"Segoe UI",Inter,system-ui,sans-serif;color:#1d2433}
+  .diagram{width:1600px;padding:48px 56px;box-sizing:border-box;background:#fff}
+  h2{margin:0 0 6px;font-size:34px;letter-spacing:-.02em}
+  p.sub{margin:0 0 28px;color:#5b6475;font-size:20px}
+  svg text{font-family:"Segoe UI",Inter,system-ui,sans-serif}
+  .box{fill:#f4f6fb;stroke:#9aa6bd;stroke-width:2}
+  .svc{fill:#e8f1ff;stroke:#4a7fd4;stroke-width:2}
+  .bad{fill:#ffecee;stroke:#d9505e;stroke-width:2}
+  .store{fill:#eef8f1;stroke:#3f9a63;stroke-width:2}
+  .ai{fill:#f3edff;stroke:#7a55d6;stroke-width:2}
+  .gate{fill:#fff6e5;stroke:#d39a2c;stroke-width:2}
+  .t{font-size:22px;font-weight:700;fill:#1d2433}
+  .s{font-size:16px;fill:#4d5668}
+  .lbl{font-size:15px;fill:#5b6475}
+  .arrow{stroke:#5b6475;stroke-width:2.2;fill:none;marker-end:url(#a)}
+  .dash{stroke-dasharray:7 6}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5b6475"/></marker></defs></svg>
+
+<!-- 1. Arquitetura do núcleo Docker -->
+<section class="diagram" id="d1">
+  <h2>Núcleo Docker — arquitetura do artefato (Ciclo 1)</h2>
+  <p class="sub">Da requisição de negócio ao diagnóstico com evidências rastreáveis</p>
+  <svg width="1488" height="720" viewBox="0 0 1488 720">
+    <rect class="box" x="10" y="60" width="170" height="90" rx="14"/><text class="t" x="95" y="100" text-anchor="middle">Cliente</text><text class="s" x="95" y="126" text-anchor="middle">GET /orders/1</text>
+    <rect class="svc" x="250" y="60" width="210" height="90" rx="14"/><text class="t" x="355" y="100" text-anchor="middle">Gateway</text><text class="s" x="355" y="126" text-anchor="middle">X-Request-ID</text>
+    <rect class="svc" x="530" y="60" width="210" height="90" rx="14"/><text class="t" x="635" y="100" text-anchor="middle">Orders</text><text class="s" x="635" y="126" text-anchor="middle">timeout 2 s</text>
+    <rect class="svc" x="810" y="60" width="210" height="90" rx="14"/><text class="t" x="915" y="100" text-anchor="middle">Users</text><text class="s" x="915" y="126" text-anchor="middle">dados fictícios</text>
+    <path class="arrow" d="M180 105H246"/><path class="arrow" d="M460 105H526"/><path class="arrow" d="M740 105H806"/>
+    <rect class="box" x="250" y="200" width="770" height="70" rx="14"/><text class="t" x="635" y="236" text-anchor="middle">Logs estruturados JSONL</text><text class="s" x="635" y="258" text-anchor="middle">request_completed · dependency_* · unhandled_exception · overload_rejected</text>
+    <path class="arrow" d="M355 150V196"/><path class="arrow" d="M635 150V196"/><path class="arrow" d="M915 150V196"/>
+    <rect class="gate" x="1100" y="60" width="370" height="210" rx="14"/><text class="t" x="1285" y="100" text-anchor="middle">Coletor (a cada 5 s)</text>
+    <text class="s" x="1125" y="138">• sonda /health e /metrics</text><text class="s" x="1125" y="166">• ingere logs (checkpoint)</text><text class="s" x="1125" y="194">• calcula sinais de negócio:</text><text class="s" x="1145" y="220">taxa de erro, p95, falhas</text><text class="s" x="1145" y="244">de dependência (30 s)</text>
+    <path class="arrow" d="M1020 235H1096"/>
+    <rect class="store" x="1100" y="330" width="370" height="150" rx="14"/><text class="t" x="1285" y="366" text-anchor="middle">etcd — estado atual</text><text class="s" x="1125" y="400">/snapshot/current (TTL 30 s)</text><text class="s" x="1125" y="428">/thresholds (limites)</text><text class="s" x="1125" y="456">/trigger/last (último disparo)</text>
+    <rect class="store" x="640" y="330" width="380" height="150" rx="14"/><text class="t" x="830" y="366" text-anchor="middle">PostgreSQL — histórico</text><text class="s" x="665" y="400">evidências (logs + snapshots)</text><text class="s" x="665" y="428">checkpoints de ingestão</text><text class="s" x="665" y="456">execuções de diagnóstico</text>
+    <path class="arrow" d="M1285 270V326"/><path class="arrow" d="M1180 270C1100 300 1060 330 1024 360"/>
+    <rect class="gate" x="1100" y="540" width="370" height="150" rx="14"/><text class="t" x="1285" y="578" text-anchor="middle">Gatilho automático</text><text class="s" x="1125" y="612">watch do etcd + limites</text><text class="s" x="1125" y="640">1 diagnóstico por incidente</text><text class="s" x="1125" y="668">intervalo mínimo (5 min)</text>
+    <path class="arrow" d="M1285 480V536"/>
+    <rect class="box" x="10" y="330" width="250" height="150" rx="14"/><text class="t" x="135" y="372" text-anchor="middle">Operador</text><text class="s" x="135" y="404" text-anchor="middle">CLI ou painel web</text><text class="s" x="135" y="430" text-anchor="middle">janela + request ID</text>
+    <rect class="ai" x="320" y="540" width="700" height="150" rx="14"/><text class="t" x="670" y="576" text-anchor="middle">Diagnóstico (LangChain → LLM)</text>
+    <text class="s" x="345" y="610">Context Builder: janela, serviço, correlação; até 80 evidências</text>
+    <text class="s" x="345" y="638">Saída JSON validada: incident / no_incident / insufficient_evidence</text>
+    <text class="s" x="345" y="666">Todo evidence_id citado precisa existir no contexto (1 correção)</text>
+    <path class="arrow" d="M135 480C135 560 220 615 316 615"/><path class="arrow" d="M1100 615H1024"/>
+    <path class="arrow dash" d="M830 484V536" marker-start="url(#a)"/><text class="lbl" x="842" y="514">lê evidências · grava a execução</text>
+  </svg>
+</section>
+
+<!-- 2. Gatilho -->
+<section class="diagram" id="d2">
+  <h2>Gatilho automático pelo etcd</h2>
+  <p class="sub">Os limites decidem quando investigar; a IA decide onde está a causa</p>
+  <svg width="1488" height="360" viewBox="0 0 1488 360">
+    <rect class="svc" x="10" y="110" width="220" height="120" rx="14"/><text class="t" x="120" y="160" text-anchor="middle">Serviços</text><text class="s" x="120" y="188" text-anchor="middle">tráfego real</text>
+    <rect class="gate" x="300" y="110" width="250" height="120" rx="14"/><text class="t" x="425" y="152" text-anchor="middle">Coletor</text><text class="s" x="425" y="180" text-anchor="middle">sinais por serviço</text><text class="s" x="425" y="204" text-anchor="middle">a cada 5 s</text>
+    <rect class="store" x="620" y="110" width="250" height="120" rx="14"/><text class="t" x="745" y="152" text-anchor="middle">etcd</text><text class="s" x="745" y="180" text-anchor="middle">snapshot + limites</text>
+    <rect class="gate" x="940" y="110" width="250" height="120" rx="14"/><text class="t" x="1065" y="152" text-anchor="middle">Gatilho</text><text class="s" x="1065" y="180" text-anchor="middle">viola limite?</text><text class="s" x="1065" y="204" text-anchor="middle">1 vez por incidente</text>
+    <rect class="ai" x="1260" y="110" width="218" height="120" rx="14"/><text class="t" x="1369" y="152" text-anchor="middle">Diagnóstico</text><text class="s" x="1369" y="180" text-anchor="middle">últimos 60 s</text><text class="s" x="1369" y="204" text-anchor="middle">sem o motivo</text>
+    <path class="arrow" d="M230 170H296"/><path class="arrow" d="M550 170H616"/><path class="arrow" d="M870 170H936"/><path class="arrow" d="M1190 170H1256"/>
+    <text class="lbl" x="905" y="150" text-anchor="middle">watch</text>
+    <text class="s" x="620" y="290">Limites padrão: taxa de erro &gt; 20% (mín. 3 req.) · p95 &gt; 1500 ms · serviço inalcançável</text>
+    <text class="s" x="620" y="320">Validação: disparou nos 6 incidentes e em nenhum controle, em 2 a 6 s</text>
+  </svg>
+</section>
+
+<!-- 3. Ciclos DSR -->
+<section class="diagram" id="d3">
+  <h2>Três ciclos construtivos da DSR</h2>
+  <p class="sub">Cada ciclo nasce da limitação observada no anterior</p>
+  <svg width="1488" height="470" viewBox="0 0 1488 470">
+    <rect class="svc" x="10" y="40" width="440" height="300" rx="16"/><text class="t" x="230" y="84" text-anchor="middle">Ciclo 1 — Observabilidade e</text><text class="t" x="230" y="112" text-anchor="middle">diagnóstico (Docker)</text>
+    <text class="s" x="34" y="152">Gateway → Orders → Users, coletor,</text><text class="s" x="34" y="178">etcd, PostgreSQL, LLM com evidências</text>
+    <text class="s" x="34" y="216">+ 8 cenários com gabarito e baselines</text><text class="s" x="34" y="242">+ gatilho automático pelo etcd</text>
+    <text class="s" x="34" y="290" font-weight="700">IA: 9/9 detecção · 6/6 localização</text>
+    <rect class="gate" x="524" y="40" width="440" height="300" rx="16"/><text class="t" x="744" y="84" text-anchor="middle">Ciclo 2 — Contenção</text><text class="t" x="744" y="112" text-anchor="middle">por regras (Nexo)</text>
+    <text class="s" x="548" y="152">Loja serverless na Vercel, carrinho</text><text class="s" x="548" y="178">preservado, 503 / 504 / 402 distintos,</text><text class="s" x="548" y="204">circuit breaker e reconciliação</text>
+    <text class="s" x="548" y="290" font-weight="700">8 verificações funcionais</text>
+    <rect class="ai" x="1038" y="40" width="440" height="300" rx="16"/><text class="t" x="1258" y="84" text-anchor="middle">Ciclo 3 — Agente governado</text><text class="t" x="1258" y="112" text-anchor="middle">por política</text>
+    <text class="s" x="1062" y="152">Agente LLM cego com ferramentas,</text><text class="s" x="1062" y="178">política determinística, auditoria</text><text class="s" x="1062" y="204">HMAC-SHA256, ablação de prompt</text>
+    <text class="s" x="1062" y="290" font-weight="700">360 execuções · 0 mudanças indevidas</text>
+    <path class="arrow" d="M450 190H520"/><path class="arrow" d="M964 190H1034"/>
+    <text class="lbl" x="230" y="390" text-anchor="middle">limite: só diagnostica, não contém</text>
+    <text class="lbl" x="744" y="390" text-anchor="middle">limite: regras fixas erram falhas cinzentas</text>
+    <text class="lbl" x="1258" y="390" text-anchor="middle">resultado: princípios de design DP1–DP3</text>
+  </svg>
+</section>
+
+<!-- 4. Método de avaliação -->
+<section class="diagram" id="d4">
+  <h2>Método de avaliação do núcleo Docker</h2>
+  <p class="sub">Falha conhecida → tráfego real → três métodos comparados com o gabarito</p>
+  <svg width="1488" height="400" viewBox="0 0 1488 400">
+    <rect class="bad" x="10" y="130" width="250" height="130" rx="14"/><text class="t" x="135" y="180" text-anchor="middle">Injeta falha</text><text class="s" x="135" y="208" text-anchor="middle">ou nenhuma</text><text class="s" x="135" y="232" text-anchor="middle">(controle)</text>
+    <rect class="svc" x="330" y="130" width="250" height="130" rx="14"/><text class="t" x="455" y="180" text-anchor="middle">Gera tráfego</text><text class="s" x="455" y="208" text-anchor="middle">ID por requisição</text><text class="s" x="455" y="232" text-anchor="middle">cenario.01, .02 …</text>
+    <path class="arrow" d="M260 195H326"/>
+    <rect class="box" x="680" y="20" width="400" height="90" rx="14"/><text class="t" x="880" y="60" text-anchor="middle">Health checks</text><text class="s" x="880" y="86" text-anchor="middle">algum /health falhou?</text>
+    <rect class="box" x="680" y="150" width="400" height="90" rx="14"/><text class="t" x="880" y="190" text-anchor="middle">Sonda sintética</text><text class="s" x="880" y="216" text-anchor="middle">a consulta de negócio falhou?</text>
+    <rect class="ai" x="680" y="280" width="400" height="90" rx="14"/><text class="t" x="880" y="320" text-anchor="middle">IA (artefato)</text><text class="s" x="880" y="346" text-anchor="middle">logs + snapshots da janela</text>
+    <path class="arrow" d="M580 195C630 195 630 65 676 65"/><path class="arrow" d="M580 195H676"/><path class="arrow" d="M580 195C630 195 630 325 676 325"/>
+    <rect class="store" x="1180" y="130" width="298" height="130" rx="14"/><text class="t" x="1329" y="172" text-anchor="middle">Gabarito</text><text class="s" x="1329" y="200" text-anchor="middle">detectou o incidente?</text><text class="s" x="1329" y="224" text-anchor="middle">apontou o serviço certo?</text>
+    <path class="arrow" d="M1080 65C1130 65 1130 195 1176 195"/><path class="arrow" d="M1080 195H1176"/><path class="arrow" d="M1080 325C1130 325 1130 195 1176 195"/>
+  </svg>
+</section>
+
+<!-- 5. Agente governado -->
+<section class="diagram" id="d5">
+  <h2>Agente investigativo governado por política (Ciclo 3)</h2>
+  <p class="sub">O modelo escolhe o que investigar; só a política autoriza mudar o sistema</p>
+  <svg width="1488" height="430" viewBox="0 0 1488 430">
+    <rect class="ai" x="10" y="120" width="260" height="140" rx="14"/><text class="t" x="140" y="166" text-anchor="middle">Agente LLM</text><text class="s" x="140" y="194" text-anchor="middle">cego ao cenário</text><text class="s" x="140" y="218" text-anchor="middle">(DP3)</text>
+    <rect class="svc" x="350" y="20" width="330" height="100" rx="14"/><text class="t" x="515" y="62" text-anchor="middle">probe_service</text><text class="s" x="515" y="88" text-anchor="middle">sondagem de saúde</text>
+    <rect class="svc" x="350" y="140" width="330" height="100" rx="14"/><text class="t" x="515" y="182" text-anchor="middle">inspect_telemetry</text><text class="s" x="515" y="208" text-anchor="middle">janela de 5 min (DP2)</text>
+    <rect class="svc" x="350" y="260" width="330" height="100" rx="14"/><text class="t" x="515" y="302" text-anchor="middle">test_payment</text><text class="s" x="515" y="328" text-anchor="middle">compra canário (DP2)</text>
+    <path class="arrow" d="M270 190C310 190 310 70 346 70"/><path class="arrow" d="M270 190H346"/><path class="arrow" d="M270 190C310 190 310 310 346 310"/>
+    <rect class="gate" x="760" y="120" width="300" height="140" rx="14"/><text class="t" x="910" y="166" text-anchor="middle">propose_action</text><text class="s" x="910" y="194" text-anchor="middle">proposta tipada</text><text class="s" x="910" y="218" text-anchor="middle">com evidence_ids</text>
+    <path class="arrow" d="M680 190H756"/>
+    <rect class="bad" x="1140" y="40" width="338" height="130" rx="14"/><text class="t" x="1309" y="88" text-anchor="middle">validateProposal</text><text class="s" x="1309" y="116" text-anchor="middle">política determinística (DP1)</text><text class="s" x="1309" y="140" text-anchor="middle">recusa sem prova</text>
+    <rect class="store" x="1140" y="220" width="338" height="130" rx="14"/><text class="t" x="1309" y="266" text-anchor="middle">Ação aplicada</text><text class="s" x="1309" y="294" text-anchor="middle">registro assinado</text><text class="s" x="1309" y="318" text-anchor="middle">HMAC-SHA256 (DP3)</text>
+    <path class="arrow" d="M1060 190C1100 190 1100 105 1136 105"/><path class="arrow" d="M1309 170V216"/>
+    <path class="arrow dash" d="M1140 150C1100 150 1100 410 900 410H160V264"/><text class="lbl" x="560" y="400" text-anchor="middle">recusa com motivo → agente reconsidera</text>
+  </svg>
+</section>
+</body>
+</html>

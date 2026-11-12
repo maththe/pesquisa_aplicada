@@ -1,0 +1,51 @@
+$ etcdctl get /observability/snapshot/current  (campo signals)
+{
+  "snapshot_id": "cdbc1d85-731f-4f01-8080-fd2862d0f453",
+  "timestamp": "2026-11-12T02:49:52.389069Z",
+  "services": [
+    {
+      "service": "gateway",
+      "reachable": true,
+      "status_code": 200
+    },
+    {
+      "service": "orders-service",
+      "reachable": true,
+      "status_code": 200
+    },
+    {
+      "service": "users-service",
+      "reachable": true,
+      "status_code": 200
+    }
+  ],
+  "signals": [
+    {
+      "service": "gateway",
+      "window_seconds": 30,
+      "requests": 0,
+      "errors": 0,
+      "error_rate": null,
+      "p95_ms": null,
+      "dependency_failures": 0
+    },
+    {
+      "service": "orders-service",
+      "window_seconds": 30,
+      "requests": 0,
+      "errors": 0,
+      "error_rate": null,
+      "p95_ms": null,
+      "dependency_failures": 0
+    },
+    {
+      "service": "users-service",
+      "window_seconds": 30,
+      "requests": 0,
+      "errors": 0,
+      "error_rate": null,
+      "p95_ms": null,
+      "dependency_failures": 0
+    }
+  ]
+}

@@ -1,0 +1,143 @@
+$ diagnostics history
+[
+  {
+    "run_id": "aab31755-619c-4f08-ad5b-cf16b8221f24",
+    "timestamp": "2026-11-12T03:05:38.366660+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Entre 03:04:46Z e 03:04:59Z, múltiplas chamadas GET /orders/1 pelo gateway retornaram 504 (~2 s). O orders-service registrou timeouts de conexão ao users-service e concluiu requisições com 504. O snapshot no período indica users-service inacessível (ConnectTimeout, ~2004 ms), enquanto gateway e orders-service estão alcançáveis mas com elevação de erros e p95 alto devido a falhas de dependência. Isso caracteriza incidente com indisponibilidade/conectividade do users-service se propagando ao orders-service e ao gateway. Um 422 isolado está associado a um caminho inválido e não altera o diagnóstico."
+  },
+  {
+    "run_id": "3d8a6e98-3768-4891-bdb4-a9598df6f47e",
+    "timestamp": "2026-11-12T03:04:30.252268+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas: entre 03:03:25.48Z e 03:03:25.60Z, requisições GET /orders/1 pelo gateway alternaram entre 200 e 500. Nos casos de falha, o gateway registrou erro HTTP da dependência orders-service e respondeu 500 (p.ex., 74bc8d53-, ea5b450d-, 4d9e9115-, f4117795- relacionados a 729ede3a-, 87d9faea-, db94acc0-, bad9b6e2-). O orders-service, para as mesmas correlações, registrou unhandled_exception com error_type RuntimeError seguido de request_completed 500 (fd726bc5-, efbb5ecd-; bd6c51d5-, 858f2e6a-; bfe7d1b9-, da339e6d-; 95c9e551-, ac6dbf28-). Em intercalamento, houve requisições idênticas atendidas com 200 ao longo da mesma janela (ex.: 3438636e-, 32441f0d-, 381520dd-, 0729cf77- no gateway; 269bf779-, 14cc1a87-, d1da3b03-, dc41b24f- no orders-service). O users-service respondeu 200 de forma consistente (933855c5-, 570ead47-, 8543a264-, 3acef496-), e o orders-service reportou sucesso ao consultá-lo (5ece21af-, 5cc52166-, 9b4c5e25-, 61754a31-). O snapshot posterior indica todos os serviços acessíveis e com baixa latência, porém com taxa de erro de 50% no gateway e no orders-service nos últimos 30s, e 0% no users-service (a3d6bb10-). Indicação: incidente intermitente originado no orders-service, propagando 500 ao gateway, com padrão consistente de exceção não tratada."
+  },
+  {
+    "run_id": "be10a89d-dff2-4709-876d-e6f3ef800a00",
+    "timestamp": "2026-11-12T03:03:03.765254+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas observados na janela 2026-11-12T03:02:00.654Z a 03:02:06.462Z:\n- gateway retornou 504 para GET /orders/1 em duas requisições correlacionadas, cada uma por ~2,0s, e registrou falha de dependência para orders-service (evidence_ids: fcf9081b-0c38-46a9-955e-878a11bd92d8, 2e7b1fb6-51d0-4ee9-a25a-56e052f02cae, da85bbe7-1f33-4395-bf57-06b683e56b9b, a8812c02-21cd-4a9e-a75b-28b6ed508a2c).\n- orders-service concluiu as mesmas requisições com 504 após cerca de ~2,0s, registrando timeouts ao chamar users-service (evidence_ids: 6a699ca0-e340-4b64-8d11-e5f681282cde, 5647fde1-170b-422a-b11e-6e5ef249133c, 5f641593-bbe0-4af8-9e70-5df338748c7e, 3e501aff-e0a5-42a5-84e9-172591a1d2f0).\n- users-service atendeu GET /users/1 com status 200, porém com latência ~3,0s nas duas amostras (evidence_ids: f129ac91-b6fa-40ac-b995-2048f56fd207, 17cc46dc-f0b9-4871-9cfe-fd445c333491).\n- Sinais agregados em 30s: erro_rate 1.0 no gateway e no orders-service; p95 ~2005ms nesses serviços; users-service com erro_rate 0 e p95 ~3002ms (evidence_id: c3e3219c-8c8c-42da-9022-5a10517b9f4f).\nInterpretação: houve falha incidente visível ao cliente no gateway (504) devido a timeouts no orders-service ao aguardar o users-service. O users-service respondeu sem erro HTTP, porém com latência (~3s) superior ao orçamento/timeout aparente do orders-service (~2s). Saúde de processo/healthcheck está OK, mas não reflete o caminho crítico."
+  },
+  {
+    "run_id": "46318a8a-b984-4e7c-bddb-0fceb858c32e",
+    "timestamp": "2026-11-12T03:01:35.547727+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas: O gateway retornou HTTP 500 para GET /orders/1 durante a janela analisada. Há 5 requisições e 5 erros no gateway e no orders-service no último snapshot de 30s, com falhas de dependência registradas no gateway. No orders-service, cada chamada correspondente gerou exceção não tratada (RuntimeError) seguida de resposta 500. A latência p95 do orders-service é muito baixa (~0,39 ms), sugerindo falha imediata de lógica e não timeout. Serviços respondem healthy nos checks, apesar do erro nos endpoints de negócio.\nImpacto: Erro 500 consistente para clientes chamando GET /orders/1, propagado pelo gateway devido a falha no orders-service."
+  },
+  {
+    "run_id": "a5aa4586-efdd-4772-8227-92864954edc2",
+    "timestamp": "2026-11-12T03:00:41.899159+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Entre 02:59:40.628Z e 02:59:40.634Z, o users-service rejeitou várias requisições com 503 por limite de concorrência excedido, o que levou o orders-service a retornar 503 ao gateway e elevou a taxa de erro (~64% na janela de 30s). As rejeições no users-service ocorreram quase imediatamente (eventos overload_rejected) e o orders-service propagou 503 em ~6–8 ms; o gateway finalizou com 503 em ~13–16 ms. Algumas requisições fora do pico concluíram com 200 em ~351–367 ms, indicando funcionamento normal quando a concorrência no users-service permaneceu ≤3. Saúde/latência de health-checks estavam normais apesar do pico de erros, o que é compatível com proteção por limite de concorrência e não com exaustão de CPU/memória."
+  },
+  {
+    "run_id": "c1b28548-9614-4322-b2ed-ad3f6105b348",
+    "timestamp": "2026-11-12T02:59:20.195592+00:00",
+    "outcome": "no_incident",
+    "simulated": false,
+    "summary": "Sintomas: não há indícios de erro na janela analisada. As três requisições GET /orders/1 observadas no gateway dentro da correlação (sufixo .01, .02, .03) concluíram com status 200 e baixa latência (e.g., 5.09 ms, 3.75 ms, 3.02 ms) [0955aaf6-0909-47bd-a52f-3f736bb7c569, f330d3bd-b5a1-405b-9116-77ffb0312f08, ac92af7a-26ae-4c38-b957-a5ef8329e725]. As chamadas a dependências também foram bem-sucedidas: gateway→orders-service [fe528bd5-3fb6-4fa1-946c-9904197d14fa, 10b67258-5138-4d6b-85f4-ceddac1fd389, 15b09863-b4af-4482-a538-4dc5f784c398] e orders-service→users-service [d61fadab-24eb-4610-97c6-2e697263e59b, f0a3acc5-0859-4024-a9f3-784e63e0140e, 86d3570b-760e-461e-bd33-daced27a7823], com respostas 200 e latências baixas em orders-service e users-service [704b223e-0060-432a-ba85-22f1ce3caf13, 8012f96c-0d82-4ab5-bea0-9386cc1a0be9, 1457fa30-7e3a-4558-9420-d094b385d412, 126d974d-c74b-4126-8a94-305d90da3143, 157656df-0681-46b1-baf4-a32c6d2f0217, 96bc1a7b-6891-4d8a-a371-6d91c9f8bb1e]. O snapshot de saúde indica os três serviços alcançáveis, status 200, e sinais com 0 erros e p95 baixo nos últimos 30s [6ac49e14-656f-48e2-a96b-dbecea7cadca]. Conclusão: operação normal sem evidências de incidente no intervalo 2026-11-12T02:58:25.218Z a 2026-11-12T02:58:26.924Z."
+  },
+  {
+    "run_id": "f7f8c030-5139-4680-b5bb-2a4d5d1b3ca3",
+    "timestamp": "2026-11-12T02:58:06.099273+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas observados na janela 2026-11-12T02:56:37.598Z a 02:56:51.353Z: o gateway retornou 504 em três requisições GET /orders/1, todas com ~2s de duração (46121631-1c7c-4508-aaf2-4728ff69a468, 85a4e18f-266d-4894-9690-44581ccc604f, c735580c-84c8-4b96-87cc-406f4dd95c1a). Em cada caso, o gateway registrou erro HTTP da dependência orders-service com status 504 (bffa1f15-6159-4b2c-933e-ec94b18f49e7, 37b2a16a-e453-4b58-8cd3-5b8733d59e0f, 0fc836a6-b5ec-4934-9761-513c3e49404d). O orders-service, por sua vez, concluiu as requisições com 504 (~2s) (3e70e2dc-7a91-40dc-ad08-975c1893bfc9, 8a3f269b-565a-49e8-b516-83a8dbe04f28, d419d93d-0366-4570-b33f-ad05829e43d8) e registrou timeouts de conexão ao chamar o users-service (ConnectTimeout ~2000 ms) (1515310f-be6f-40ad-92e8-3d6646982542, f4be6044-774c-4201-b03f-5719598a9752, 790925b1-b9c6-4ee5-a53e-9739fa385f5d). O snapshot confirma o users-service inalcançável com ConnectTimeout e latência ~2004 ms, enquanto gateway e orders-service estão alcançáveis (d8e73305-66e4-4775-8abf-ee023fa7eaa2). Em conjunto, isso caracteriza um incidente com indisponibilidade/timeout na dependência users-service (ou no caminho de rede até ela), resultando em 504 em cascata no orders-service e no gateway."
+  },
+  {
+    "run_id": "286b92c7-153b-4ae6-a8b3-6db9abb56ad3",
+    "timestamp": "2026-11-12T02:56:22.733793+00:00",
+    "outcome": "no_incident",
+    "simulated": false,
+    "summary": "Sintomas observados na janela 2026-11-12T02:55:38.609Z a 2026-11-12T02:55:40.390Z:\n- Nenhum erro registrado; todas as requisições correlacionadas retornaram 200 com latências de poucos milissegundos no gateway, orders-service e users-service (incluindo chamadas de dependência).\n- Health/snapshot no meio da janela indica todos os serviços alcançáveis (200) e baixa latência, com erros=0 e p95 baixo nos últimos 30s.\n\nAnálise do encadeamento:\n- gateway atendeu GET /orders/1 e concluiu as consultas ao orders-service com sucesso nas três amostras (.01, .02, .03) [4bc03b3f-23de-40b2-a92f-77072523d9c4, 7afc42a5-7120-4ef8-a583-a020e648ccf2, 5e0a0eb3-0a12-4091-9b2c-f010367bafb3, 9ba4df9c-e61b-4d1d-8e7b-e57ceb55c862, 79f7c5cf-6a34-4099-9563-5e544c14bca4, f8283316-adde-45b3-b602-d411d537deaa, e374d510-dfb1-4765-a228-77c6eb6c0338, 1aab3032-9eab-4f4f-bb81-5b80b5dc1896, 99e4df44-2d04-4b0f-9dde-2b57002fb44a, 77952d21-6897-4ce9-9d2c-42b245727b86, 2edfb506-529b-454f-a87d-ae59a7f382cb, 860e899c-ab15-4385-8671-9fc9d0e42737].\n- orders-service consultou users-service com sucesso e users-service respondeu 200 rapidamente em todas as amostras [9ba4df9c-e61b-4d1d-8e7b-e57ceb55c862, 1aab3032-9eab-4f4f-bb81-5b80b5dc1896, 860e899c-ab15-4385-8671-9fc9d0e42737, f5806e59-057b-4494-a4f4-453f8cabc186, 75c96f17-3b6e-4485-af74-d6922ebdf4f1, f8c0ab91-439e-4103-8a59-60cd255c5573].\n- Snapshot mostra serviços reachable= true, status 200 e erros=0 na janela de 30s [865d606a-90d7-4fa9-9b66-31337aa23828].\n\nConclusão:\n- Não há evidência de incidente no período analisado; o fluxo gateway -> orders-service -> users-service operou normalmente com 0% de erros e baixa latência.\n"
+  },
+  {
+    "run_id": "3e064222-abb5-4cf7-a8f6-3caa638775ce",
+    "timestamp": "2026-11-12T02:11:03.603936+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Entre 02:10:10Z e 02:10:15Z houve aumento abrupto de erros 500, com error_rate ~46% no gateway e no orders-service. Em cada ocorrência, o orders-service registrou unhandled_exception (RuntimeError) ao atender GET /orders/1 e, em seguida, respondeu 500; o gateway registrou dependency_http_error para o orders-service e propagou 500 ao cliente. Antes de 02:10:05Z não havia erros; por volta de 02:10:10Z surgiram (~5) e cresceram até ~20 aos 02:10:15Z. O users-service permaneceu estável. Os health checks (200) e baixas latências sugerem falha lógica de aplicação no orders-service, não indisponibilidade de processo. Causa raiz específica não é confirmável com os dados presentes, mas a evidência aponta para erro de aplicação no orders-service na rota GET /orders/1."
+  },
+  {
+    "run_id": "d0d40643-1864-4d6d-83d3-a7898f5ce366",
+    "timestamp": "2026-11-12T01:45:49.977943+00:00",
+    "outcome": "no_incident",
+    "simulated": false,
+    "summary": "Sintomas observados: durante a janela analisada (~2026-11-12T01:45:13.61Z a 01:45:15.47Z), três requisições GET /orders/1 no gateway com correlação normal-cd2c92bef0f3 (.01, .02, .03) completaram com HTTP 200 e baixa latência. A cadeia gateway -> orders-service -> users-service respondeu com sucesso e sem error_type. Um snapshot próximo ao período mostra os três serviços alcançáveis (status 200) e latências baixas. Não há evidências de erro ou degradação de performance no intervalo. Evidências: dec21982-4173-4fad-876e-2439fc9005a2, 70c6a078-97dd-46b8-8c38-1ccad86eda81, a0c4a699-9cce-42da-a2cf-0f9a4217ceb9, e8c56268-fefa-4351-8c77-a4d97661aa88, 37451f75-a74e-437d-8e77-3468c525a205, 5afd978f-6121-424d-a1d1-d833e414cd98, 680f4632-0770-4e93-a011-e0037c2c0424, 812e4cff-7d78-4705-aa5e-db935a184e4d, 2985a19d-f210-4a53-9ff6-27c1accc795e, f8e6a2c2-0024-47eb-a917-d329d7e1fb5b, 8f94f88e-8268-4ba0-94b0-878e245cdf93, 50f78da8-10d5-4665-8637-e499c5daef92, 66818be6-1959-465e-b7fb-b43294eb2652, 96b5b724-9d61-4216-9de9-9778eadd986d, affe368a-6c67-48cb-9791-48b194e7c8ce, 7dadaea6-1cc4-427d-8a27-f6724aa4b3c3."
+  },
+  {
+    "run_id": "4a8f06c2-d251-4f44-aa4a-cb3b05bec842",
+    "timestamp": "2026-11-12T01:44:54.441053+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas: entre 01:44:06Z e 01:44:10Z, o gateway respondeu 504 para GET /orders/1 em múltiplas tentativas (~2s cada). O orders-service também concluiu as requisições com 504 após aguardar ~2s pela dependência. Antes de retornar 504, o orders-service registrou timeout de conexão ao users-service (ConnectTimeout ~2s). Às 01:44:15Z, o snapshot indicou o users-service inacessível (ConnectTimeout ~2004ms), enquanto gateway e orders-service estavam alcançáveis com 200, o que não garante saúde das dependências. Evidências-chave: timeouts do orders-service ao users-service, 504 em cascata até o gateway e snapshot com users-service indisponível."
+  },
+  {
+    "run_id": "ae2481c7-33dc-4387-adcf-3c505bbadffe",
+    "timestamp": "2026-11-12T01:43:44.676014+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Entre 01:42:38.57Z e 01:42:38.75Z houve falhas intermitentes no endpoint GET /orders/1: 4 requisições retornaram 500 (IDs .02, .04, .06, .08) alternando com 4 sucessos (IDs .01, .03, .05, .07). Nas falhas, o orders-service registrou unhandled_exception com error_type=RuntimeError e concluiu a requisição com status 500, que foi propagado pelo gateway. Nos sucessos, o orders-service chamou o users-service com 200 e respondeu 200 ao gateway. Um snapshot posterior (~01:42:39.87Z) mostrou os três serviços alcançáveis e sem sinais de pressão de recursos, o que não invalida a presença de exceções lógicas intermitentes no orders-service. A evidência localiza o impacto e o mecanismo de falha (exceções não tratadas no orders-service) mas não permite inferir a causa raiz específica."
+  },
+  {
+    "run_id": "a4f295ed-a67b-4fa2-874a-c244fecc30bd",
+    "timestamp": "2026-11-12T01:42:17.514572+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Durante 01:41:30.737Z–01:41:36.482Z, o gateway retornou 504 para GET /orders/1 em duas ocorrências (~2,0s cada). O orders-service respondeu 504 após atingir ~2,0s de espera pela sua dependência users-service (ReadTimeout). Em ambos os casos, o users-service concluiu a mesma chamada GET /users/1 com 200, porém em ~3,0s, ou seja, depois do timeout do orders-service. O snapshot indica processos saudáveis e latências baixas para checagens básicas, o que não descarta lentidão específica do endpoint. Evidências apontam impacto ao cliente por tempo de resposta do users-service excedendo o timeout configurado no orders-service."
+  },
+  {
+    "run_id": "bea6dcf0-f9d4-414c-8b7c-ae95ecc90809",
+    "timestamp": "2026-11-12T01:41:05.833817+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas: o gateway respondeu 500 para GET /orders/1 em três requisições correlacionadas (.01, .02, .03) dentro da janela analisada. Em cada caso, o gateway registrou erro HTTP da dependência orders-service e concluiu com 500. Causa imediata observável: o orders-service registrou exceção não tratada (RuntimeError) ao processar as mesmas requisições, finalizando com status 500, o que foi propagado pelo gateway. Saúde/ambiente: um snapshot no meio da janela indica que os três serviços estavam alcançáveis e com healthcheck 200 e baixa latência; isso sugere que o problema é lógico/aplicativo no endpoint e não indisponibilidade do processo. Escopo: não há indícios de envolvimento do users-service; o erro parece restrito ao orders-service no caminho GET /orders/1."
+  },
+  {
+    "run_id": "5b3c0084-3299-4efc-9cc9-c8032ad1a00f",
+    "timestamp": "2026-11-12T01:39:59.352054+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas observados na janela 2026-11-12T01:39:05.558Z a 01:39:07.716Z:\n- Várias requisições GET /orders/1 no gateway falharam com 503, correlacionadas a erros HTTP 503 do orders-service (ex.: 79810e99-c57e-48ce-99e9-03763477df70, 6de97948-0c37-4849-ada7-16170edeb471, fc00f48a-bcc2-4d01-8dd3-529296fe8e7d, de9fca11-eb2b-4583-8170-2bd384ecb31a).\n- O orders-service retornou 503 rapidamente para múltiplas chamadas, registrando dependency_http_error ao chamar o users-service (ex.: 8166716c-58f5-4f34-b937-b70c6c4c2339, 6f4ddaa8-43cb-4dfe-a247-523086516df2, cbdbd542-7f5e-4300-9adf-48aeb559300f) e concluindo com 503 (ex.: f50659ed-2239-4dac-82c9-a24abf3d561d, 26f5422f-bfda-4cd5-83b0-8ed904526fd3).\n- O users-service registrou rejeições por sobrecarga (ConcurrencyLimitExceeded) ao exceder o limite de 3 requisições simultâneas (ex.: bb35faad-547f-419c-a608-3c668818588a, 6da5ce90-cb19-4733-aeb8-982fadcba7cf, 7c40ab8a-241f-42e4-9555-e2b73fc6bcbe, c401befa-e161-4ca8-b907-18c1c6cff20a) e finalizou requisições com 503 quase imediatos (ex.: 1bbff2d6-012c-44ad-9036-97b131347cf0, 3c6d2951-38b6-4385-870a-7c17d2c19ed4).\n- Em seguida, houve sucesso para algumas requisições: users-service atendeu em ~352 ms (ex.: 74b47faf-6724-47c9-9ab8-8580a8bf6f0d), orders-service concluiu em ~359 ms (ex.: 60fef2e3-1d9a-43f1-8b61-1b8ebdc3c177) e o gateway respondeu 200 (ex.: dd040849-acf3-4521-a14a-87448c77c644).\n- Snapshot posterior indica todos os serviços saudáveis e com baixa latência em health checks (b81576d5-f201-4819-9e28-513596e5b51f), o que não reflete o pico de erro ocorrido.\nDiagnóstico resumido:\n- Incidente transitório de sobrecarga no users-service (limite de concorrência atingido) causou 503 imediatos, propagados em cascata ao orders-service e ao gateway. Após conclusão das requisições aceitas (até o limite), novas passaram a ser atendidas com sucesso. A causa do pico de concorrência não é determinável com os dados disponíveis."
+  },
+  {
+    "run_id": "8bc4ed8b-e9e0-44d8-b2c8-b756272086eb",
+    "timestamp": "2026-11-12T01:38:45.208409+00:00",
+    "outcome": "no_incident",
+    "simulated": false,
+    "summary": "Sintomas observados na janela 2026-11-12T01:38:02.726Z–01:38:04.472Z:\n- Três chamadas GET /orders/1 via gateway concluídas com 200 e baixa latência (ex.: request_completed do gateway: d270e62d, b7ead10b, 8ced1b64). Cada uma incluiu chamada ao orders-service também com 200 (bf3a1af4, 530f35e7, ded0ea07; e request_completed no orders-service: e7dfbc70, e9799b03, 4445ed03). O orders-service consultou o users-service com 200 e latências sub-milisegundo a ~1–2 ms (dependências: 4f7ab3c6, e13f91e7, c229bf06; request_completed no users-service: ebbb75db, 904d4473, 72c99fe2).\n- Snapshot de saúde durante a janela indica os três serviços alcançáveis com status 200 e latências baixas (93fd899d).\n- Não há erros, timeouts ou códigos 5xx/4xx registrados nos eventos fornecidos.\n\nInterpretação: Todas as interações na cadeia gateway -> orders-service -> users-service, para as três tentativas observadas, retornaram com sucesso e baixa latência. O estado atual, pelo recorte analisado, sugere operação normal, sem evidência de incidente em andamento."
+  },
+  {
+    "run_id": "80b9bc8c-cbc2-4019-9a80-65a16f264d05",
+    "timestamp": "2026-11-12T01:37:43.583535+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Sintomas observados na janela: três requisições GET /orders/1 pelo gateway retornaram 504 após ~2s (21c91eb5-d641-4b5f-902e-02ec063031ef, 8ed5ebca-310d-4f19-a8ac-8df3bf73b091, 071a1776-bc52-4ca8-b6ea-e4f00c13f5db). Em cada tentativa, o gateway registrou erro de dependência 504 vindo do orders-service (8f5fcbd9-cb80-4f58-b953-123964855aaa, 590a1c52-d45f-43fd-baad-fae3fb1bd97d, f099aa1b-dd5c-4394-a1e5-634deef508fa). O orders-service completou as requisições com 504 após ~2s e, internamente, registrou timeout ao chamar o users-service (/users/1) com ConnectTimeout (~2s) (73962cb1-d5da-46e7-99c7-33caecc229da, 15863a94-955a-40de-82d5-8ab61d5059eb, dd19887e-2ce8-4aba-be28-d7876d8752ac; 8041fc63-bec8-4727-87cd-f188c8725ff0, 0345b2e3-b580-4257-adb6-f2d12ccaeae0, d50d54bb-8eb7-42e2-a682-ca7b110d5a20). Um snapshot posterior mostrou o users-service inacessível (ConnectTimeout ~2s), enquanto gateway e orders-service respondiam 200 com baixa latência e métricas normais (8223b952-4736-48b3-9e5f-2a67bb645e57). Conclusão: incidente com impacto ao usuário final, devido à indisponibilidade/timeout do users-service causando falha em cadeia no orders-service e no gateway."
+  },
+  {
+    "run_id": "fd0f6e6a-cc9c-4e3d-a04e-91c9667e3fe5",
+    "timestamp": "2026-11-12T01:36:24.609231+00:00",
+    "outcome": "no_incident",
+    "simulated": false,
+    "summary": "Entre 01:35:30.342Z e 01:35:32.171Z, três requisições correlacionadas (normal-44bc733b2c7a.01–.03) para GET /orders/1 foram processadas com sucesso pelo gateway, com chamadas bem-sucedidas ao orders-service, que por sua vez consultou o users-service. Todas as respostas retornaram 200 e latências baixas e consistentes foram observadas em cada etapa. Um snapshot no período confirma os três serviços acessíveis e sem erros aparentes. Sintomas observados: nenhum erro 4xx/5xx, nenhuma exceção registrada e sem indícios de degradação de latência. Conclusão: não há evidências de incidente no intervalo analisado."
+  },
+  {
+    "run_id": "ec7bd726-06e8-440e-afb1-42e8962b28c5",
+    "timestamp": "2026-11-12T01:35:04.960789+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Três tentativas quase simultâneas de GET /orders/1 falharam com 500 via gateway entre 01:34:14.831Z e 01:34:14.866Z. Em cada tentativa o orders-service registrou unhandled_exception (RuntimeError) seguida de request_completed com status 500; o gateway registrou dependency_http_error para o orders-service e propagou 500 ao cliente. Um snapshot ~1,25s depois mostra todos os serviços alcançáveis e respondendo 200, sugerindo falha transitória ou não coberta pelo healthcheck. As evidências indicam incidente no orders-service afetando a rota /orders/1 naquele instante."
+  },
+  {
+    "run_id": "20b654dc-af3e-44b0-b0bf-d6f364ec04da",
+    "timestamp": "2026-11-12T01:33:28.398724+00:00",
+    "outcome": "incident",
+    "simulated": false,
+    "summary": "Durante a janela analisada, o gateway retornou 504 para três chamadas GET /orders/1 (~2s cada), após o orders-service propagar falha por timeout ao chamar o users-service. Os logs do orders-service registram ConnectTimeout ao consultar o users-service por ~2000 ms, e o snapshot no final da janela mostra o users-service como não alcançável (ConnectTimeout), enquanto gateway e orders-service respondem 200 localmente. Indica incidente de indisponibilidade/conectividade do users-service impactando o fluxo de pedidos."
+  }
+]

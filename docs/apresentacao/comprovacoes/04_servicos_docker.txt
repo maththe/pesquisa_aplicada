@@ -1,0 +1,10 @@
+$ docker compose ps
+SERVICE          STATE     STATUS
+collector        running   Up 25 minutes (healthy)
+etcd             running   Up 2 hours (healthy)
+gateway          running   Up 41 minutes (healthy)
+migrate          exited    Exited (0) 25 minutes ago
+orders-service   running   Up 27 minutes (healthy)
+postgres         running   Up 2 hours (healthy)
+trigger          exited    Exited (137) 36 minutes ago
+users-service    running   Up 26 minutes (healthy)
